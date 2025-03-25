@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { 
   ArrowUpRight, Star, BookOpen, DollarSign, Tag, 
@@ -116,6 +117,30 @@ const ToolDetail = () => {
             });
           }
         } else if (data) {
+          // Parse faqs to ensure it's an array of objects with question and answer properties
+          let parsedFaqs: { question: string; answer: string; }[] = [];
+          
+          if (data.faqs) {
+            try {
+              // If faqs is already an array, ensure it has the right structure
+              if (Array.isArray(data.faqs)) {
+                parsedFaqs = data.faqs.map((faq: any) => ({
+                  question: faq.question || "Question",
+                  answer: faq.answer || "No answer provided"
+                }));
+              } else if (typeof data.faqs === 'object') {
+                // If faqs is an object but not an array, convert it to array format
+                parsedFaqs = Object.entries(data.faqs).map(([key, value]) => ({
+                  question: key,
+                  answer: String(value)
+                }));
+              }
+            } catch (e) {
+              console.error('Error parsing FAQs:', e);
+              parsedFaqs = [];
+            }
+          }
+
           const formattedTool: ToolDetailType = {
             id: data.id.toString(),
             name: data.company_name || 'Unknown Tool',
@@ -132,11 +157,11 @@ const ToolDetail = () => {
             url: data.visit_website_url || '#',
             website: data.visit_website_url || '#',
             isFeatured: false,
-            pros: data.pros || [],
-            cons: data.cons || [],
-            features: data.applicable_tasks || [],
+            pros: Array.isArray(data.pros) ? data.pros : [],
+            cons: Array.isArray(data.cons) ? data.cons : [],
+            features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
             lastUpdated: 'Recently',
-            faqs: data.faqs || [],
+            faqs: parsedFaqs,
             alternatives: []
           };
           
@@ -406,20 +431,22 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
-                  <div className="space-y-4">
-                    {tool.faqs.map((faq, index) => (
-                      <div key={index} className="rounded-xl border border-border/40 bg-background p-5">
-                        <h3 className="font-medium mb-2 flex items-start gap-2">
-                          <MessageCircle size={18} className="text-primary mt-1" />
-                          {faq.question}
-                        </h3>
-                        <p className="text-muted-foreground">{faq.answer}</p>
-                      </div>
-                    ))}
+                {Array.isArray(tool.faqs) && tool.faqs.length > 0 && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
+                    <div className="space-y-4">
+                      {tool.faqs.map((faq, index) => (
+                        <div key={index} className="rounded-xl border border-border/40 bg-background p-5">
+                          <h3 className="font-medium mb-2 flex items-start gap-2">
+                            <MessageCircle size={18} className="text-primary mt-1" />
+                            {faq.question}
+                          </h3>
+                          <p className="text-muted-foreground">{faq.answer}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
                 
                 <div>
                   <div className="flex items-center justify-between mb-4">
