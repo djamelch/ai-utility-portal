@@ -1,10 +1,20 @@
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
-  Menu, X, Search, Moon, Sun 
+  Menu, X, Search, Moon, Sun, User, LogOut, Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavbarProps {
   className?: string;
@@ -17,6 +27,8 @@ export function Navbar({ className }: NavbarProps) {
     localStorage.getItem("theme") === "dark" || 
     (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)
   );
+  const { user, profile, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isDarkMode) {
@@ -55,12 +67,22 @@ export function Navbar({ className }: NavbarProps) {
     setIsDarkMode(!isDarkMode);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   const navLinks = [
     { title: "Home", path: "/" },
     { title: "Tools", path: "/tools" },
     { title: "Blog", path: "/blog" },
     { title: "About", path: "/about" }
   ];
+
+  // Add admin dashboard link if user is admin
+  if (isAdmin) {
+    navLinks.push({ title: "Admin", path: "/admin" });
+  }
 
   return (
     <header
@@ -107,12 +129,42 @@ export function Navbar({ className }: NavbarProps) {
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             
-            <Link 
-              to="/login" 
-              className="px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Sign In
-            </Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="rounded-full">
+                    {isAdmin ? (
+                      <Shield size={20} className="text-primary" />
+                    ) : (
+                      <User size={20} />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>
+                    {isAdmin ? 'Admin Account' : 'User Account'}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Admin Dashboard</span>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link 
+                to="/auth" 
+                className="px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
 
@@ -152,20 +204,29 @@ export function Navbar({ className }: NavbarProps) {
               ))}
             </ul>
             <div className="mt-auto pt-8 flex flex-col gap-4">
-              <Link
-                to="/login"
-                className="w-full py-3 text-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                onClick={toggleMenu}
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/register"
-                className="w-full py-3 text-center rounded-full border border-input bg-background hover:bg-accent/10 transition-colors"
-                onClick={toggleMenu}
-              >
-                Register
-              </Link>
+              {user ? (
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => {
+                    handleSignOut();
+                    toggleMenu();
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              ) : (
+                <>
+                  <Link
+                    to="/auth"
+                    className="w-full py-3 text-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                    onClick={toggleMenu}
+                  >
+                    Sign In
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
