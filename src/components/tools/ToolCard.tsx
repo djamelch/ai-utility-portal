@@ -123,6 +123,9 @@ export function ToolCard({ tool, className }: ToolCardProps) {
     try {
       // Track click count
       await supabase.rpc('increment_tool_click_count', { tool_id: numericId });
+      
+      // Log to console for debugging
+      console.log(`Visit clicked for tool: ${name} (ID: ${numericId}), redirecting to: ${tool.url}`);
     } catch (error) {
       console.error('Error incrementing click count:', error);
     }
@@ -174,7 +177,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
               src={logo || placeholderImage} 
               alt={`${name} logo`} 
               className="h-full w-full object-cover"
-              onError={(e) => {
+              onError={() => {
                 setImgError(true);
               }}
             />
