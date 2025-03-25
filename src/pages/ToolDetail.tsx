@@ -8,6 +8,9 @@ import { Footer } from "@/components/layout/Footer";
 import { ToolGrid } from "@/components/tools/ToolGrid";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Tool } from "@/components/tools/ToolCard";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ToolDetailType extends Omit<Tool, 'pricing'> {
   longDescription: string;
@@ -85,7 +88,109 @@ const toolDetails: { [key: string]: ToolDetailType } = {
 
 const ToolDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const tool = id ? toolDetails[id] : null;
+  const [tool, setTool] = useState<ToolDetailType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    const fetchToolDetails = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('tools')
+          .select('*')
+          .eq(isNaN(parseInt(id)) ? 'slug' : 'id', isNaN(parseInt(id)) ? id : parseInt(id))
+          .single();
+        
+        if (error) {
+          console.error('Error fetching tool:', error);
+          if (toolDetails[id]) {
+            setTool(toolDetails[id]);
+          } else {
+            toast({
+              title: "Tool not found",
+              description: "The tool you're looking for doesn't exist",
+              variant: "destructive",
+            });
+          }
+        } else if (data) {
+          const formattedTool: ToolDetailType = {
+            id: data.id.toString(),
+            name: data.company_name || 'Unknown Tool',
+            description: data.short_description || '',
+            longDescription: data.full_description || data.short_description || '',
+            logo: data.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
+            category: data.primary_task || 'Uncategorized',
+            rating: 0,
+            reviewCount: 0,
+            pricing: {
+              model: data.pricing || 'Unknown',
+              details: [data.pricing || 'Pricing details unavailable']
+            },
+            url: data.visit_website_url || '#',
+            website: data.visit_website_url || '#',
+            isFeatured: false,
+            pros: data.pros || [],
+            cons: data.cons || [],
+            features: data.applicable_tasks || [],
+            lastUpdated: 'Recently',
+            faqs: data.faqs || [],
+            alternatives: []
+          };
+          
+          setTool(formattedTool);
+        }
+      } catch (error) {
+        console.error('Error processing tool data:', error);
+        toast({
+          title: "Error loading tool",
+          description: "An error occurred while loading the tool details",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchToolDetails();
+  }, [id, toast]);
+  
+  const handleVisitWebsite = async (websiteUrl: string) => {
+    try {
+      if (websiteUrl && websiteUrl !== '#') {
+        if (id && !isNaN(parseInt(id))) {
+          await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(id) });
+        }
+        console.log(`Redirecting to external website: ${websiteUrl}`);
+        window.open(websiteUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        toast({
+          title: "Website URL not available",
+          description: "This tool doesn't have a website URL defined",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error handling website visit:', error);
+    }
+  };
+  
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading tool details...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   
   if (!tool) {
     return (
@@ -117,6 +222,9 @@ const ToolDetail = () => {
                       src={tool.logo} 
                       alt={`${tool.name} logo`} 
                       className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200?text=AI+Tool';
+                      }}
                     />
                   </div>
                   
@@ -169,15 +277,13 @@ const ToolDetail = () => {
               
               <div className="w-full md:w-72 flex-shrink-0">
                 <div className="rounded-xl border border-border/40 bg-background p-5">
-                  <a
-                    href={tool.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => handleVisitWebsite(tool.website)}
                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     Visit Website
                     <ArrowUpRight size={16} />
-                  </a>
+                  </button>
                   
                   <div className="mt-4 space-y-3">
                     <button className="w-full rounded-lg border border-input bg-background px-4 py-2.5 font-medium hover:bg-secondary/50 transition-colors">
