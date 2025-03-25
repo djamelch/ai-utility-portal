@@ -9,11 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          tool_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          tool_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          tool_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          rating: number
+          tool_id: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating: number
+          tool_id?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number
+          tool_id?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tools: {
         Row: {
           applicable_tasks: string[] | null
+          click_count: number | null
           company_name: string | null
           cons: string[] | null
+          created_at: string | null
           detail_url: string | null
           faqs: Json | null
           featured_image_url: string | null
@@ -24,12 +93,16 @@ export type Database = {
           primary_task: string | null
           pros: string[] | null
           short_description: string | null
+          slug: string | null
+          updated_at: string | null
           visit_website_url: string | null
         }
         Insert: {
           applicable_tasks?: string[] | null
+          click_count?: number | null
           company_name?: string | null
           cons?: string[] | null
+          created_at?: string | null
           detail_url?: string | null
           faqs?: Json | null
           featured_image_url?: string | null
@@ -40,12 +113,16 @@ export type Database = {
           primary_task?: string | null
           pros?: string[] | null
           short_description?: string | null
+          slug?: string | null
+          updated_at?: string | null
           visit_website_url?: string | null
         }
         Update: {
           applicable_tasks?: string[] | null
+          click_count?: number | null
           company_name?: string | null
           cons?: string[] | null
+          created_at?: string | null
           detail_url?: string | null
           faqs?: Json | null
           featured_image_url?: string | null
@@ -56,6 +133,8 @@ export type Database = {
           primary_task?: string | null
           pros?: string[] | null
           short_description?: string | null
+          slug?: string | null
+          updated_at?: string | null
           visit_website_url?: string | null
         }
         Relationships: []
@@ -65,7 +144,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_average_rating: {
+        Args: {
+          tool_id: number
+        }
+        Returns: number
+      }
+      increment_tool_click_count: {
+        Args: {
+          tool_id: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

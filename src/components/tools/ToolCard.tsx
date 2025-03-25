@@ -1,7 +1,10 @@
 
-import { Star, ExternalLink, Heart } from "lucide-react";
+import { Star, ExternalLink, Heart, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export interface Tool {
   id: string;
@@ -24,6 +27,102 @@ interface ToolCardProps {
 
 export function ToolCard({ tool, className }: ToolCardProps) {
   const { id, name, description, logo, category, rating, reviewCount, pricing, isFeatured, isNew } = tool;
+  const { toast } = useToast();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+      
+      // If authenticated, check if tool is in favorites
+      if (session) {
+        const { data } = await supabase
+          .from('favorites')
+          .select('id')
+          .eq('tool_id', id)
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        setIsFavorite(!!data);
+      }
+    };
+    
+    checkAuth();
+  }, [id]);
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to save favorites",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("Session expired. Please log in again.");
+      }
+      
+      if (isFavorite) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('tool_id', id)
+          .eq('user_id', session.user.id);
+        
+        if (error) throw error;
+        
+        setIsFavorite(false);
+        toast({
+          title: "Removed from favorites",
+          description: `${name} has been removed from your favorites`,
+        });
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            tool_id: id,
+            user_id: session.user.id,
+          });
+        
+        if (error) throw error;
+        
+        setIsFavorite(true);
+        toast({
+          title: "Added to favorites",
+          description: `${name} has been added to your favorites`,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating favorite status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update favorite status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleVisitClick = async () => {
+    try {
+      // Track click count
+      await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(id) });
+    } catch (error) {
+      console.error('Error incrementing click count:', error);
+    }
+  };
 
   return (
     <div 
@@ -48,10 +147,16 @@ export function ToolCard({ tool, className }: ToolCardProps) {
 
       {/* Favorite button */}
       <button 
-        className="absolute top-4 left-4 rounded-full p-1.5 text-muted-foreground hover:text-primary transition-colors"
-        aria-label="Save to favorites"
+        className={cn(
+          "absolute top-4 left-4 rounded-full p-1.5 transition-colors",
+          isFavorite 
+            ? "text-red-500 hover:text-red-600" 
+            : "text-muted-foreground hover:text-primary"
+        )}
+        aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
+        onClick={handleFavoriteClick}
       >
-        <Heart size={16} />
+        <Heart size={16} className={isFavorite ? "fill-current" : ""} />
       </button>
 
       {/* Logo and content */}
@@ -71,7 +176,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium truncate">
-              <Link to={`/tools/${id}`} className="hover:text-primary transition-colors">
+              <Link to={tool.url} className="hover:text-primary transition-colors">
                 {name}
               </Link>
             </h3>
@@ -112,16 +217,17 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       {/* Actions */}
       <div className="mt-auto pt-4 flex items-center gap-3 text-sm">
         <Link
-          to={`/tools/${id}`}
+          to={tool.url}
           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-center font-medium hover:bg-secondary/50 transition-colors"
         >
           View Details
         </Link>
         <a
-          href={tool.url}
+          href={`/tools/${id}?external=true`}
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+          onClick={handleVisitClick}
         >
           Visit
           <ExternalLink size={14} />
