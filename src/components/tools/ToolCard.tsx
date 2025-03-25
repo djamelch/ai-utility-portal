@@ -30,6 +30,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   // Convert id to number for database operations if it's a string
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
@@ -118,7 +119,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
     }
   };
 
-  const handleVisitClick = async () => {
+  const handleVisitClick = async (e: React.MouseEvent) => {
     try {
       // Track click count
       await supabase.rpc('increment_tool_click_count', { tool_id: numericId });
@@ -126,6 +127,9 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       console.error('Error incrementing click count:', error);
     }
   };
+
+  // Default placeholder image
+  const placeholderImage = 'https://via.placeholder.com/80?text=AI+Tool';
 
   return (
     <div 
@@ -165,21 +169,28 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       {/* Logo and content */}
       <div className="flex items-start gap-4">
         <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/50">
-          <img 
-            src={logo || 'https://via.placeholder.com/80'} 
-            alt={`${name} logo`} 
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = 'https://via.placeholder.com/80';
-            }}
-          />
+          {!imgError ? (
+            <img 
+              src={logo || placeholderImage} 
+              alt={`${name} logo`} 
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                setImgError(true);
+              }}
+            />
+          ) : (
+            <img 
+              src={placeholderImage} 
+              alt={`${name} logo placeholder`} 
+              className="h-full w-full object-cover"
+            />
+          )}
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium truncate">
-              <Link to={tool.url} className="hover:text-primary transition-colors">
+              <Link to={`/tools/${id.toString().toLowerCase()}`} className="hover:text-primary transition-colors">
                 {name}
               </Link>
             </h3>
@@ -220,13 +231,13 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       {/* Actions */}
       <div className="mt-auto pt-4 flex items-center gap-3 text-sm">
         <Link
-          to={tool.url}
+          to={`/tools/${id.toString().toLowerCase()}`}
           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-center font-medium hover:bg-secondary/50 transition-colors"
         >
           View Details
         </Link>
         <a
-          href={`/tools/${id}?external=true`}
+          href={tool.url}
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
