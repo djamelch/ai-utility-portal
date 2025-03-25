@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { ArrowUpTray, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { UploadCloud, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/layout/Navbar';
@@ -11,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { CsvTemplateDownloader } from '@/components/admin/CsvTemplateDownloader';
 
 export default function CsvImport() {
   const { toast } = useToast();
@@ -86,7 +86,10 @@ export default function CsvImport() {
         return;
       }
       
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/process-csv`, {
+      // Get API URL from environment or from config
+      const apiUrl = `${process.env.SUPABASE_URL || 'https://yilhwiqwoolmvmaasdra.supabase.co'}/functions/v1/process-csv`;
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -189,7 +192,7 @@ export default function CsvImport() {
                       className="hidden"
                       onChange={handleFileChange}
                     />
-                    <ArrowUpTray className="h-8 w-8 text-muted-foreground mb-2" />
+                    <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
                     <p className="text-sm text-muted-foreground">
                       {file ? file.name : 'Click to select a CSV file or drag and drop'}
                     </p>
@@ -201,65 +204,69 @@ export default function CsvImport() {
                     )}
                   </div>
                   
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <Button variant="outline" className="mt-2" type="button">
-                        View CSV Format Instructions
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-                      <SheetHeader>
-                        <SheetTitle>CSV Format Requirements</SheetTitle>
-                      </SheetHeader>
-                      <Separator className="my-4" />
-                      <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          Your CSV file should have the following columns:
-                        </p>
-                        <div className="space-y-2">
-                          <h3 className="font-medium">Required Columns:</h3>
-                          <ul className="list-disc pl-5 text-sm space-y-1">
-                            <li>company_name - The name of the AI tool (unique identifier)</li>
-                            <li>short_description - A brief description (1-2 sentences)</li>
-                            <li>pricing - Pricing model (Free, Freemium, Paid, etc.)</li>
-                          </ul>
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="font-medium">Optional Columns:</h3>
-                          <ul className="list-disc pl-5 text-sm space-y-1">
-                            <li>logo_url - URL to the tool's logo image</li>
-                            <li>full_description - Detailed description of the tool</li>
-                            <li>primary_task - Main purpose of the tool</li>
-                            <li>applicable_tasks - Comma-separated list of tasks the tool can perform</li>
-                            <li>pros - Comma-separated list of benefits</li>
-                            <li>cons - Comma-separated list of limitations</li>
-                            <li>featured_image_url - URL to a featured image</li>
-                            <li>visit_website_url - URL to the tool's website</li>
-                            <li>detail_url - URL for more information</li>
-                          </ul>
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="font-medium">FAQ Columns (Optional):</h3>
+                  <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                    <CsvTemplateDownloader />
+                    
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" type="button">
+                          View CSV Format Instructions
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+                        <SheetHeader>
+                          <SheetTitle>CSV Format Requirements</SheetTitle>
+                        </SheetHeader>
+                        <Separator className="my-4" />
+                        <div className="space-y-4">
                           <p className="text-sm text-muted-foreground">
-                            To include FAQs, add column pairs with this pattern:
+                            Your CSV file should have the following columns:
                           </p>
-                          <ul className="list-disc pl-5 text-sm space-y-1">
-                            <li>q1, a1 - First question and answer</li>
-                            <li>q2, a2 - Second question and answer</li>
-                            <li>... and so on</li>
-                          </ul>
+                          <div className="space-y-2">
+                            <h3 className="font-medium">Required Columns:</h3>
+                            <ul className="list-disc pl-5 text-sm space-y-1">
+                              <li>company_name - The name of the AI tool (unique identifier)</li>
+                              <li>short_description - A brief description (1-2 sentences)</li>
+                              <li>pricing - Pricing model (Free, Freemium, Paid, etc.)</li>
+                            </ul>
+                          </div>
+                          <div className="space-y-2">
+                            <h3 className="font-medium">Optional Columns:</h3>
+                            <ul className="list-disc pl-5 text-sm space-y-1">
+                              <li>logo_url - URL to the tool's logo image</li>
+                              <li>full_description - Detailed description of the tool</li>
+                              <li>primary_task - Main purpose of the tool</li>
+                              <li>applicable_tasks - Comma-separated list of tasks the tool can perform</li>
+                              <li>pros - Comma-separated list of benefits</li>
+                              <li>cons - Comma-separated list of limitations</li>
+                              <li>featured_image_url - URL to a featured image</li>
+                              <li>visit_website_url - URL to the tool's website</li>
+                              <li>detail_url - URL for more information</li>
+                            </ul>
+                          </div>
+                          <div className="space-y-2">
+                            <h3 className="font-medium">FAQ Columns (Optional):</h3>
+                            <p className="text-sm text-muted-foreground">
+                              To include FAQs, add column pairs with this pattern:
+                            </p>
+                            <ul className="list-disc pl-5 text-sm space-y-1">
+                              <li>q1, a1 - First question and answer</li>
+                              <li>q2, a2 - Second question and answer</li>
+                              <li>... and so on</li>
+                            </ul>
+                          </div>
+                          <div className="space-y-2">
+                            <h3 className="font-medium">Example CSV:</h3>
+                            <pre className="bg-secondary p-2 rounded text-xs overflow-x-auto">
+                              company_name,short_description,pricing,primary_task,q1,a1<br/>
+                              ChatGPT,Advanced AI chatbot,Freemium,AI Chatbot,What is it?,An AI assistant.<br/>
+                              Midjourney,AI image generation,Paid,Image Generation,How much?,Starts at $10/month.
+                            </pre>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <h3 className="font-medium">Example CSV:</h3>
-                          <pre className="bg-secondary p-2 rounded text-xs overflow-x-auto">
-                            company_name,short_description,pricing,primary_task,q1,a1<br/>
-                            ChatGPT,Advanced AI chatbot,Freemium,AI Chatbot,What is it?,An AI assistant.<br/>
-                            Midjourney,AI image generation,Paid,Image Generation,How much?,Starts at $10/month.
-                          </pre>
-                        </div>
-                      </div>
-                    </SheetContent>
-                  </Sheet>
+                      </SheetContent>
+                    </Sheet>
+                  </div>
                 </div>
 
                 <Button type="submit" disabled={!file || isUploading} className="w-full">

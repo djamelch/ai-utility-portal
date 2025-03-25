@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export interface Tool {
-  id: string;
+  id: string | number;
   name: string;
   description: string;
   logo: string;
@@ -31,6 +31,9 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Convert id to number for database operations if it's a string
+  const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+
   useEffect(() => {
     // Check if user is authenticated
     const checkAuth = async () => {
@@ -42,7 +45,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         const { data } = await supabase
           .from('favorites')
           .select('id')
-          .eq('tool_id', id)
+          .eq('tool_id', numericId)
           .eq('user_id', session.user.id)
           .maybeSingle();
         
@@ -51,7 +54,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
     };
     
     checkAuth();
-  }, [id]);
+  }, [numericId]);
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -78,7 +81,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         const { error } = await supabase
           .from('favorites')
           .delete()
-          .eq('tool_id', id)
+          .eq('tool_id', numericId)
           .eq('user_id', session.user.id);
         
         if (error) throw error;
@@ -93,7 +96,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         const { error } = await supabase
           .from('favorites')
           .insert({
-            tool_id: id,
+            tool_id: numericId,
             user_id: session.user.id,
           });
         
@@ -118,7 +121,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   const handleVisitClick = async () => {
     try {
       // Track click count
-      await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(id) });
+      await supabase.rpc('increment_tool_click_count', { tool_id: numericId });
     } catch (error) {
       console.error('Error incrementing click count:', error);
     }

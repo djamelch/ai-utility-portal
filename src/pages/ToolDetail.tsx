@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { 
   ArrowUpRight, Star, BookOpen, DollarSign, Tag, 
@@ -10,9 +9,7 @@ import { ToolGrid } from "@/components/tools/ToolGrid";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Tool } from "@/components/tools/ToolCard";
 
-// Sample data for a single tool
-const toolDetails: { [key: string]: Tool & { 
-  description: string;
+interface ToolDetailType extends Omit<Tool, 'pricing'> {
   longDescription: string;
   pros: string[];
   cons: string[];
@@ -25,7 +22,9 @@ const toolDetails: { [key: string]: Tool & {
   website: string;
   faqs: { question: string; answer: string; }[];
   alternatives: string[];
-} } = {
+}
+
+const toolDetails: { [key: string]: ToolDetailType } = {
   "chatgpt": {
     id: "chatgpt",
     name: "ChatGPT",
@@ -35,7 +34,14 @@ const toolDetails: { [key: string]: Tool & {
     category: "AI Chatbots",
     rating: 4.8,
     reviewCount: 1250,
-    pricing: "Freemium",
+    pricing: {
+      model: "Freemium",
+      details: [
+        "Free tier: Basic features with some usage limits",
+        "ChatGPT Plus: $20/month with priority access and advanced features",
+        "Team and enterprise plans available for organizations"
+      ]
+    },
     url: "https://chat.openai.com",
     isFeatured: true,
     pros: [
@@ -57,14 +63,6 @@ const toolDetails: { [key: string]: Tool & {
       "Language translation and explanation",
       "Custom instructions and memory"
     ],
-    pricing: {
-      model: "Freemium",
-      details: [
-        "Free tier: Basic features with some usage limits",
-        "ChatGPT Plus: $20/month with priority access and advanced features",
-        "Team and enterprise plans available for organizations"
-      ]
-    },
     lastUpdated: "June 2023",
     website: "https://chat.openai.com",
     faqs: [
@@ -110,10 +108,8 @@ const ToolDetail = () => {
       
       <main className="flex-1 pt-24 pb-16">
         <div className="container-wide">
-          {/* Hero Section */}
           <MotionWrapper animation="fadeIn">
             <div className="flex flex-col md:flex-row gap-8 items-start">
-              {/* Tool info */}
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="h-16 w-16 overflow-hidden rounded-xl bg-secondary/50">
@@ -140,7 +136,7 @@ const ToolDetail = () => {
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <DollarSign size={14} className="text-muted-foreground" />
-                        {tool.pricing}
+                        {tool.pricing.model}
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <Calendar size={14} className="text-muted-foreground" />
@@ -171,7 +167,6 @@ const ToolDetail = () => {
                 </div>
               </div>
               
-              {/* Action card */}
               <div className="w-full md:w-72 flex-shrink-0">
                 <div className="rounded-xl border border-border/40 bg-background p-5">
                   <a
@@ -231,11 +226,9 @@ const ToolDetail = () => {
             </div>
           </MotionWrapper>
           
-          {/* Content Tabs */}
           <MotionWrapper animation="fadeIn" delay="delay-200" className="mt-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-12">
-                {/* About Section */}
                 <div>
                   <h2 className="text-2xl font-bold mb-4">About {tool.name}</h2>
                   <div className="prose prose-gray dark:prose-invert max-w-none">
@@ -243,7 +236,6 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                {/* Features Section */}
                 <div>
                   <h2 className="text-2xl font-bold mb-4">Key Features</h2>
                   <ul className="space-y-2">
@@ -256,7 +248,6 @@ const ToolDetail = () => {
                   </ul>
                 </div>
                 
-                {/* Pros & Cons */}
                 <div>
                   <h2 className="text-2xl font-bold mb-4">Pros & Cons</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -291,7 +282,6 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                {/* Pricing Section */}
                 <div>
                   <h2 className="text-2xl font-bold mb-4">Pricing</h2>
                   <div className="rounded-xl border border-border/40 bg-background p-5">
@@ -310,7 +300,6 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                {/* FAQ Section */}
                 <div>
                   <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
                   <div className="space-y-4">
@@ -326,7 +315,6 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                {/* Reviews Section */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-bold">User Reviews</h2>
@@ -336,7 +324,6 @@ const ToolDetail = () => {
                   </div>
                   
                   <div className="space-y-4">
-                    {/* Sample reviews */}
                     <div className="rounded-xl border border-border/40 bg-background p-5">
                       <div className="flex items-start justify-between mb-3">
                         <div>
@@ -409,7 +396,6 @@ const ToolDetail = () => {
               </div>
               
               <div className="space-y-8">
-                {/* Website Info */}
                 <div className="rounded-xl border border-border/40 bg-background p-5">
                   <h3 className="font-medium mb-3">Website Information</h3>
                   <div className="space-y-3">
@@ -437,11 +423,9 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                {/* Alternatives */}
                 <div className="rounded-xl border border-border/40 bg-background p-5">
                   <h3 className="font-medium mb-3">Similar Tools</h3>
                   <div className="space-y-3">
-                    {/* Placeholder for similar tools */}
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
                       <div className="flex-1 min-w-0">
@@ -466,7 +450,6 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                {/* Help Box */}
                 <div className="rounded-xl border border-border/40 bg-background p-5">
                   <h3 className="font-medium mb-3">Need Help?</h3>
                   <p className="text-sm text-muted-foreground mb-4">
@@ -480,7 +463,6 @@ const ToolDetail = () => {
             </div>
           </MotionWrapper>
           
-          {/* Related Tools */}
           <MotionWrapper animation="fadeIn" delay="delay-300" className="mt-16">
             <h2 className="text-2xl font-bold mb-6">Related Tools</h2>
             <ToolGrid limit={4} category={tool.category} />

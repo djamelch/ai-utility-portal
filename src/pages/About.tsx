@@ -1,4 +1,3 @@
-
 import { MessageSquare, Users, Globe, Award, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
@@ -210,7 +209,7 @@ const About = () => {
         </MotionWrapper>
         
         {/* CTA Section */}
-        <MotionWrapper animation="fadeIn" delay="delay-600">
+        <MotionWrapper animation="fadeIn" delay="delay-500">
           <section className="py-16 md:py-24">
             <div className="container-tight">
               <div className="rounded-xl bg-background border border-border/40 p-8 md:p-12 text-center">
