@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { 
   ArrowUpRight, Star, BookOpen, DollarSign, Tag, 
@@ -619,4 +620,20 @@ const ToolDetail = () => {
                       <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">Google Bard</div>
-                        <div className="text-
+                        <div className="text-xs text-muted-foreground">AI Chatbots</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </MotionWrapper>
+        </div>
+      </main>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default ToolDetail;
