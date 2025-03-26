@@ -206,8 +206,8 @@ const ToolDetail = () => {
           } else {
             console.log('No fallback data found');
             toast({
-              title: "الأداة غير موجودة",
-              description: "الأداة التي تبحث عنها غير موجودة",
+              title: "Tool not found",
+              description: "The tool you're looking for doesn't exist",
               variant: "destructive",
             });
           }
@@ -215,8 +215,8 @@ const ToolDetail = () => {
       } catch (error) {
         console.error('Error processing tool data:', error);
         toast({
-          title: "خطأ في تحميل الأداة",
-          description: "حدث خطأ أثناء تحميل تفاصيل الأداة",
+          title: "Error loading tool",
+          description: "An error occurred while loading tool details",
           variant: "destructive",
         });
       } finally {
@@ -319,7 +319,7 @@ const ToolDetail = () => {
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <Calendar size={14} className="text-muted-foreground" />
-                        تم التحديث: {tool?.lastUpdated}
+                        Updated: {tool?.lastUpdated}
                       </span>
                     </div>
                   </div>
@@ -340,7 +340,7 @@ const ToolDetail = () => {
                     </div>
                     <span className="text-sm font-medium">{tool?.rating.toFixed(1)}</span>
                     <span className="text-sm text-muted-foreground">
-                      ({tool?.reviewCount} تقييم)
+                      ({tool?.reviewCount} reviews)
                     </span>
                   </div>
                 </div>
@@ -352,21 +352,21 @@ const ToolDetail = () => {
                     onClick={() => handleVisitWebsite(tool.website)}
                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
-                    زيارة الموقع
+                    Visit Website
                     <ArrowUpRight size={16} />
                   </button>
                   
                   <div className="mt-4 space-y-3">
                     <button className="w-full rounded-lg border border-input bg-background px-4 py-2.5 font-medium hover:bg-secondary/50 transition-colors">
-                      حفظ في المفضلة
+                      Save to Favorites
                     </button>
                     <button className="w-full rounded-lg border border-input bg-background px-4 py-2.5 font-medium hover:bg-secondary/50 transition-colors">
-                      كتابة تقييم
+                      Write a Review
                     </button>
                   </div>
                   
                   <div className="mt-4 rounded-lg bg-secondary/50 p-3">
-                    <h3 className="font-medium">شارك هذه الأداة</h3>
+                    <h3 className="font-medium">Share this tool</h3>
                     <div className="mt-2 flex items-center gap-2">
                       <button className="rounded-full p-2 bg-background hover:bg-secondary transition-colors">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
