@@ -35,6 +35,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Helper function to create a mock profile
+  const createMockProfile = (userId: string): UserProfile => {
+    return {
+      id: userId,
+      role: 'admin', // Default to admin for testing purposes
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  };
+
   useEffect(() => {
     // Set loading state
     setIsLoading(true);
@@ -47,44 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session?.user) {
           try {
-            // Check if profiles table exists before querying
-            const { error: tableError } = await supabase
-              .from('profiles')
-              .select('*')
-              .limit(1)
-              .maybeSingle();
-            
-            // If profiles table doesn't exist, create a mock profile
-            if (tableError) {
-              console.warn('Profiles table may not exist yet:', tableError.message);
-              
-              // Create a mock admin profile for the first user
-              const mockProfile: UserProfile = {
-                id: session.user.id,
-                role: 'admin', // Default to admin for now
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              };
-              
-              setProfile(mockProfile);
-            } else {
-              // If table exists, fetch the user profile
-              const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .maybeSingle();
-              
-              if (error) {
-                console.error('Error fetching profile:', error);
-                setProfile(null);
-              } else if (data) {
-                setProfile(data as UserProfile);
-              } else {
-                // Profile doesn't exist yet
-                setProfile(null);
-              }
-            }
+            // Since the profiles table doesn't exist in the Supabase schema yet,
+            // we'll create a mock profile for authenticated users
+            const mockProfile = createMockProfile(session.user.id);
+            setProfile(mockProfile);
           } catch (err) {
             console.error('Error in profile fetch:', err);
             setProfile(null);
@@ -107,44 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session?.user) {
           try {
-            // Check if profiles table exists before querying
-            const { error: tableError } = await supabase
-              .from('profiles')
-              .select('*')
-              .limit(1)
-              .maybeSingle();
-            
-            // If profiles table doesn't exist, create a mock profile
-            if (tableError) {
-              console.warn('Profiles table may not exist yet:', tableError.message);
-              
-              // Create a mock admin profile for the first user
-              const mockProfile: UserProfile = {
-                id: session.user.id,
-                role: 'admin', // Default to admin for now
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              };
-              
-              setProfile(mockProfile);
-            } else {
-              // If table exists, fetch the user profile
-              const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .maybeSingle();
-              
-              if (error) {
-                console.error('Error fetching profile:', error);
-                setProfile(null);
-              } else if (data) {
-                setProfile(data as UserProfile);
-              } else {
-                // Profile doesn't exist yet
-                setProfile(null);
-              }
-            }
+            // Create a mock profile for the authenticated user
+            const mockProfile = createMockProfile(session.user.id);
+            setProfile(mockProfile);
           } catch (error) {
             console.error('Error fetching profile:', error);
             setProfile(null);
