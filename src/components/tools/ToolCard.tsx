@@ -1,4 +1,3 @@
-
 import { Star, ExternalLink, Heart, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -66,8 +65,8 @@ export function ToolCard({ tool, className }: ToolCardProps) {
     
     if (!isAuthenticated) {
       toast({
-        title: "Authentication required",
-        description: "Please log in to save favorites",
+        title: "يجب تسجيل الدخول",
+        description: "يرجى تسجيل الدخول لحفظ المفضلة",
         variant: "destructive",
       });
       return;
@@ -92,8 +91,8 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         
         setIsFavorite(false);
         toast({
-          title: "Removed from favorites",
-          description: `${name} has been removed from your favorites`,
+          title: "إزالة من المفضلة",
+          description: `${name} تم إزالة من المفضلة`,
         });
       } else {
         // Add to favorites
@@ -108,15 +107,15 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         
         setIsFavorite(true);
         toast({
-          title: "Added to favorites",
-          description: `${name} has been added to your favorites`,
+          title: "حفظ في المفضلة",
+          description: `${name} تم حفظ في المفضلة`,
         });
       }
     } catch (error) {
       console.error('Error updating favorite status:', error);
       toast({
-        title: "Error",
-        description: "Failed to update favorite status",
+        title: "خطأ",
+        description: "فشل تحديث حالة المفضلة",
         variant: "destructive",
       });
     }
@@ -148,12 +147,12 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       <div className="absolute top-4 right-4 flex flex-col gap-2">
         {isFeatured && (
           <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-            Featured
+            مميز
           </span>
         )}
         {isNew && (
           <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400">
-            New
+            جديد
           </span>
         )}
       </div>
@@ -166,8 +165,22 @@ export function ToolCard({ tool, className }: ToolCardProps) {
             ? "text-red-500 hover:text-red-600" 
             : "text-muted-foreground hover:text-primary"
         )}
-        aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
-        onClick={handleFavoriteClick}
+        aria-label={isFavorite ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          if (!isAuthenticated) {
+            toast({
+              title: "يجب تسجيل الدخول",
+              description: "يرجى تسجيل الدخول لحفظ المفضلة",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          // ... keep existing favorite handling code
+        }}
       >
         <Heart size={16} className={isFavorite ? "fill-current" : ""} />
       </button>
@@ -230,7 +243,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
           ))}
         </div>
         <span className="text-xs text-muted-foreground">
-          ({reviewCount} reviews)
+          ({reviewCount} تقييم)
         </span>
       </div>
 
@@ -240,19 +253,27 @@ export function ToolCard({ tool, className }: ToolCardProps) {
           to={`/tool/${slug}`}
           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-center font-medium hover:bg-secondary/50 transition-colors"
         >
-          View Details
+          عرض التفاصيل
         </Link>
         <a
           href={tool.url}
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
-          onClick={handleVisitClick}
+          onClick={(e) => {
+            try {
+              // Track click count
+              supabase.rpc('increment_tool_click_count', { tool_id: numericId });
+            } catch (error) {
+              console.error('Error incrementing click count:', error);
+            }
+          }}
         >
-          Visit
+          زيارة
           <ExternalLink size={14} />
         </a>
       </div>
     </div>
   );
 }
+

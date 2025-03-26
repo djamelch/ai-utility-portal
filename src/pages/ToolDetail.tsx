@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { 
   ArrowUpRight, Star, BookOpen, DollarSign, Tag, 
@@ -98,82 +97,65 @@ const ToolDetail = () => {
       if (!id && !slug) return;
       
       try {
+        console.log(`Fetching tool with id: ${id} or slug: ${slug}`);
         setLoading(true);
         
         // Determine which parameter to use for the query
-        const searchParam = slug ? 'slug' : (isNaN(parseInt(id!)) ? 'slug' : 'id');
+        const searchParam = slug ? 'slug' : 'id';
         const searchValue = slug || id;
         
-        // First try to find by exact match
+        console.log(`Search parameter: ${searchParam}, value: ${searchValue}`);
+        
         let { data, error } = await supabase
           .from('tools')
-          .select('*')
-          .eq(searchParam, searchParam === 'id' && !isNaN(parseInt(searchValue!)) ? parseInt(searchValue!) : searchValue)
-          .maybeSingle();
+          .select('*');
+          
+        console.log('All tools:', data);
         
-        // If not found by exact match and we're searching by slug, try a LIKE query
-        if (!data && error && searchParam === 'slug') {
-          const formattedSlug = searchValue?.toLowerCase().replace(/-/g, ' ');
-          
-          // Try by matching against the company_name using ILIKE
-          const { data: dataByName, error: errorByName } = await supabase
-            .from('tools')
-            .select('*')
-            .ilike('company_name', `%${formattedSlug}%`)
-            .limit(1)
-            .maybeSingle();
+        if (error) {
+          console.error('Error fetching all tools:', error);
+          throw error;
+        }
+        
+        let foundTool = null;
+        
+        if (data && data.length > 0) {
+          if (searchParam === 'id' && !isNaN(parseInt(searchValue!))) {
+            // Search by ID
+            foundTool = data.find(t => t.id === parseInt(searchValue!));
+          } else {
+            // Search by slug/name
+            const searchTermLower = searchValue!.toLowerCase();
             
-          if (dataByName) {
-            data = dataByName;
-            error = null;
-          } else if (errorByName) {
-            console.error('Error searching by name:', errorByName);
-          }
-          
-          // If still not found, try by matching slug pattern
-          if (!data) {
-            const { data: dataBySlug, error: errorBySlug } = await supabase
-              .from('tools')
-              .select('*')
-              .ilike('slug', `%${searchValue}%`)
-              .limit(1)
-              .maybeSingle();
-              
-            if (dataBySlug) {
-              data = dataBySlug;
-              error = null;
-            } else if (errorBySlug) {
-              console.error('Error searching by slug pattern:', errorBySlug);
+            // Try exact slug match
+            foundTool = data.find(t => 
+              (t.slug && t.slug.toLowerCase() === searchTermLower) ||
+              (t.company_name && t.company_name.toLowerCase().replace(/\s+/g, '-') === searchTermLower)
+            );
+            
+            // If not found, try partial name match
+            if (!foundTool) {
+              foundTool = data.find(t => 
+                (t.company_name && t.company_name.toLowerCase().includes(searchTermLower.replace(/-/g, ' ')))
+              );
             }
           }
         }
         
-        if (error || !data) {
-          console.error('Error fetching tool:', error);
-          // Check fallback data
-          if (slug && toolDetails[slug]) {
-            setTool(toolDetails[slug]);
-          } else if (id && toolDetails[id]) {
-            setTool(toolDetails[id]);
-          } else {
-            toast({
-              title: "Tool not found",
-              description: "The tool you're looking for doesn't exist",
-              variant: "destructive",
-            });
-          }
-        } else if (data) {
+        if (foundTool) {
+          console.log('Found tool:', foundTool);
+          
           let parsedFaqs: { question: string; answer: string; }[] = [];
           
-          if (data.faqs) {
+          if (foundTool.faqs) {
             try {
-              if (Array.isArray(data.faqs)) {
-                parsedFaqs = data.faqs.map((faq: any) => ({
+              if (Array.isArray(foundTool.faqs)) {
+                parsedFaqs = foundTool.faqs.map((faq: any) => ({
                   question: faq.question || "Question",
                   answer: faq.answer || "No answer provided"
                 }));
-              } else if (typeof data.faqs === 'object') {
-                parsedFaqs = Object.entries(data.faqs).map(([key, value]) => ({
+              } else if (typeof foundTool.faqs === 'object') {
+                parsedFaqs = Object.entries(foundTool.faqs).map(([key, value]) => ({
                   question: key,
                   answer: String(value)
                 }));
@@ -183,38 +165,57 @@ const ToolDetail = () => {
               parsedFaqs = [];
             }
           }
-
+          
+          // Process the found tool
           const processedTool: ToolDetailType = {
-            id: data.id.toString(),
-            name: data.company_name || 'Unknown Tool',
-            description: data.short_description || '',
-            longDescription: data.full_description || data.short_description || '',
-            logo: data.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
-            category: data.primary_task || 'Uncategorized',
+            id: foundTool.id.toString(),
+            name: foundTool.company_name || 'Unknown Tool',
+            description: foundTool.short_description || '',
+            longDescription: foundTool.full_description || foundTool.short_description || '',
+            logo: foundTool.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
+            category: foundTool.primary_task || 'Uncategorized',
             rating: 0,
             reviewCount: 0,
             pricing: {
-              model: data.pricing || 'Unknown',
-              details: [data.pricing || 'Pricing details unavailable']
+              model: foundTool.pricing || 'Unknown',
+              details: [foundTool.pricing || 'Pricing details unavailable']
             },
-            url: data.visit_website_url || '#',
-            website: data.visit_website_url || '#',
+            url: foundTool.visit_website_url || '#',
+            website: foundTool.visit_website_url || '#',
             isFeatured: false,
-            pros: Array.isArray(data.pros) ? data.pros.map(item => String(item)) : [],
-            cons: Array.isArray(data.cons) ? data.cons.map(item => String(item)) : [],
-            features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
-            lastUpdated: data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Recently',
+            pros: Array.isArray(foundTool.pros) ? foundTool.pros.map(item => String(item)) : [],
+            cons: Array.isArray(foundTool.cons) ? foundTool.cons.map(item => String(item)) : [],
+            features: Array.isArray(foundTool.applicable_tasks) ? foundTool.applicable_tasks : [],
+            lastUpdated: foundTool.updated_at ? new Date(foundTool.updated_at).toLocaleDateString() : 'Recently',
             faqs: parsedFaqs,
             alternatives: []
           };
           
           setTool(processedTool);
+        } else {
+          console.log('Tool not found in database');
+          
+          // Check fallback data
+          if (slug && toolDetails[slug]) {
+            console.log('Using fallback data for slug:', slug);
+            setTool(toolDetails[slug]);
+          } else if (id && toolDetails[id]) {
+            console.log('Using fallback data for id:', id);
+            setTool(toolDetails[id]);
+          } else {
+            console.log('No fallback data found');
+            toast({
+              title: "الأداة غير موجودة",
+              description: "الأداة التي تبحث عنها غير موجودة",
+              variant: "destructive",
+            });
+          }
         }
       } catch (error) {
         console.error('Error processing tool data:', error);
         toast({
-          title: "Error loading tool",
-          description: "An error occurred while loading the tool details",
+          title: "خطأ في تحميل الأداة",
+          description: "حدث خطأ أثناء تحميل تفاصيل الأداة",
           variant: "destructive",
         });
       } finally {
@@ -288,8 +289,8 @@ const ToolDetail = () => {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="h-16 w-16 overflow-hidden rounded-xl bg-secondary/50">
                     <img 
-                      src={tool.logo} 
-                      alt={`${tool.name} logo`} 
+                      src={tool?.logo} 
+                      alt={`${tool?.name} logo`} 
                       className="h-full w-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200?text=AI+Tool';
@@ -299,8 +300,8 @@ const ToolDetail = () => {
                   
                   <div>
                     <div className="flex items-center gap-2">
-                      <h1 className="text-2xl md:text-3xl font-bold">{tool.name}</h1>
-                      {tool.isFeatured && (
+                      <h1 className="text-2xl md:text-3xl font-bold">{tool?.name}</h1>
+                      {tool?.isFeatured && (
                         <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                           Featured
                         </span>
@@ -309,21 +310,21 @@ const ToolDetail = () => {
                     <div className="mt-1 flex items-center gap-3">
                       <span className="flex items-center gap-1 text-sm">
                         <Tag size={14} className="text-muted-foreground" />
-                        {tool.category}
+                        {tool?.category}
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <DollarSign size={14} className="text-muted-foreground" />
-                        {tool.pricing.model}
+                        {tool?.pricing.model}
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <Calendar size={14} className="text-muted-foreground" />
-                        Updated: {tool.lastUpdated}
+                        تم التحديث: {tool?.lastUpdated}
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <p className="text-muted-foreground">{tool.description}</p>
+                <p className="text-muted-foreground">{tool?.description}</p>
                 
                 <div className="mt-4 flex items-center gap-4">
                   <div className="flex items-center gap-1">
@@ -332,13 +333,13 @@ const ToolDetail = () => {
                         <Star
                           key={i}
                           size={16}
-                          className={i < Math.round(tool.rating) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
+                          className={i < Math.round(tool?.rating || 0) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
                         />
                       ))}
                     </div>
-                    <span className="text-sm font-medium">{tool.rating.toFixed(1)}</span>
+                    <span className="text-sm font-medium">{tool?.rating.toFixed(1)}</span>
                     <span className="text-sm text-muted-foreground">
-                      ({tool.reviewCount} reviews)
+                      ({tool?.reviewCount} تقييم)
                     </span>
                   </div>
                 </div>
@@ -347,24 +348,28 @@ const ToolDetail = () => {
               <div className="w-full md:w-72 flex-shrink-0">
                 <div className="rounded-xl border border-border/40 bg-background p-5">
                   <button
-                    onClick={() => handleVisitWebsite(tool.website)}
+                    onClick={() => {
+                      if (tool?.website) {
+                        window.open(tool.website, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
-                    Visit Website
+                    زيارة الموقع
                     <ArrowUpRight size={16} />
                   </button>
                   
                   <div className="mt-4 space-y-3">
                     <button className="w-full rounded-lg border border-input bg-background px-4 py-2.5 font-medium hover:bg-secondary/50 transition-colors">
-                      Save to Favorites
+                      حفظ في المفضلة
                     </button>
                     <button className="w-full rounded-lg border border-input bg-background px-4 py-2.5 font-medium hover:bg-secondary/50 transition-colors">
-                      Write a Review
+                      كتابة تقييم
                     </button>
                   </div>
                   
                   <div className="mt-4 rounded-lg bg-secondary/50 p-3">
-                    <h3 className="font-medium">Share this tool</h3>
+                    <h3 className="font-medium">شارك هذه الأداة</h3>
                     <div className="mt-2 flex items-center gap-2">
                       <button className="rounded-full p-2 bg-background hover:bg-secondary transition-colors">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -405,16 +410,16 @@ const ToolDetail = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-12">
                 <div>
-                  <h2 className="text-2xl font-bold mb-4">About {tool.name}</h2>
+                  <h2 className="text-2xl font-bold mb-4">About {tool?.name}</h2>
                   <div className="prose prose-gray dark:prose-invert max-w-none">
-                    <p>{tool.longDescription}</p>
+                    <p>{tool?.longDescription}</p>
                   </div>
                 </div>
                 
                 <div>
                   <h2 className="text-2xl font-bold mb-4">Key Features</h2>
                   <ul className="space-y-2">
-                    {tool.features.map((feature, index) => (
+                    {tool?.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <CheckCircle size={20} className="mt-0.5 text-green-500" />
                         <span>{feature}</span>
@@ -432,7 +437,7 @@ const ToolDetail = () => {
                         Pros
                       </h3>
                       <ul className="space-y-2">
-                        {tool.pros.map((pro, index) => (
+                        {tool?.pros.map((pro, index) => (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-green-500">+</span>
                             <span>{pro}</span>
@@ -446,7 +451,7 @@ const ToolDetail = () => {
                         Cons
                       </h3>
                       <ul className="space-y-2">
-                        {tool.cons.map((con, index) => (
+                        {tool?.cons.map((con, index) => (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-red-500">-</span>
                             <span>{con}</span>
@@ -462,10 +467,10 @@ const ToolDetail = () => {
                   <div className="rounded-xl border border-border/40 bg-background p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <DollarSign size={18} className="text-primary" />
-                      <h3 className="font-medium">{tool.pricing.model}</h3>
+                      <h3 className="font-medium">{tool?.pricing.model}</h3>
                     </div>
                     <ul className="space-y-2">
-                      {tool.pricing.details.map((detail, index) => (
+                      {tool?.pricing.details.map((detail, index) => (
                         <li key={index} className="flex items-start gap-2">
                           <span>•</span>
                           <span>{detail}</span>
@@ -579,17 +584,17 @@ const ToolDetail = () => {
                     <div className="flex items-center gap-2">
                       <Globe size={16} className="text-muted-foreground" />
                       <a 
-                        href={tool.website} 
+                        href={tool?.website} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-primary hover:underline truncate"
                       >
-                        {tool.website.replace(/^https?:\/\//, '')}
+                        {tool?.website.replace(/^https?:\/\//, '')}
                       </a>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar size={16} className="text-muted-foreground" />
-                      <span>Updated: {tool.lastUpdated}</span>
+                      <span>Updated: {tool?.lastUpdated}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <BookOpen size={16} className="text-muted-foreground" />
@@ -614,43 +619,4 @@ const ToolDetail = () => {
                       <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">Google Bard</div>
-                        <div className="text-xs text-muted-foreground">AI Chatbots</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">Meta Llama</div>
-                        <div className="text-xs text-muted-foreground">AI Chatbots</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="rounded-xl border border-border/40 bg-background p-5">
-                  <h3 className="font-medium mb-3">Need Help?</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Have questions about {tool.name} or need further assistance? Our team is here to help.
-                  </p>
-                  <button className="w-full rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors">
-                    Contact Support
-                  </button>
-                </div>
-              </div>
-            </div>
-          </MotionWrapper>
-          
-          <MotionWrapper animation="fadeIn" delay="delay-300" className="mt-16">
-            <h2 className="text-2xl font-bold mb-6">Related Tools</h2>
-            <ToolGrid limit={4} category={tool.category} />
-          </MotionWrapper>
-        </div>
-      </main>
-      
-      <Footer />
-    </div>
-  );
-};
-
-export default ToolDetail;
-
+                        <div className="text-
