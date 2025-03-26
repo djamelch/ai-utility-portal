@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { 
   ArrowUpRight, Star, BookOpen, DollarSign, Tag, 
@@ -431,7 +430,7 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                {Array.isArray(tool.faqs) && tool.faqs.length > 0 && (
+                {Array.isArray(tool?.faqs) && tool.faqs.length > 0 && (
                   <div>
                     <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
                     <div className="space-y-4">
@@ -609,3 +608,4 @@ const ToolDetail = () => {
 };
 
 export default ToolDetail;
+

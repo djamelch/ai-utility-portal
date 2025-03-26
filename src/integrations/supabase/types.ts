@@ -81,7 +81,7 @@ export type Database = {
           applicable_tasks: string[] | null
           click_count: number | null
           company_name: string | null
-          cons: string[] | null
+          cons: Json[] | null
           created_at: string | null
           detail_url: string | null
           faqs: Json | null
@@ -91,7 +91,7 @@ export type Database = {
           logo_url: string | null
           pricing: string | null
           primary_task: string | null
-          pros: string[] | null
+          pros: Json[] | null
           short_description: string | null
           slug: string | null
           updated_at: string | null
@@ -101,7 +101,7 @@ export type Database = {
           applicable_tasks?: string[] | null
           click_count?: number | null
           company_name?: string | null
-          cons?: string[] | null
+          cons?: Json[] | null
           created_at?: string | null
           detail_url?: string | null
           faqs?: Json | null
@@ -111,7 +111,7 @@ export type Database = {
           logo_url?: string | null
           pricing?: string | null
           primary_task?: string | null
-          pros?: string[] | null
+          pros?: Json[] | null
           short_description?: string | null
           slug?: string | null
           updated_at?: string | null
@@ -121,7 +121,7 @@ export type Database = {
           applicable_tasks?: string[] | null
           click_count?: number | null
           company_name?: string | null
-          cons?: string[] | null
+          cons?: Json[] | null
           created_at?: string | null
           detail_url?: string | null
           faqs?: Json | null
@@ -131,7 +131,7 @@ export type Database = {
           logo_url?: string | null
           pricing?: string | null
           primary_task?: string | null
-          pros?: string[] | null
+          pros?: Json[] | null
           short_description?: string | null
           slug?: string | null
           updated_at?: string | null
