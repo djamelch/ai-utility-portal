@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
@@ -30,10 +29,8 @@ export default function Auth() {
     setIsSubmitting(true);
     
     try {
-      const { error } = await signIn(email, password);
-      if (!error) {
-        navigate('/');
-      }
+      await signIn(email, password);
+      navigate('/');
     } finally {
       setIsSubmitting(false);
     }
@@ -44,10 +41,8 @@ export default function Auth() {
     setIsSubmitting(true);
     
     try {
-      const { error } = await signUp(email, password);
-      if (!error) {
-        // Don't navigate - user needs to verify email first
-      }
+      await signUp(email, password);
+      // Don't navigate - user needs to verify email first
     } finally {
       setIsSubmitting(false);
     }

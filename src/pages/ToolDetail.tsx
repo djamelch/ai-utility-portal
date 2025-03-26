@@ -116,19 +116,16 @@ const ToolDetail = () => {
             });
           }
         } else if (data) {
-          // Parse faqs to ensure it's an array of objects with question and answer properties
           let parsedFaqs: { question: string; answer: string; }[] = [];
           
           if (data.faqs) {
             try {
-              // If faqs is already an array, ensure it has the right structure
               if (Array.isArray(data.faqs)) {
                 parsedFaqs = data.faqs.map((faq: any) => ({
                   question: faq.question || "Question",
                   answer: faq.answer || "No answer provided"
                 }));
               } else if (typeof data.faqs === 'object') {
-                // If faqs is an object but not an array, convert it to array format
                 parsedFaqs = Object.entries(data.faqs).map(([key, value]) => ({
                   question: key,
                   answer: String(value)
@@ -140,7 +137,7 @@ const ToolDetail = () => {
             }
           }
 
-          const formattedTool: ToolDetailType = {
+          const processedTool: ToolDetailType = {
             id: data.id.toString(),
             name: data.company_name || 'Unknown Tool',
             description: data.short_description || '',
@@ -156,15 +153,15 @@ const ToolDetail = () => {
             url: data.visit_website_url || '#',
             website: data.visit_website_url || '#',
             isFeatured: false,
-            pros: Array.isArray(data.pros) ? data.pros : [],
-            cons: Array.isArray(data.cons) ? data.cons : [],
+            pros: Array.isArray(data.pros) ? data.pros.map(item => String(item)) : [],
+            cons: Array.isArray(data.cons) ? data.cons.map(item => String(item)) : [],
             features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
             lastUpdated: 'Recently',
             faqs: parsedFaqs,
             alternatives: []
           };
           
-          setTool(formattedTool);
+          setTool(processedTool);
         }
       } catch (error) {
         console.error('Error processing tool data:', error);

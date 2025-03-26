@@ -18,9 +18,9 @@ interface AuthContextType {
   profile: UserProfile | null;
   isAdmin: boolean;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{error: string | null}>;
+  signInWithGoogle: () => Promise<{error: string | null}>;
+  signUp: (email: string, password: string) => Promise<{error: string | null}>;
   signOut: () => Promise<void>;
   error: string | null;
 }
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session?.user) {
           try {
-            // Fetch the user profile
+            // Fetch the user profile from our new profiles table
             const { data, error } = await supabase
               .from('profiles')
               .select('*')
@@ -122,14 +122,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           variant: "destructive",
         });
       }
+      return { error: error ? error.message : null };
     } catch (error) {
       console.error('Error signing in:', error);
-      setError('An unexpected error occurred');
+      const errorMsg = 'An unexpected error occurred';
+      setError(errorMsg);
       toast({
         title: "Sign in failed",
-        description: "An unexpected error occurred",
+        description: errorMsg,
         variant: "destructive",
       });
+      return { error: errorMsg };
     }
   };
 
@@ -151,14 +154,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           variant: "destructive",
         });
       }
+      return { error: error ? error.message : null };
     } catch (error) {
       console.error('Error signing in with Google:', error);
-      setError('An unexpected error occurred');
+      const errorMsg = 'An unexpected error occurred';
+      setError(errorMsg);
       toast({
         title: "Google sign in failed",
-        description: "An unexpected error occurred",
+        description: errorMsg,
         variant: "destructive",
       });
+      return { error: errorMsg };
     }
   };
 
@@ -186,14 +192,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: "Please check your email to confirm your account",
         });
       }
+      return { error: error ? error.message : null };
     } catch (error) {
       console.error('Error signing up:', error);
-      setError('An unexpected error occurred');
+      const errorMsg = 'An unexpected error occurred';
+      setError(errorMsg);
       toast({
         title: "Sign up failed",
-        description: "An unexpected error occurred",
+        description: errorMsg,
         variant: "destructive",
       });
+      return { error: errorMsg };
     }
   };
 
