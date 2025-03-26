@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { 
   ArrowUpRight, Star, BookOpen, DollarSign, Tag, 
@@ -87,26 +88,72 @@ const toolDetails: { [key: string]: ToolDetailType } = {
 };
 
 const ToolDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const [tool, setTool] = useState<ToolDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
   useEffect(() => {
     const fetchToolDetails = async () => {
-      if (!id) return;
+      if (!id && !slug) return;
       
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        
+        // Determine which parameter to use for the query
+        const searchParam = slug ? 'slug' : (isNaN(parseInt(id!)) ? 'slug' : 'id');
+        const searchValue = slug || id;
+        
+        // First try to find by exact match
+        let { data, error } = await supabase
           .from('tools')
           .select('*')
-          .eq(isNaN(parseInt(id)) ? 'slug' : 'id', isNaN(parseInt(id)) ? id : parseInt(id))
-          .single();
+          .eq(searchParam, searchParam === 'id' && !isNaN(parseInt(searchValue!)) ? parseInt(searchValue!) : searchValue)
+          .maybeSingle();
         
-        if (error) {
+        // If not found by exact match and we're searching by slug, try a LIKE query
+        if (!data && error && searchParam === 'slug') {
+          const formattedSlug = searchValue?.toLowerCase().replace(/-/g, ' ');
+          
+          // Try by matching against the company_name using ILIKE
+          const { data: dataByName, error: errorByName } = await supabase
+            .from('tools')
+            .select('*')
+            .ilike('company_name', `%${formattedSlug}%`)
+            .limit(1)
+            .maybeSingle();
+            
+          if (dataByName) {
+            data = dataByName;
+            error = null;
+          } else if (errorByName) {
+            console.error('Error searching by name:', errorByName);
+          }
+          
+          // If still not found, try by matching slug pattern
+          if (!data) {
+            const { data: dataBySlug, error: errorBySlug } = await supabase
+              .from('tools')
+              .select('*')
+              .ilike('slug', `%${searchValue}%`)
+              .limit(1)
+              .maybeSingle();
+              
+            if (dataBySlug) {
+              data = dataBySlug;
+              error = null;
+            } else if (errorBySlug) {
+              console.error('Error searching by slug pattern:', errorBySlug);
+            }
+          }
+        }
+        
+        if (error || !data) {
           console.error('Error fetching tool:', error);
-          if (toolDetails[id]) {
+          // Check fallback data
+          if (slug && toolDetails[slug]) {
+            setTool(toolDetails[slug]);
+          } else if (id && toolDetails[id]) {
             setTool(toolDetails[id]);
           } else {
             toast({
@@ -156,7 +203,7 @@ const ToolDetail = () => {
             pros: Array.isArray(data.pros) ? data.pros.map(item => String(item)) : [],
             cons: Array.isArray(data.cons) ? data.cons.map(item => String(item)) : [],
             features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
-            lastUpdated: 'Recently',
+            lastUpdated: data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Recently',
             faqs: parsedFaqs,
             alternatives: []
           };
@@ -176,13 +223,14 @@ const ToolDetail = () => {
     };
     
     fetchToolDetails();
-  }, [id, toast]);
+  }, [id, slug, toast]);
   
   const handleVisitWebsite = async (websiteUrl: string) => {
     try {
       if (websiteUrl && websiteUrl !== '#') {
-        if (id && !isNaN(parseInt(id))) {
-          await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(id) });
+        const toolId = tool?.id;
+        if (toolId && !isNaN(parseInt(toolId.toString()))) {
+          await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) });
         }
         console.log(`Redirecting to external website: ${websiteUrl}`);
         window.open(websiteUrl, '_blank', 'noopener,noreferrer');

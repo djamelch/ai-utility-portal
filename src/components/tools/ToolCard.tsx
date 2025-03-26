@@ -34,6 +34,9 @@ export function ToolCard({ tool, className }: ToolCardProps) {
 
   // Convert id to number for database operations if it's a string
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+  
+  // Create slug from name for the URL
+  const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
   useEffect(() => {
     // Check if user is authenticated
@@ -193,7 +196,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium truncate">
-              <Link to={`/tools/${id.toString().toLowerCase()}`} className="hover:text-primary transition-colors">
+              <Link to={`/tool/${slug}`} className="hover:text-primary transition-colors">
                 {name}
               </Link>
             </h3>
@@ -234,7 +237,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       {/* Actions */}
       <div className="mt-auto pt-4 flex items-center gap-3 text-sm">
         <Link
-          to={`/tools/${id.toString().toLowerCase()}`}
+          to={`/tool/${slug}`}
           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-center font-medium hover:bg-secondary/50 transition-colors"
         >
           View Details
