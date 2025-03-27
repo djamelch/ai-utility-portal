@@ -52,7 +52,7 @@ export default function ToolDetail() {
         // Transform database tool to Tool interface format
         const transformedTool: Tool = {
           id: data.id,
-          name: data.company_name || data.name || "",
+          name: data.company_name || "", // Use company_name instead of name
           description: data.short_description || "",
           logo: data.logo_url || "",
           category: data.primary_task || "",
