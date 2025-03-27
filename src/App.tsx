@@ -17,6 +17,7 @@ import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import CsvImport from "./pages/admin/CsvImport";
+import UserDashboard from "./pages/UserDashboard";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,11 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/dashboard" element={
+              <RequireAuth>
+                <UserDashboard />
+              </RequireAuth>
+            } />
             <Route path="/admin" element={
               <RequireAuth requireAdmin={true}>
                 <AdminDashboard />

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
-  Menu, X, Search, Moon, Sun, User, LogOut, Shield
+  Menu, X, Search, Moon, Sun, User, LogOut, Shield, LayoutDashboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -145,10 +145,15 @@ export function Navbar({ className }: NavbarProps) {
                     {isAdmin ? 'Admin Account' : 'User Account'}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {isAdmin && (
+                  {isAdmin ? (
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       <Shield className="mr-2 h-4 w-4" />
                       <span>Admin Dashboard</span>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Your Dashboard</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={handleSignOut}>
@@ -202,6 +207,18 @@ export function Navbar({ className }: NavbarProps) {
                   </Link>
                 </li>
               ))}
+              {user && !isAdmin && (
+                <li>
+                  <Link
+                    to="/dashboard"
+                    className="text-xl font-medium flex items-center gap-2"
+                    onClick={toggleMenu}
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    Your Dashboard
+                  </Link>
+                </li>
+              )}
             </ul>
             <div className="mt-auto pt-8 flex flex-col gap-4">
               {user ? (
