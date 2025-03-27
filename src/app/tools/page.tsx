@@ -12,7 +12,7 @@ export default function Tools() {
       <main className="flex-1 pt-24 pb-16">
         <div className="container">
           <h1 className="text-3xl font-bold mb-8">All AI Tools</h1>
-          <ToolGrid queryType="all" />
+          <ToolGrid queryType="featured" />
         </div>
       </main>
       <Footer />
