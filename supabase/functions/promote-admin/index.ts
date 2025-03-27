@@ -72,21 +72,21 @@ serve(async (req) => {
       )
     }
 
-    // Check if any admin user already exists
-    const { data: existingAdmins, error: checkError } = await supabaseAdmin
+    // Check if any admin user already exists using a direct count query
+    // This avoids the recursion issue
+    const { count, error: countError } = await supabaseAdmin
       .from('profiles')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('role', 'admin')
-      .limit(1)
     
-    if (checkError) {
+    if (countError) {
       return new Response(
-        JSON.stringify({ message: 'Failed to check existing admins', error: checkError }),
+        JSON.stringify({ message: 'Failed to check existing admins', error: countError }),
         { status: 500, headers: corsHeaders }
       )
     }
     
-    if (existingAdmins && existingAdmins.length > 0) {
+    if (count && count > 0) {
       return new Response(
         JSON.stringify({ message: 'An admin user already exists' }),
         { status: 403, headers: corsHeaders }

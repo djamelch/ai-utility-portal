@@ -13,25 +13,28 @@ export function PromoteToAdmin() {
   const { toast } = useToast();
   const { user, profile } = useAuth();
   
-  // Check if any admin users already exist
+  // Check if any admin users already exist using a safer approach
   useEffect(() => {
     const checkIfAdminExists = async () => {
       try {
         setIsCheckingAdmin(true);
-        const { data, error } = await supabase
+        
+        // Using count instead of select to avoid RLS recursion
+        const { count, error } = await supabase
           .from('profiles')
-          .select('id')
-          .eq('role', 'admin')
-          .limit(1);
+          .select('*', { count: 'exact', head: true })
+          .eq('role', 'admin');
         
         if (error) {
           throw error;
         }
         
-        // If any admin users exist and the current user is not an admin
-        setAdminExists(data && data.length > 0);
+        // If any admin users exist
+        setAdminExists(count !== null && count > 0);
       } catch (error) {
         console.error('Error checking admin status:', error);
+        // Default to assuming no admin exists in case of error
+        setAdminExists(false);
       } finally {
         setIsCheckingAdmin(false);
       }
@@ -62,15 +65,14 @@ export function PromoteToAdmin() {
       setIsLoading(true);
       
       // Check once more if an admin already exists before proceeding
-      const { data, error: checkError } = await supabase
+      const { count, error: checkError } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('role', 'admin')
-        .limit(1);
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'admin');
       
       if (checkError) throw checkError;
       
-      if (data && data.length > 0) {
+      if (count && count > 0) {
         toast({
           title: 'Admin already exists',
           description: 'Someone else has already been promoted to admin.',
@@ -80,13 +82,19 @@ export function PromoteToAdmin() {
         return;
       }
       
-      // Call the Supabase Edge Function directly
-      const { error } = await supabase.functions.invoke('promote-admin', {
-        body: { userId: user.id },
+      // Call the edge function directly
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/promote-admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({ userId: user.id }),
       });
       
-      if (error) {
-        throw new Error(error.message || 'Failed to promote to admin');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to promote to admin');
       }
       
       toast({
