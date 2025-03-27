@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
@@ -22,6 +21,7 @@ interface SavedTool {
   primary_task: string | null;
   pricing: string | null;
   favorite_id: string;
+  slug?: string;  // Added slug field for navigation
 }
 
 // Review type definition
@@ -65,7 +65,8 @@ export default function UserDashboard() {
             short_description,
             logo_url,
             primary_task,
-            pricing
+            pricing,
+            slug
           )
         `)
         .eq('user_id', user?.id);
@@ -77,12 +78,13 @@ export default function UserDashboard() {
         .filter(item => item.tools) // Filter out any null tools
         .map(item => ({
           id: item.tools.id,
-          name: item.tools.company_name,
+          name: item.tools.company_name, // Map company_name to name for consistency
           short_description: item.tools.short_description,
           logo_url: item.tools.logo_url,
           primary_task: item.tools.primary_task,
           pricing: item.tools.pricing,
-          favorite_id: item.id
+          favorite_id: item.id,
+          slug: item.tools.slug // Include slug for better navigation
         }));
 
       setSavedTools(formattedTools);
@@ -204,6 +206,14 @@ export default function UserDashboard() {
     ));
   };
 
+  const navigateToToolDetail = (toolId: number, slug?: string) => {
+    if (slug) {
+      navigate(`/tool/${slug}`);
+    } else {
+      navigate(`/tool/${toolId}`);
+    }
+  };
+
   return (
     <RequireAuth>
       <div className="flex min-h-screen flex-col">
@@ -307,7 +317,7 @@ export default function UserDashboard() {
                                     variant="outline" 
                                     size="sm" 
                                     className="w-full"
-                                    onClick={() => navigate(`/tool/${tool.id}`)}
+                                    onClick={() => navigateToToolDetail(tool.id, tool.slug)}
                                   >
                                     View Details
                                   </Button>
