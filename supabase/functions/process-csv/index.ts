@@ -84,20 +84,22 @@ serve(async (req) => {
         };
 
         // Process FAQ data if present in the CSV
-        const faqData = {};
+        const faqData = [];
         Object.keys(row).forEach(key => {
           if (key.startsWith('q') && /^q\d+$/.test(key)) {
             const num = key.substring(1);
             const answerKey = `a${num}`;
             
             if (row[key] && row[answerKey]) {
-              faqData[key] = row[key];
-              faqData[answerKey] = row[answerKey];
+              faqData.push({
+                question: row[key],
+                answer: row[answerKey]
+              });
             }
           }
         });
 
-        if (Object.keys(faqData).length > 0) {
+        if (faqData.length > 0) {
           toolData.faqs = faqData;
         }
 

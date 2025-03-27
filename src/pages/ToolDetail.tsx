@@ -156,49 +156,54 @@ const ToolDetail = () => {
         
         // If we reach here, either we're looking for a tool by id or we couldn't find it by slug
         if (id) {
-          const { data, error } = await supabase
-            .from('tools')
-            .select('*')
-            .eq('id', id)
-            .maybeSingle();
-          
-          if (error) {
-            throw error;
-          }
-          
-          if (data) {
-            console.log('Found tool by id:', data);
+          // FIX #1: Convert string id to number using parseInt instead of passing the string directly
+          const numericId = parseInt(id, 10);
+          // Only proceed if we have a valid number
+          if (!isNaN(numericId)) {
+            const { data, error } = await supabase
+              .from('tools')
+              .select('*')
+              .eq('id', numericId)
+              .maybeSingle();
             
-            const parsedFaqs: { question: string; answer: string; }[] = processToolFaqs(data.faqs);
+            if (error) {
+              throw error;
+            }
             
-            // Process the found tool
-            const processedTool: ToolDetailType = {
-              id: data.id.toString(),
-              name: data.company_name || 'Unknown Tool',
-              description: data.short_description || '',
-              longDescription: data.full_description || data.short_description || '',
-              logo: data.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
-              category: data.primary_task || 'Uncategorized',
-              rating: 0,
-              reviewCount: 0,
-              pricing: {
-                model: data.pricing || 'Unknown',
-                details: [data.pricing || 'Pricing details unavailable']
-              },
-              url: data.visit_website_url || '#',
-              website: data.visit_website_url || '#',
-              isFeatured: false,
-              pros: Array.isArray(data.pros) ? data.pros.map(item => String(item)) : [],
-              cons: Array.isArray(data.cons) ? data.cons.map(item => String(item)) : [],
-              features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
-              lastUpdated: data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Recently',
-              faqs: parsedFaqs,
-              alternatives: []
-            };
-            
-            setTool(processedTool);
-            setLoading(false);
-            return;
+            if (data) {
+              console.log('Found tool by id:', data);
+              
+              const parsedFaqs: { question: string; answer: string; }[] = processToolFaqs(data.faqs);
+              
+              // Process the found tool
+              const processedTool: ToolDetailType = {
+                id: data.id.toString(),
+                name: data.company_name || 'Unknown Tool',
+                description: data.short_description || '',
+                longDescription: data.full_description || data.short_description || '',
+                logo: data.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
+                category: data.primary_task || 'Uncategorized',
+                rating: 0,
+                reviewCount: 0,
+                pricing: {
+                  model: data.pricing || 'Unknown',
+                  details: [data.pricing || 'Pricing details unavailable']
+                },
+                url: data.visit_website_url || '#',
+                website: data.visit_website_url || '#',
+                isFeatured: false,
+                pros: Array.isArray(data.pros) ? data.pros.map(item => String(item)) : [],
+                cons: Array.isArray(data.cons) ? data.cons.map(item => String(item)) : [],
+                features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
+                lastUpdated: data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Recently',
+                faqs: parsedFaqs,
+                alternatives: []
+              };
+              
+              setTool(processedTool);
+              setLoading(false);
+              return;
+            }
           }
         }
         
@@ -335,7 +340,7 @@ const ToolDetail = () => {
       if (tool?.website && tool.website !== '#') {
         const toolId = tool?.id;
         if (toolId && !isNaN(parseInt(toolId.toString()))) {
-          // Increment click count in the background
+          // FIX #2: Use Promise.then().catch() instead of just catch() on PromiseLike
           supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) })
             .then(() => console.log('Click count incremented'))
             .catch(err => console.error('Error incrementing click count:', err));
