@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,13 +36,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      // First try to get the user's profile from the database
-      // Using a workaround for TypeScript by casting to any
-      const { data, error } = await (supabase as any)
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+      console.log('Fetching user profile for:', userId);
+      
+      // Use a direct SQL query approach instead of using 'from' which triggers RLS policies
+      const { data, error } = await supabase.rpc('get_profile_by_id', {
+        user_id: userId
+      });
       
       if (error) {
         throw error;
@@ -57,10 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Profile doesn't exist, create one
       // Check if this is the first user (would be admin)
-      // Using a workaround for TypeScript by casting to any
-      const { count, error: countError } = await (supabase as any)
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
+      const { count, error: countError } = await supabase.rpc('count_profiles');
       
       if (countError) {
         throw countError;
@@ -69,14 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isFirstUser = count === 0;
       const role = isFirstUser ? 'admin' : 'user';
       
-      // Create the user profile
-      // Using a workaround for TypeScript by casting to any
-      const { error: insertError } = await (supabase as any)
-        .from('profiles')
-        .insert({
-          id: userId,
-          role: role,
-        });
+      // Create the user profile using a custom RPC function
+      const { error: insertError } = await supabase.rpc('create_new_profile', {
+        user_id: userId,
+        user_role: role
+      });
       
       if (insertError) {
         throw insertError;
@@ -107,12 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // First, set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch or create the user profile
+          // Use setTimeout to defer profile fetching to avoid recursion
+          // This is important to prevent the infinite recursion issue
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
