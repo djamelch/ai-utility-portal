@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { AdminTools } from './AdminTools';
 import { AdminUsers } from './AdminUsers';
@@ -19,8 +19,16 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
   const { isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Ensure that admin users can't access the regular user dashboard
+  // Set the active tab based on the current route
+  useEffect(() => {
+    if (location.pathname.includes('/admin/tools')) {
+      setActiveTab('tools');
+    }
+  }, [location.pathname]);
+
+  // Ensure that non-admin users can't access the admin dashboard
   useEffect(() => {
     if (!isLoading && !isAdmin) {
       navigate('/dashboard');
@@ -67,11 +75,11 @@ export default function AdminDashboard() {
                 className="w-full"
               >
                 <TabsList className="mb-6">
-                  <TabsTrigger value="analytics">
+                  <TabsTrigger value="analytics" onClick={() => navigate('/admin')}>
                     <BarChart className="h-4 w-4 mr-2" />
                     Analytics
                   </TabsTrigger>
-                  <TabsTrigger value="tools">
+                  <TabsTrigger value="tools" onClick={() => navigate('/admin/tools')}>
                     <Database className="h-4 w-4 mr-2" />
                     Tools
                   </TabsTrigger>
