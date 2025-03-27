@@ -33,6 +33,19 @@ export default function ToolDetail() {
         } else if (slug) {
           // If it's a string, query by slug
           query = query.eq('slug', slug);
+          // Also handle slugs with numeric suffixes like "tool-name-1"
+          if (slug.includes('-')) {
+            const parts = slug.split('-');
+            const possibleId = parts[parts.length - 1];
+            if (!isNaN(Number(possibleId))) {
+              console.log('Trying with possible ID from slug:', possibleId);
+              // Try again with the ID if no results
+              const { data: slugData } = await query.maybeSingle();
+              if (!slugData) {
+                query = supabase.from('tools').select('*').eq('id', parseInt(possibleId, 10));
+              }
+            }
+          }
         }
         
         const { data, error } = await query.maybeSingle();
