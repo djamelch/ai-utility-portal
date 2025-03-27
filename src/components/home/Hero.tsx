@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Search, Filter } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Input } from "@/components/ui/input";
@@ -14,6 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 // Define the Category type
 interface Category {
@@ -24,7 +26,11 @@ interface Category {
 
 export function Hero() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all"); // Changed from empty string to "all"
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedPricing, setSelectedPricing] = useState("all");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [sortOrder, setSortOrder] = useState("newest");
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const navigate = useNavigate();
   
   // Fetch categories with their tool counts
@@ -61,6 +67,28 @@ export function Hero() {
         .sort((a, b) => b.count - a.count);
       
       return sortedCategories;
+    }
+  });
+  
+  // Fetch pricing options
+  const { data: pricingOptions = [] } = useQuery({
+    queryKey: ["pricing-options"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tools")
+        .select("pricing");
+      
+      if (error) {
+        console.error("Error fetching pricing options:", error);
+        return [];
+      }
+      
+      // Get unique pricing options
+      const uniquePricing = Array.from(new Set(
+        data.map(tool => tool.pricing).filter(Boolean)
+      ));
+      
+      return uniquePricing;
     }
   });
   
@@ -116,14 +144,31 @@ export function Hero() {
       queryParams.append("search", searchTerm);
     }
     
-    if (selectedCategory && selectedCategory !== "all") { // Don't add "all" to query params
+    if (selectedCategory && selectedCategory !== "all") {
       queryParams.append("category", selectedCategory);
+    }
+    
+    if (selectedPricing && selectedPricing !== "all") {
+      queryParams.append("pricing", selectedPricing);
+    }
+    
+    if (sortOrder && sortOrder !== "newest") {
+      queryParams.append("sortBy", sortOrder);
+    }
+    
+    if (selectedFeatures.length > 0) {
+      queryParams.append("features", selectedFeatures.join(','));
     }
     
     navigate(`/tools?${queryParams.toString()}`);
   };
   
-  // Top popular categories (limited to 5 for display)
+  // Handle feature toggle
+  const handleFeatureToggle = (features: string[]) => {
+    setSelectedFeatures(features);
+  };
+  
+  // Popular categories limited to 5 for display
   const popularCategories = categories.slice(0, 5);
   
   return (
@@ -181,6 +226,68 @@ export function Hero() {
               Search
             </Button>
           </div>
+          
+          {/* Advanced Filters */}
+          <Collapsible 
+            open={showAdvancedFilters} 
+            onOpenChange={setShowAdvancedFilters}
+            className="mt-4 max-w-xl mx-auto"
+          >
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" size="sm" className="w-full">
+                <Filter size={16} className="mr-2" />
+                {showAdvancedFilters ? "Hide Advanced Filters" : "Show Advanced Filters"}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-4 bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-input">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Pricing</label>
+                  <Select value={selectedPricing} onValueChange={setSelectedPricing}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select pricing" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Pricing</SelectItem>
+                      {pricingOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Sort By</label>
+                  <Select value={sortOrder} onValueChange={setSortOrder}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest</SelectItem>
+                      <SelectItem value="popular">Most Popular</SelectItem>
+                      <SelectItem value="top-rated">Top Rated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-2 block">Tool Features</label>
+                <ToggleGroup type="multiple" value={selectedFeatures} onValueChange={handleFeatureToggle} className="flex flex-wrap gap-2">
+                  <ToggleGroupItem value="api" className="text-xs">API Access</ToggleGroupItem>
+                  <ToggleGroupItem value="free-trial" className="text-xs">Free Trial</ToggleGroupItem>
+                  <ToggleGroupItem value="no-signup" className="text-xs">No Signup</ToggleGroupItem>
+                  <ToggleGroupItem value="mobile-friendly" className="text-xs">Mobile Friendly</ToggleGroupItem>
+                  <ToggleGroupItem value="browser-extension" className="text-xs">Browser Extension</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              
+              <Button size="sm" onClick={handleSearch} className="w-full">
+                Apply Filters
+              </Button>
+            </CollapsibleContent>
+          </Collapsible>
         </MotionWrapper>
         
         {/* Popular Categories */}
