@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +13,7 @@ interface ToolCardProps {
   className?: string;
 }
 
-export { Tool } from "./types";
+export type { Tool };
 
 export function ToolCard({ tool, className }: ToolCardProps) {
   const { id, name, description, logo, category, rating, reviewCount, pricing, isFeatured, isNew, slug, url } = tool;

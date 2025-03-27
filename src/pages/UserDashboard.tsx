@@ -1,16 +1,14 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { RequireAuth } from '@/components/auth/RequireAuth';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { BookmarkX, Heart, Star, UserCircle, Loader2, PenSquare } from 'lucide-react';
+import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
 
 // Tool type definition
 interface SavedTool {
@@ -21,7 +19,7 @@ interface SavedTool {
   primary_task: string | null;
   pricing: string | null;
   favorite_id: string;
-  slug?: string;  // Added slug field for navigation
+  slug?: string;
 }
 
 // Review type definition
@@ -35,7 +33,6 @@ interface UserReview {
 }
 
 export default function UserDashboard() {
-  const [activeTab, setActiveTab] = useState('saved');
   const [savedTools, setSavedTools] = useState<SavedTool[]>([]);
   const [userReviews, setUserReviews] = useState<UserReview[]>([]);
   const [isLoadingSaved, setIsLoadingSaved] = useState(true);
@@ -73,18 +70,18 @@ export default function UserDashboard() {
 
       if (error) throw error;
 
-      // Transform the data to flatten the structure - fixed field mapping to match database structure
+      // Transform the data to flatten the structure
       const formattedTools = data
-        .filter(item => item.tools) // Filter out any null tools
+        .filter(item => item.tools)
         .map(item => ({
           id: item.tools.id,
-          name: item.tools.company_name, // Map company_name to name for consistency
+          name: item.tools.company_name,
           short_description: item.tools.short_description,
           logo_url: item.tools.logo_url,
           primary_task: item.tools.primary_task,
           pricing: item.tools.pricing,
           favorite_id: item.id,
-          slug: item.tools.slug // Include slug for better navigation
+          slug: item.tools.slug
         }));
 
       setSavedTools(formattedTools);
@@ -151,8 +148,6 @@ export default function UserDashboard() {
         .eq('id', favoriteId);
 
       if (error) throw error;
-
-      setSavedTools(prev => prev.filter(tool => tool.favorite_id !== favoriteId));
       
       toast({
         title: 'Success',
@@ -180,8 +175,6 @@ export default function UserDashboard() {
         .eq('id', reviewId);
 
       if (error) throw error;
-
-      setUserReviews(prev => prev.filter(review => review.id !== reviewId));
       
       toast({
         title: 'Success',
@@ -194,23 +187,6 @@ export default function UserDashboard() {
         description: 'Failed to delete review',
         variant: 'destructive'
       });
-    }
-  };
-
-  const renderStars = (rating: number) => {
-    return Array(5).fill(0).map((_, i) => (
-      <Star 
-        key={i} 
-        className={`h-4 w-4 ${i < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} 
-      />
-    ));
-  };
-
-  const navigateToToolDetail = (toolId: number, slug?: string) => {
-    if (slug) {
-      navigate(`/tool/${slug}`);
-    } else {
-      navigate(`/tool/${toolId}`);
     }
   };
 
@@ -233,224 +209,17 @@ export default function UserDashboard() {
             </MotionWrapper>
             
             <MotionWrapper animation="fadeIn" delay="delay-200">
-              <Tabs 
-                defaultValue="saved" 
-                value={activeTab} 
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <TabsList className="mb-6">
-                  <TabsTrigger value="saved">
-                    <Heart className="h-4 w-4 mr-2" />
-                    Saved Tools
-                  </TabsTrigger>
-                  <TabsTrigger value="reviews">
-                    <Star className="h-4 w-4 mr-2" />
-                    Your Reviews
-                  </TabsTrigger>
-                  <TabsTrigger value="profile">
-                    <UserCircle className="h-4 w-4 mr-2" />
-                    Profile
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="saved" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Your Saved AI Tools</CardTitle>
-                      <CardDescription>
-                        These are the AI tools you've bookmarked for later reference
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {isLoadingSaved ? (
-                        <div className="flex justify-center py-8">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                      ) : savedTools.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {savedTools.map(tool => (
-                            <div key={tool.favorite_id} className="border rounded-lg overflow-hidden">
-                              <div className="p-4">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex gap-3 items-center">
-                                    {tool.logo_url ? (
-                                      <img 
-                                        src={tool.logo_url} 
-                                        alt={tool.name} 
-                                        className="w-10 h-10 object-contain rounded"
-                                      />
-                                    ) : (
-                                      <div className="w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
-                                        <span className="text-lg font-bold text-primary">
-                                          {tool.name.charAt(0)}
-                                        </span>
-                                      </div>
-                                    )}
-                                    <h3 className="font-semibold">{tool.name}</h3>
-                                  </div>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handleRemoveSaved(tool.favorite_id)}
-                                  >
-                                    <BookmarkX className="h-4 w-4 text-destructive" />
-                                  </Button>
-                                </div>
-                                <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                                  {tool.short_description}
-                                </p>
-                                <div className="mt-3 flex justify-between">
-                                  {tool.primary_task && (
-                                    <span className="text-xs px-2 py-1 bg-primary/10 rounded-full">
-                                      {tool.primary_task}
-                                    </span>
-                                  )}
-                                  {tool.pricing && (
-                                    <span className="text-xs text-muted-foreground">
-                                      {tool.pricing}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="mt-3">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="w-full"
-                                    onClick={() => navigateToToolDetail(tool.id, tool.slug)}
-                                  >
-                                    View Details
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <Heart className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                          <h3 className="text-xl font-medium mb-2">No saved tools yet</h3>
-                          <p className="text-muted-foreground mb-4">
-                            You haven't saved any AI tools to your dashboard
-                          </p>
-                          <Button onClick={() => navigate('/tools')}>
-                            Explore AI Tools
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="reviews" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Your Reviews</CardTitle>
-                      <CardDescription>
-                        Manage the reviews you've left for AI tools
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {isLoadingReviews ? (
-                        <div className="flex justify-center py-8">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                      ) : userReviews.length > 0 ? (
-                        <div className="divide-y">
-                          {userReviews.map(review => (
-                            <div key={review.id} className="py-4">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h3 className="font-semibold mb-1">{review.tool_name}</h3>
-                                  <div className="flex items-center gap-1 mb-2">
-                                    {renderStars(review.rating)}
-                                    <span className="text-sm text-muted-foreground ml-2">
-                                      {review.created_at}
-                                    </span>
-                                  </div>
-                                  {review.comment && (
-                                    <p className="text-sm text-muted-foreground">
-                                      {review.comment}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handleEditReview(review.id, review.tool_id)}
-                                  >
-                                    <PenSquare className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handleDeleteReview(review.id)}
-                                  >
-                                    <BookmarkX className="h-4 w-4 text-destructive" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                          <h3 className="text-xl font-medium mb-2">No reviews yet</h3>
-                          <p className="text-muted-foreground mb-4">
-                            You haven't reviewed any AI tools yet
-                          </p>
-                          <Button onClick={() => navigate('/tools')}>
-                            Browse Tools to Review
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="profile" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Profile Settings</CardTitle>
-                      <CardDescription>
-                        Manage your account settings and preferences
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-medium mb-4">Account Information</h3>
-                          <div className="space-y-4">
-                            <div>
-                              <label className="text-sm font-medium">Email</label>
-                              <div className="mt-1 p-2 border rounded bg-muted/30">
-                                {user?.email}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h3 className="text-lg font-medium mb-4">Account Actions</h3>
-                          <div className="space-y-4">
-                            <div>
-                              <Button 
-                                variant="outline" 
-                                onClick={() => navigate('/auth')}
-                                className="w-full sm:w-auto"
-                              >
-                                Update Password
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
+              <DashboardTabs
+                savedTools={savedTools}
+                userReviews={userReviews}
+                isLoadingSaved={isLoadingSaved}
+                isLoadingReviews={isLoadingReviews}
+                onRemoveSaved={handleRemoveSaved}
+                onEditReview={handleEditReview}
+                onDeleteReview={handleDeleteReview}
+                refetchSavedTools={fetchSavedTools}
+                refetchUserReviews={fetchUserReviews}
+              />
             </MotionWrapper>
           </div>
         </main>
