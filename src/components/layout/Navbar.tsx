@@ -1,6 +1,9 @@
 
+"use client";
+
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { 
   Menu, X, Search, Moon, Sun, User, LogOut, Shield, LayoutDashboard
 } from "lucide-react";
@@ -24,11 +27,13 @@ export function Navbar({ className }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("theme") === "dark" || 
-    (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    typeof window !== 'undefined' && 
+    (localStorage.getItem("theme") === "dark" || 
+    (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches))
   );
   const { user, profile, isAdmin, signOut } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (isDarkMode) {
@@ -69,7 +74,6 @@ export function Navbar({ className }: NavbarProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
   };
 
   const navLinks = [
@@ -94,7 +98,7 @@ export function Navbar({ className }: NavbarProps) {
     >
       <nav className="container-wide flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 text-xl font-bold">
+        <Link href="/" className="flex items-center gap-2 text-xl font-bold">
           <span className="text-gradient">AI Any Tool</span>
         </Link>
 
@@ -104,8 +108,11 @@ export function Navbar({ className }: NavbarProps) {
             {navLinks.map((link) => (
               <li key={link.title}>
                 <Link 
-                  to={link.path} 
-                  className="font-medium text-foreground/80 hover:text-foreground transition-colors link-underline"
+                  href={link.path} 
+                  className={cn(
+                    "font-medium text-foreground/80 hover:text-foreground transition-colors link-underline",
+                    pathname === link.path && "text-foreground font-semibold"
+                  )}
                 >
                   {link.title}
                 </Link>
@@ -146,12 +153,12 @@ export function Navbar({ className }: NavbarProps) {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {isAdmin ? (
-                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    <DropdownMenuItem onClick={() => router.push('/admin')}>
                       <Shield className="mr-2 h-4 w-4" />
                       <span>Admin Dashboard</span>
                     </DropdownMenuItem>
                   ) : (
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>Your Dashboard</span>
                     </DropdownMenuItem>
@@ -164,7 +171,7 @@ export function Navbar({ className }: NavbarProps) {
               </DropdownMenu>
             ) : (
               <Link 
-                to="/auth" 
+                href="/auth" 
                 className="px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 Sign In
@@ -199,7 +206,7 @@ export function Navbar({ className }: NavbarProps) {
               {navLinks.map((link) => (
                 <li key={link.title}>
                   <Link
-                    to={link.path}
+                    href={link.path}
                     className="text-xl font-medium"
                     onClick={toggleMenu}
                   >
@@ -210,7 +217,7 @@ export function Navbar({ className }: NavbarProps) {
               {user && !isAdmin && (
                 <li>
                   <Link
-                    to="/dashboard"
+                    href="/dashboard"
                     className="text-xl font-medium flex items-center gap-2"
                     onClick={toggleMenu}
                   >
@@ -236,7 +243,7 @@ export function Navbar({ className }: NavbarProps) {
               ) : (
                 <>
                   <Link
-                    to="/auth"
+                    href="/auth"
                     className="w-full py-3 text-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                     onClick={toggleMenu}
                   >

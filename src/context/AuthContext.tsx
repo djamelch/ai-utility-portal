@@ -1,8 +1,11 @@
 
+"use client";
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 // Define the UserProfile type for our profiles table
 interface UserProfile {
@@ -34,6 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
+  const supabase = createClientComponentClient();
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -261,6 +266,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: error.message,
           variant: "destructive",
         });
+      } else {
+        router.push('/');
+        router.refresh();
       }
     } catch (error) {
       console.error('Error signing out:', error);

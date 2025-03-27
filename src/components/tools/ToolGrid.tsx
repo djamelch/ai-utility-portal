@@ -1,6 +1,9 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 
@@ -58,6 +61,7 @@ export function ToolGrid({
   pricing = "",
   sortBy = "featured"
 }: ToolGridProps) {
+  const supabase = createClientComponentClient();
   // Use both searchTerm and searchQuery (preference to searchQuery if both exist)
   const effectiveSearchTerm = searchQuery || searchTerm || "";
   const effectiveCategoryFilter = category || categoryFilter || "";

@@ -8,27 +8,13 @@ export async function POST(req: NextRequest) {
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
-    // Check if the current user is admin
+    // Check if the current user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
       return NextResponse.json(
         { message: 'Not authenticated' },
         { status: 401 }
-      );
-    }
-    
-    // Check if the current user is an admin
-    const { data: adminCheck } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single();
-    
-    if (!adminCheck || adminCheck.role !== 'admin') {
-      return NextResponse.json(
-        { message: 'Unauthorized - must be an admin' },
-        { status: 403 }
       );
     }
     
@@ -40,6 +26,37 @@ export async function POST(req: NextRequest) {
         { message: 'User ID is required' },
         { status: 400 }
       );
+    }
+    
+    // Check if any admin already exists
+    const { count, error: countError } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'admin');
+    
+    if (countError) {
+      console.error('Error checking admin count:', countError);
+      return NextResponse.json(
+        { message: 'Failed to check admin status' },
+        { status: 500 }
+      );
+    }
+    
+    // If an admin already exists, check if current user is admin
+    if (count && count > 0) {
+      // Check if the current user is an admin
+      const { data: adminCheck } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (!adminCheck || adminCheck.role !== 'admin') {
+        return NextResponse.json(
+          { message: 'Unauthorized - must be an admin' },
+          { status: 403 }
+        );
+      }
     }
     
     // Update the user's role to admin
