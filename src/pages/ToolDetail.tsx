@@ -100,116 +100,176 @@ const ToolDetail = () => {
         console.log(`Fetching tool with id: ${id} or slug: ${slug}`);
         setLoading(true);
         
-        // Determine which parameter to use for the query
-        const searchParam = slug ? 'slug' : 'id';
-        const searchValue = slug || id;
+        // Build the query
+        let query = supabase.from('tools').select('*');
         
-        console.log(`Search parameter: ${searchParam}, value: ${searchValue}`);
-        
-        let { data, error } = await supabase
-          .from('tools')
-          .select('*');
+        // If we have a slug, search by slug
+        if (slug) {
+          // Try to match by slug directly or by generating slug from company_name
+          const { data, error } = await supabase
+            .from('tools')
+            .select('*')
+            .or(`slug.eq.${slug},company_name.ilike.%${slug.replace(/-/g, '%')}%`)
+            .limit(1);
           
-        console.log('All tools:', data);
-        
-        if (error) {
-          console.error('Error fetching all tools:', error);
-          throw error;
-        }
-        
-        let foundTool = null;
-        
-        if (data && data.length > 0) {
-          if (searchParam === 'id' && !isNaN(parseInt(searchValue!))) {
-            // Search by ID
-            foundTool = data.find(t => t.id === parseInt(searchValue!));
-          } else {
-            // Search by slug/name
-            const searchTermLower = searchValue!.toLowerCase();
+          if (error) {
+            throw error;
+          }
+          
+          if (data && data.length > 0) {
+            // Process found tool
+            const foundTool = data[0];
+            console.log('Found tool by slug:', foundTool);
             
-            // Try exact slug match
-            foundTool = data.find(t => 
-              (t.slug && t.slug.toLowerCase() === searchTermLower) ||
-              (t.company_name && t.company_name.toLowerCase().replace(/\s+/g, '-') === searchTermLower)
-            );
+            const parsedFaqs: { question: string; answer: string; }[] = processToolFaqs(foundTool.faqs);
             
-            // If not found, try partial name match
-            if (!foundTool) {
-              foundTool = data.find(t => 
-                (t.company_name && t.company_name.toLowerCase().includes(searchTermLower.replace(/-/g, ' ')))
-              );
-            }
+            // Process the found tool
+            const processedTool: ToolDetailType = {
+              id: foundTool.id.toString(),
+              name: foundTool.company_name || 'Unknown Tool',
+              description: foundTool.short_description || '',
+              longDescription: foundTool.full_description || foundTool.short_description || '',
+              logo: foundTool.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
+              category: foundTool.primary_task || 'Uncategorized',
+              rating: 0,
+              reviewCount: 0,
+              pricing: {
+                model: foundTool.pricing || 'Unknown',
+                details: [foundTool.pricing || 'Pricing details unavailable']
+              },
+              url: foundTool.visit_website_url || '#',
+              website: foundTool.visit_website_url || '#',
+              isFeatured: false,
+              pros: Array.isArray(foundTool.pros) ? foundTool.pros.map(item => String(item)) : [],
+              cons: Array.isArray(foundTool.cons) ? foundTool.cons.map(item => String(item)) : [],
+              features: Array.isArray(foundTool.applicable_tasks) ? foundTool.applicable_tasks : [],
+              lastUpdated: foundTool.updated_at ? new Date(foundTool.updated_at).toLocaleDateString() : 'Recently',
+              faqs: parsedFaqs,
+              alternatives: []
+            };
+            
+            setTool(processedTool);
+            setLoading(false);
+            return;
           }
         }
         
-        if (foundTool) {
-          console.log('Found tool:', foundTool);
+        // If we reach here, either we're looking for a tool by id or we couldn't find it by slug
+        if (id) {
+          const { data, error } = await supabase
+            .from('tools')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle();
           
-          let parsedFaqs: { question: string; answer: string; }[] = [];
-          
-          if (foundTool.faqs) {
-            try {
-              if (Array.isArray(foundTool.faqs)) {
-                parsedFaqs = foundTool.faqs.map((faq: any) => ({
-                  question: faq.question || "Question",
-                  answer: faq.answer || "No answer provided"
-                }));
-              } else if (typeof foundTool.faqs === 'object') {
-                parsedFaqs = Object.entries(foundTool.faqs).map(([key, value]) => ({
-                  question: key,
-                  answer: String(value)
-                }));
-              }
-            } catch (e) {
-              console.error('Error parsing FAQs:', e);
-              parsedFaqs = [];
-            }
+          if (error) {
+            throw error;
           }
           
-          // Process the found tool
-          const processedTool: ToolDetailType = {
-            id: foundTool.id.toString(),
-            name: foundTool.company_name || 'Unknown Tool',
-            description: foundTool.short_description || '',
-            longDescription: foundTool.full_description || foundTool.short_description || '',
-            logo: foundTool.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
-            category: foundTool.primary_task || 'Uncategorized',
-            rating: 0,
-            reviewCount: 0,
-            pricing: {
-              model: foundTool.pricing || 'Unknown',
-              details: [foundTool.pricing || 'Pricing details unavailable']
-            },
-            url: foundTool.visit_website_url || '#',
-            website: foundTool.visit_website_url || '#',
-            isFeatured: false,
-            pros: Array.isArray(foundTool.pros) ? foundTool.pros.map(item => String(item)) : [],
-            cons: Array.isArray(foundTool.cons) ? foundTool.cons.map(item => String(item)) : [],
-            features: Array.isArray(foundTool.applicable_tasks) ? foundTool.applicable_tasks : [],
-            lastUpdated: foundTool.updated_at ? new Date(foundTool.updated_at).toLocaleDateString() : 'Recently',
-            faqs: parsedFaqs,
-            alternatives: []
-          };
+          if (data) {
+            console.log('Found tool by id:', data);
+            
+            const parsedFaqs: { question: string; answer: string; }[] = processToolFaqs(data.faqs);
+            
+            // Process the found tool
+            const processedTool: ToolDetailType = {
+              id: data.id.toString(),
+              name: data.company_name || 'Unknown Tool',
+              description: data.short_description || '',
+              longDescription: data.full_description || data.short_description || '',
+              logo: data.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
+              category: data.primary_task || 'Uncategorized',
+              rating: 0,
+              reviewCount: 0,
+              pricing: {
+                model: data.pricing || 'Unknown',
+                details: [data.pricing || 'Pricing details unavailable']
+              },
+              url: data.visit_website_url || '#',
+              website: data.visit_website_url || '#',
+              isFeatured: false,
+              pros: Array.isArray(data.pros) ? data.pros.map(item => String(item)) : [],
+              cons: Array.isArray(data.cons) ? data.cons.map(item => String(item)) : [],
+              features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
+              lastUpdated: data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Recently',
+              faqs: parsedFaqs,
+              alternatives: []
+            };
+            
+            setTool(processedTool);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // If we got here and still don't have a tool, try a more aggressive search by name
+        if (slug) {
+          // Try a broader search to find any match
+          const searchTerm = slug.replace(/-/g, ' ');
           
-          setTool(processedTool);
+          const { data, error } = await supabase
+            .from('tools')
+            .select('*')
+            .ilike('company_name', `%${searchTerm}%`)
+            .limit(1);
+          
+          if (error) {
+            throw error;
+          }
+          
+          if (data && data.length > 0) {
+            console.log('Found tool by broad name search:', data[0]);
+            
+            const foundTool = data[0];
+            const parsedFaqs: { question: string; answer: string; }[] = processToolFaqs(foundTool.faqs);
+            
+            // Process the found tool
+            const processedTool: ToolDetailType = {
+              id: foundTool.id.toString(),
+              name: foundTool.company_name || 'Unknown Tool',
+              description: foundTool.short_description || '',
+              longDescription: foundTool.full_description || foundTool.short_description || '',
+              logo: foundTool.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
+              category: foundTool.primary_task || 'Uncategorized',
+              rating: 0,
+              reviewCount: 0,
+              pricing: {
+                model: foundTool.pricing || 'Unknown',
+                details: [foundTool.pricing || 'Pricing details unavailable']
+              },
+              url: foundTool.visit_website_url || '#',
+              website: foundTool.visit_website_url || '#',
+              isFeatured: false,
+              pros: Array.isArray(foundTool.pros) ? foundTool.pros.map(item => String(item)) : [],
+              cons: Array.isArray(foundTool.cons) ? foundTool.cons.map(item => String(item)) : [],
+              features: Array.isArray(foundTool.applicable_tasks) ? foundTool.applicable_tasks : [],
+              lastUpdated: foundTool.updated_at ? new Date(foundTool.updated_at).toLocaleDateString() : 'Recently',
+              faqs: parsedFaqs,
+              alternatives: []
+            };
+            
+            setTool(processedTool);
+            setLoading(false);
+            return;
+          }
+        }
+          
+        // Check fallback data if everything else fails
+        console.log('Tool not found in database, checking fallback data');
+        
+        if (slug && toolDetails[slug]) {
+          console.log('Using fallback data for slug:', slug);
+          setTool(toolDetails[slug]);
+        } else if (id && toolDetails[id]) {
+          console.log('Using fallback data for id:', id);
+          setTool(toolDetails[id]);
         } else {
-          console.log('Tool not found in database');
-          
-          // Check fallback data
-          if (slug && toolDetails[slug]) {
-            console.log('Using fallback data for slug:', slug);
-            setTool(toolDetails[slug]);
-          } else if (id && toolDetails[id]) {
-            console.log('Using fallback data for id:', id);
-            setTool(toolDetails[id]);
-          } else {
-            console.log('No fallback data found');
-            toast({
-              title: "Tool Not Found",
-              description: "The tool you're looking for doesn't exist or has been removed",
-              variant: "destructive",
-            });
-          }
+          console.log('No fallback data found');
+          toast({
+            title: "Tool Not Found",
+            description: "The tool you're looking for doesn't exist or has been removed",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error('Error processing tool data:', error);
@@ -226,13 +286,61 @@ const ToolDetail = () => {
     fetchToolDetails();
   }, [id, slug, toast]);
   
-  const handleVisitWebsite = async () => {
+  // Helper function to process FAQs
+  const processToolFaqs = (faqs: any): { question: string; answer: string; }[] => {
+    let parsedFaqs: { question: string; answer: string; }[] = [];
+    
+    if (faqs) {
+      try {
+        if (Array.isArray(faqs)) {
+          parsedFaqs = faqs.map((faq: any) => ({
+            question: faq.question || "Question",
+            answer: faq.answer || "No answer provided"
+          }));
+        } else if (typeof faqs === 'object') {
+          // Handle q1/a1, q2/a2 format
+          const questionKeys = Object.keys(faqs).filter(key => key.startsWith('q') && /^q\d+$/.test(key));
+          
+          questionKeys.forEach(qKey => {
+            const num = qKey.substring(1);
+            const aKey = `a${num}`;
+            
+            if (faqs[aKey]) {
+              parsedFaqs.push({
+                question: faqs[qKey],
+                answer: faqs[aKey]
+              });
+            }
+          });
+          
+          // If no structured q/a pairs found, try to convert the object directly
+          if (parsedFaqs.length === 0) {
+            parsedFaqs = Object.entries(faqs).map(([key, value]) => ({
+              question: key,
+              answer: String(value)
+            }));
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing FAQs:', e);
+        parsedFaqs = [];
+      }
+    }
+    
+    return parsedFaqs;
+  };
+  
+  const handleVisitWebsite = () => {
     try {
       if (tool?.website && tool.website !== '#') {
         const toolId = tool?.id;
         if (toolId && !isNaN(parseInt(toolId.toString()))) {
-          await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) });
+          // Increment click count in the background
+          supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) })
+            .then(() => console.log('Click count incremented'))
+            .catch(err => console.error('Error incrementing click count:', err));
         }
+        
         console.log(`Redirecting to external website: ${tool.website}`);
         window.open(tool.website, '_blank', 'noopener,noreferrer');
       } else {
@@ -412,51 +520,60 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">Key Features</h2>
-                  <ul className="space-y-2">
-                    {tool.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <CheckCircle size={20} className="mt-0.5 text-green-500" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {tool.features && tool.features.length > 0 && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">Key Features</h2>
+                    <ul className="space-y-2">
+                      {tool.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <CheckCircle size={20} className="mt-0.5 text-green-500" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">Pros & Cons</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="rounded-xl border border-border/40 bg-background p-5">
-                      <h3 className="font-medium text-green-500 flex items-center gap-2 mb-3">
-                        <CheckCircle size={18} />
-                        Pros
-                      </h3>
-                      <ul className="space-y-2">
-                        {tool.pros.map((pro, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-green-500">+</span>
-                            <span>{pro}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="rounded-xl border border-border/40 bg-background p-5">
-                      <h3 className="font-medium text-red-500 flex items-center gap-2 mb-3">
-                        <XCircle size={18} />
-                        Cons
-                      </h3>
-                      <ul className="space-y-2">
-                        {tool.cons.map((con, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-red-500">-</span>
-                            <span>{con}</span>
-                          </li>
-                        ))}
-                      </ul>
+                {(tool.pros.length > 0 || tool.cons.length > 0) && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">Pros & Cons</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {tool.pros.length > 0 && (
+                        <div className="rounded-xl border border-border/40 bg-background p-5">
+                          <h3 className="font-medium text-green-500 flex items-center gap-2 mb-3">
+                            <CheckCircle size={18} />
+                            Pros
+                          </h3>
+                          <ul className="space-y-2">
+                            {tool.pros.map((pro, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-green-500">+</span>
+                                <span>{pro}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {tool.cons.length > 0 && (
+                        <div className="rounded-xl border border-border/40 bg-background p-5">
+                          <h3 className="font-medium text-red-500 flex items-center gap-2 mb-3">
+                            <XCircle size={18} />
+                            Cons
+                          </h3>
+                          <ul className="space-y-2">
+                            {tool.cons.map((con, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-red-500">-</span>
+                                <span>{con}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                )}
                 
                 <div>
                   <h2 className="text-2xl font-bold mb-4">Pricing</h2>
@@ -526,7 +643,7 @@ const ToolDetail = () => {
                         </div>
                       </div>
                       <p className="text-muted-foreground">
-                        ChatGPT has completely transformed my content creation workflow. It helps me brainstorm ideas, draft outlines, and polish my writing. The free tier is generous enough for my needs, though I sometimes hit the usage limits during busy periods.
+                        This tool has completely transformed my workflow. It helps me brainstorm ideas, draft outlines, and polish my work. The free tier is generous enough for my needs, though I sometimes hit the usage limits during busy periods.
                       </p>
                       <div className="mt-3 text-sm text-muted-foreground">
                         May 12, 2023
@@ -557,7 +674,7 @@ const ToolDetail = () => {
                         </div>
                       </div>
                       <p className="text-muted-foreground">
-                        As a developer, I find ChatGPT incredibly helpful for debugging code and explaining complex programming concepts. It's not perfect - sometimes the code it generates has errors - but it's an excellent starting point and time-saver.
+                        As a developer, I find this tool incredibly helpful for improving my productivity. It's not perfect - sometimes there are errors - but it's an excellent starting point and time-saver.
                       </p>
                       <div className="mt-3 text-sm text-muted-foreground">
                         April 3, 2023
@@ -607,22 +724,22 @@ const ToolDetail = () => {
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">Claude AI</div>
-                        <div className="text-xs text-muted-foreground">AI Chatbots</div>
+                        <div className="font-medium truncate">Similar Tool 1</div>
+                        <div className="text-xs text-muted-foreground">Similar Category</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">Google Bard</div>
-                        <div className="text-xs text-muted-foreground">AI Chatbots</div>
+                        <div className="font-medium truncate">Similar Tool 2</div>
+                        <div className="text-xs text-muted-foreground">Similar Category</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">Llama 2</div>
-                        <div className="text-xs text-muted-foreground">AI Chatbots</div>
+                        <div className="font-medium truncate">Similar Tool 3</div>
+                        <div className="text-xs text-muted-foreground">Similar Category</div>
                       </div>
                     </div>
                   </div>

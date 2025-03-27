@@ -62,6 +62,9 @@ serve(async (req) => {
           throw queryError;
         }
 
+        // Generate a slug from company name if not provided
+        const slug = row.slug || row.company_name.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
+
         // Prepare tool data
         const toolData = {
           company_name: row.company_name,
@@ -76,6 +79,7 @@ serve(async (req) => {
           featured_image_url: row.featured_image_url,
           visit_website_url: row.visit_website_url,
           detail_url: row.detail_url,
+          slug: slug, // Add the generated slug
           updated_at: new Date().toISOString(),
         };
 

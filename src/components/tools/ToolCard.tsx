@@ -1,5 +1,5 @@
 
-import { Star, ExternalLink, Heart, Check } from "lucide-react";
+import { Star, ExternalLink, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -35,8 +35,8 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   // Convert id to number for database operations if it's a string
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
-  // Create slug from name for the URL
-  const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+  // Create slug from name for the URL - handle special characters and spaces
+  const slug = name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
 
   useEffect(() => {
     // Check if user is authenticated
