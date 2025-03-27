@@ -18,47 +18,51 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import CsvImport from "./pages/admin/CsvImport";
 import UserDashboard from "./pages/UserDashboard";
+import { useState } from "react";
 
-const queryClient = new QueryClient();
+function App() {
+  // Create a new QueryClient instance inside the component function
+  const [queryClient] = useState(() => new QueryClient());
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/tools" element={<Tools />} />
-            {/* Using the slug format for tool detail pages */}
-            <Route path="/tool/:slug" element={<ToolDetail />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:id" element={<BlogPost />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/dashboard" element={
-              <RequireAuth>
-                <UserDashboard />
-              </RequireAuth>
-            } />
-            <Route path="/admin" element={
-              <RequireAuth requireAdmin={true}>
-                <AdminDashboard />
-              </RequireAuth>
-            } />
-            <Route path="/admin/csv-import" element={
-              <RequireAuth requireAdmin={true}>
-                <CsvImport />
-              </RequireAuth>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/tools" element={<Tools />} />
+              {/* Using the slug format for tool detail pages */}
+              <Route path="/tool/:slug" element={<ToolDetail />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:id" element={<BlogPost />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/dashboard" element={
+                <RequireAuth>
+                  <UserDashboard />
+                </RequireAuth>
+              } />
+              <Route path="/admin" element={
+                <RequireAuth requireAdmin={true}>
+                  <AdminDashboard />
+                </RequireAuth>
+              } />
+              <Route path="/admin/csv-import" element={
+                <RequireAuth requireAdmin={true}>
+                  <CsvImport />
+                </RequireAuth>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

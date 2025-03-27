@@ -24,7 +24,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, UserX, Shield, ShieldAlert, MailCheck } from 'lucide-react';
+import { Loader2, Search, Shield, ShieldAlert, MailCheck } from 'lucide-react';
+import { Database } from '@/integrations/supabase/types';
 
 interface User {
   id: string;
@@ -50,20 +51,37 @@ export function AdminUsers() {
     try {
       setIsLoading(true);
       
-      // Fetch users from Supabase
-      const { data, error } = await supabase
+      // Fetch users from Supabase auth - get the users from auth.users
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      
+      if (authError) throw authError;
+
+      // Fetch profiles to get role information
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, created_at, last_sign_in_at, is_admin')
-        .order('created_at', { ascending: false });
+        .select('id, role, created_at');
       
-      if (error) throw error;
+      if (profilesError) throw profilesError;
       
-      setUsers(data || []);
+      // Map auth users with profile data
+      const mappedUsers: User[] = authUsers?.users.map(user => {
+        const profile = profiles?.find(p => p.id === user.id);
+        return {
+          id: user.id,
+          email: user.email || 'No email',
+          created_at: user.created_at || new Date().toISOString(),
+          last_sign_in_at: user.last_sign_in_at,
+          // Check if role in profile is 'admin'
+          is_admin: profile?.role === 'admin'
+        };
+      }) || [];
+      
+      setUsers(mappedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load users',
+        description: 'Failed to load users. You may not have admin privileges.',
         variant: 'destructive',
       });
     } finally {
@@ -75,13 +93,12 @@ export function AdminUsers() {
     if (!userToDelete) return;
     
     try {
-      // Delete the user from Supabase
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userToDelete.id);
+      // Delete the user from auth
+      const { error: authError } = await supabase.auth.admin.deleteUser(userToDelete.id);
       
-      if (error) throw error;
+      if (authError) throw authError;
+      
+      // Profile will be automatically deleted via cascade
       
       // Update the local state
       setUsers(users.filter(user => user.id !== userToDelete.id));
@@ -107,11 +124,12 @@ export function AdminUsers() {
     
     try {
       const newAdminStatus = !userToToggleAdmin.is_admin;
+      const newRole = newAdminStatus ? 'admin' : 'user';
       
-      // Update the user's admin status
+      // Update the user's role in the profiles table
       const { error } = await supabase
         .from('profiles')
-        .update({ is_admin: newAdminStatus })
+        .update({ role: newRole })
         .eq('id', userToToggleAdmin.id);
       
       if (error) throw error;
