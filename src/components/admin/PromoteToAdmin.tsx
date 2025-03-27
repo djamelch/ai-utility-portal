@@ -22,14 +22,19 @@ export function PromoteToAdmin() {
     try {
       setIsLoading(true);
       
-      // Update the role to admin in the profiles table
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: 'admin' })
-        .eq('id', user.id);
+      // Instead of directly updating the profile, make a fetch request to a special endpoint
+      // that will update the profile using admin privileges
+      const response = await fetch('/api/promote-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
       
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to promote to admin');
       }
       
       toast({
