@@ -3,8 +3,11 @@ export async function POST(req: Request) {
   try {
     const { userId } = await req.json();
     
+    // Get the environment variables
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    
     // Get the session from the cookie
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/promote-admin`, {
+    const response = await fetch(`${supabaseUrl}/functions/v1/promote-admin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

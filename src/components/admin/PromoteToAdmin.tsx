@@ -82,8 +82,8 @@ export function PromoteToAdmin() {
         return;
       }
       
-      // Call the edge function directly
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/promote-admin`, {
+      // Call our Next.js API endpoint which will call the edge function
+      const response = await fetch('/api/promote-admin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
