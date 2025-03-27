@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { ToolGrid } from "@/components/tools/ToolGrid";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Tool } from "@/components/tools/ToolCard";
 import { useEffect, useState } from "react";
@@ -206,8 +205,8 @@ const ToolDetail = () => {
           } else {
             console.log('No fallback data found');
             toast({
-              title: "Tool not found",
-              description: "The tool you're looking for doesn't exist",
+              title: "Tool Not Found",
+              description: "The tool you're looking for doesn't exist or has been removed",
               variant: "destructive",
             });
           }
@@ -215,7 +214,7 @@ const ToolDetail = () => {
       } catch (error) {
         console.error('Error processing tool data:', error);
         toast({
-          title: "Error loading tool",
+          title: "Error Loading Tool",
           description: "An error occurred while loading tool details",
           variant: "destructive",
         });
@@ -227,15 +226,15 @@ const ToolDetail = () => {
     fetchToolDetails();
   }, [id, slug, toast]);
   
-  const handleVisitWebsite = async (websiteUrl: string) => {
+  const handleVisitWebsite = async () => {
     try {
-      if (websiteUrl && websiteUrl !== '#') {
+      if (tool?.website && tool.website !== '#') {
         const toolId = tool?.id;
         if (toolId && !isNaN(parseInt(toolId.toString()))) {
           await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) });
         }
-        console.log(`Redirecting to external website: ${websiteUrl}`);
-        window.open(websiteUrl, '_blank', 'noopener,noreferrer');
+        console.log(`Redirecting to external website: ${tool.website}`);
+        window.open(tool.website, '_blank', 'noopener,noreferrer');
       } else {
         toast({
           title: "Website URL not available",
@@ -290,8 +289,8 @@ const ToolDetail = () => {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="h-16 w-16 overflow-hidden rounded-xl bg-secondary/50">
                     <img 
-                      src={tool?.logo} 
-                      alt={`${tool?.name} logo`} 
+                      src={tool.logo} 
+                      alt={`${tool.name} logo`} 
                       className="h-full w-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200?text=AI+Tool';
@@ -301,8 +300,8 @@ const ToolDetail = () => {
                   
                   <div>
                     <div className="flex items-center gap-2">
-                      <h1 className="text-2xl md:text-3xl font-bold">{tool?.name}</h1>
-                      {tool?.isFeatured && (
+                      <h1 className="text-2xl md:text-3xl font-bold">{tool.name}</h1>
+                      {tool.isFeatured && (
                         <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                           Featured
                         </span>
@@ -311,21 +310,21 @@ const ToolDetail = () => {
                     <div className="mt-1 flex items-center gap-3">
                       <span className="flex items-center gap-1 text-sm">
                         <Tag size={14} className="text-muted-foreground" />
-                        {tool?.category}
+                        {tool.category}
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <DollarSign size={14} className="text-muted-foreground" />
-                        {tool?.pricing.model}
+                        {tool.pricing.model}
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <Calendar size={14} className="text-muted-foreground" />
-                        Updated: {tool?.lastUpdated}
+                        Updated: {tool.lastUpdated}
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <p className="text-muted-foreground">{tool?.description}</p>
+                <p className="text-muted-foreground">{tool.description}</p>
                 
                 <div className="mt-4 flex items-center gap-4">
                   <div className="flex items-center gap-1">
@@ -334,13 +333,13 @@ const ToolDetail = () => {
                         <Star
                           key={i}
                           size={16}
-                          className={i < Math.round(tool?.rating || 0) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
+                          className={i < Math.round(tool.rating || 0) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
                         />
                       ))}
                     </div>
-                    <span className="text-sm font-medium">{tool?.rating.toFixed(1)}</span>
+                    <span className="text-sm font-medium">{tool.rating.toFixed(1)}</span>
                     <span className="text-sm text-muted-foreground">
-                      ({tool?.reviewCount} reviews)
+                      ({tool.reviewCount} reviews)
                     </span>
                   </div>
                 </div>
@@ -349,7 +348,7 @@ const ToolDetail = () => {
               <div className="w-full md:w-72 flex-shrink-0">
                 <div className="rounded-xl border border-border/40 bg-background p-5">
                   <button
-                    onClick={() => handleVisitWebsite(tool.website)}
+                    onClick={handleVisitWebsite}
                     className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     Visit Website
@@ -366,7 +365,7 @@ const ToolDetail = () => {
                   </div>
                   
                   <div className="mt-4 rounded-lg bg-secondary/50 p-3">
-                    <h3 className="font-medium">Share this tool</h3>
+                    <h3 className="font-medium">Share this Tool</h3>
                     <div className="mt-2 flex items-center gap-2">
                       <button className="rounded-full p-2 bg-background hover:bg-secondary transition-colors">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -407,16 +406,16 @@ const ToolDetail = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-12">
                 <div>
-                  <h2 className="text-2xl font-bold mb-4">About {tool?.name}</h2>
+                  <h2 className="text-2xl font-bold mb-4">About {tool.name}</h2>
                   <div className="prose prose-gray dark:prose-invert max-w-none">
-                    <p>{tool?.longDescription}</p>
+                    <p>{tool.longDescription}</p>
                   </div>
                 </div>
                 
                 <div>
                   <h2 className="text-2xl font-bold mb-4">Key Features</h2>
                   <ul className="space-y-2">
-                    {tool?.features.map((feature, index) => (
+                    {tool.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <CheckCircle size={20} className="mt-0.5 text-green-500" />
                         <span>{feature}</span>
@@ -434,7 +433,7 @@ const ToolDetail = () => {
                         Pros
                       </h3>
                       <ul className="space-y-2">
-                        {tool?.pros.map((pro, index) => (
+                        {tool.pros.map((pro, index) => (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-green-500">+</span>
                             <span>{pro}</span>
@@ -448,7 +447,7 @@ const ToolDetail = () => {
                         Cons
                       </h3>
                       <ul className="space-y-2">
-                        {tool?.cons.map((con, index) => (
+                        {tool.cons.map((con, index) => (
                           <li key={index} className="flex items-start gap-2">
                             <span className="text-red-500">-</span>
                             <span>{con}</span>
@@ -464,10 +463,10 @@ const ToolDetail = () => {
                   <div className="rounded-xl border border-border/40 bg-background p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <DollarSign size={18} className="text-primary" />
-                      <h3 className="font-medium">{tool?.pricing.model}</h3>
+                      <h3 className="font-medium">{tool.pricing.model}</h3>
                     </div>
                     <ul className="space-y-2">
-                      {tool?.pricing.details.map((detail, index) => (
+                      {tool.pricing.details.map((detail, index) => (
                         <li key={index} className="flex items-start gap-2">
                           <span>•</span>
                           <span>{detail}</span>
@@ -477,7 +476,7 @@ const ToolDetail = () => {
                   </div>
                 </div>
                 
-                {Array.isArray(tool?.faqs) && tool.faqs.length > 0 && (
+                {Array.isArray(tool.faqs) && tool.faqs.length > 0 && (
                   <div>
                     <h2 className="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
                     <div className="space-y-4">
@@ -581,17 +580,17 @@ const ToolDetail = () => {
                     <div className="flex items-center gap-2">
                       <Globe size={16} className="text-muted-foreground" />
                       <a 
-                        href={tool?.website} 
+                        href={tool.website} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-primary hover:underline truncate"
                       >
-                        {tool?.website.replace(/^https?:\/\//, '')}
+                        {tool.website.replace(/^https?:\/\//, '')}
                       </a>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar size={16} className="text-muted-foreground" />
-                      <span>Updated: {tool?.lastUpdated}</span>
+                      <span>Updated: {tool.lastUpdated}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <BookOpen size={16} className="text-muted-foreground" />
@@ -616,6 +615,13 @@ const ToolDetail = () => {
                       <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">Google Bard</div>
+                        <div className="text-xs text-muted-foreground">AI Chatbots</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">Llama 2</div>
                         <div className="text-xs text-muted-foreground">AI Chatbots</div>
                       </div>
                     </div>
