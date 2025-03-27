@@ -75,6 +75,8 @@ export function ToolGrid({
           throw error;
         }
         
+        console.log("Tools data from database:", data);
+        
         // Map database results to Tool interface
         const toolsData = data.map(item => ({
           id: item.id.toString(),
@@ -85,7 +87,7 @@ export function ToolGrid({
           rating: 0, // We'll implement ratings later
           reviewCount: 0, // We'll implement review counts later
           pricing: item.pricing || 'Unknown',
-          url: `/tools/${item.slug || item.id}`,
+          url: `/tool/${item.slug || item.id}`,
           isFeatured: sortBy === 'featured',
           isNew: sortBy === 'newest'
         }));

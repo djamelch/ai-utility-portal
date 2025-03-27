@@ -27,7 +27,7 @@ interface ToolDetailType extends Omit<Tool, 'pricing'> {
   alternatives: string[];
 }
 
-const toolDetails: { [key: string]: ToolDetailType } = {
+const fallbackToolDetails: { [key: string]: ToolDetailType } = {
   "chatgpt": {
     id: "chatgpt",
     name: "ChatGPT",
@@ -46,6 +46,7 @@ const toolDetails: { [key: string]: ToolDetailType } = {
       ]
     },
     url: "https://chat.openai.com",
+    website: "https://chat.openai.com",
     isFeatured: true,
     pros: [
       "Highly versatile and can handle a wide range of queries",
@@ -67,7 +68,6 @@ const toolDetails: { [key: string]: ToolDetailType } = {
       "Custom instructions and memory"
     ],
     lastUpdated: "June 2023",
-    website: "https://chat.openai.com",
     faqs: [
       {
         question: "Is ChatGPT free to use?",
@@ -169,12 +169,12 @@ const ToolDetail = () => {
         // If we got here, check fallback data
         console.log('Tool not found in database, checking fallback data');
         
-        if (slug && toolDetails[slug]) {
+        if (slug && fallbackToolDetails[slug]) {
           console.log('Using fallback data for slug:', slug);
-          setTool(toolDetails[slug]);
-        } else if (id && toolDetails[id]) {
+          setTool(fallbackToolDetails[slug]);
+        } else if (id && fallbackToolDetails[id]) {
           console.log('Using fallback data for id:', id);
-          setTool(toolDetails[id]);
+          setTool(fallbackToolDetails[id]);
         } else {
           console.log('No data found in any source');
           toast({
@@ -195,9 +195,73 @@ const ToolDetail = () => {
       }
     };
     
-    const processToolData = (data: any) => {
-      const parsedFaqs = processToolFaqs(data.faqs);
+    fetchToolDetails();
+  }, [id, slug, toast]);
+  
+  // Process the tool data from the database into our ToolDetailType format
+  const processToolData = (data: any) => {
+    try {
+      console.log("Processing tool data:", data);
       
+      // Process FAQs
+      let parsedFaqs: { question: string; answer: string; }[] = [];
+      
+      if (data.faqs) {
+        try {
+          if (Array.isArray(data.faqs)) {
+            parsedFaqs = data.faqs.map((faq: any) => ({
+              question: faq.question || "Question",
+              answer: faq.answer || "No answer provided"
+            }));
+          } else if (typeof data.faqs === 'object') {
+            // Handle q1/a1, q2/a2 format
+            const questionKeys = Object.keys(data.faqs).filter(key => key.startsWith('q') && /^q\d+$/.test(key));
+            
+            questionKeys.forEach(qKey => {
+              const num = qKey.substring(1);
+              const aKey = `a${num}`;
+              
+              if (data.faqs[aKey]) {
+                parsedFaqs.push({
+                  question: data.faqs[qKey],
+                  answer: data.faqs[aKey]
+                });
+              }
+            });
+            
+            // If no structured q/a pairs found, try to convert the object directly
+            if (parsedFaqs.length === 0) {
+              parsedFaqs = Object.entries(data.faqs).map(([key, value]) => ({
+                question: key,
+                answer: String(value)
+              }));
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing FAQs:', e);
+          parsedFaqs = [];
+        }
+      }
+      
+      // Process pros and cons
+      let processPros: string[] = [];
+      let processCons: string[] = [];
+      
+      if (Array.isArray(data.pros)) {
+        processPros = data.pros.map((item: any) => String(item));
+      }
+      
+      if (Array.isArray(data.cons)) {
+        processCons = data.cons.map((item: any) => String(item));
+      }
+      
+      // Process applicable tasks (features)
+      let processFeatures: string[] = [];
+      if (Array.isArray(data.applicable_tasks)) {
+        processFeatures = data.applicable_tasks.map((item: any) => String(item));
+      }
+      
+      // Create the processed tool object
       const processedTool: ToolDetailType = {
         id: data.id.toString(),
         name: data.company_name || 'Unknown Tool',
@@ -214,62 +278,21 @@ const ToolDetail = () => {
         url: data.visit_website_url || '#',
         website: data.visit_website_url || '#',
         isFeatured: false,
-        pros: Array.isArray(data.pros) ? data.pros.map((item: any) => String(item)) : [],
-        cons: Array.isArray(data.cons) ? data.cons.map((item: any) => String(item)) : [],
-        features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
+        isNew: false,
+        pros: processPros,
+        cons: processCons,
+        features: processFeatures,
         lastUpdated: data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Recently',
         faqs: parsedFaqs,
         alternatives: []
       };
       
+      console.log("Processed tool object:", processedTool);
       setTool(processedTool);
-    };
-    
-    fetchToolDetails();
-  }, [id, slug, toast]);
-  
-  // Helper function to process FAQs
-  const processToolFaqs = (faqs: any): { question: string; answer: string; }[] => {
-    let parsedFaqs: { question: string; answer: string; }[] = [];
-    
-    if (faqs) {
-      try {
-        if (Array.isArray(faqs)) {
-          parsedFaqs = faqs.map((faq: any) => ({
-            question: faq.question || "Question",
-            answer: faq.answer || "No answer provided"
-          }));
-        } else if (typeof faqs === 'object') {
-          // Handle q1/a1, q2/a2 format
-          const questionKeys = Object.keys(faqs).filter(key => key.startsWith('q') && /^q\d+$/.test(key));
-          
-          questionKeys.forEach(qKey => {
-            const num = qKey.substring(1);
-            const aKey = `a${num}`;
-            
-            if (faqs[aKey]) {
-              parsedFaqs.push({
-                question: faqs[qKey],
-                answer: faqs[aKey]
-              });
-            }
-          });
-          
-          // If no structured q/a pairs found, try to convert the object directly
-          if (parsedFaqs.length === 0) {
-            parsedFaqs = Object.entries(faqs).map(([key, value]) => ({
-              question: key,
-              answer: String(value)
-            }));
-          }
-        }
-      } catch (e) {
-        console.error('Error parsing FAQs:', e);
-        parsedFaqs = [];
-      }
+    } catch (error) {
+      console.error("Error in processToolData:", error);
+      throw error;
     }
-    
-    return parsedFaqs;
   };
   
   const handleVisitWebsite = () => {
