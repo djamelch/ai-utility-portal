@@ -82,7 +82,7 @@ export function PromoteToAdmin() {
         return;
       }
       
-      // Call our Next.js API endpoint which will call the edge function
+      // Call our API endpoint instead of directly accessing supabaseUrl
       const response = await fetch('/api/promote-admin', {
         method: 'POST',
         headers: {
