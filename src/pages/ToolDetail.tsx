@@ -340,7 +340,7 @@ const ToolDetail = () => {
       if (tool?.website && tool.website !== '#') {
         const toolId = tool?.id;
         if (toolId && !isNaN(parseInt(toolId.toString()))) {
-          // FIX: Use async/await with try/catch instead of promise chains
+          // Fix: Use async/await with try/catch
           (async () => {
             try {
               await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) });
