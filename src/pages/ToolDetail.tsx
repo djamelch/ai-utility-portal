@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { 
   ArrowUpRight, Star, BookOpen, DollarSign, Tag, 
@@ -340,14 +339,15 @@ const ToolDetail = () => {
       if (tool?.website && tool.website !== '#') {
         const toolId = tool?.id;
         if (toolId && !isNaN(parseInt(toolId.toString()))) {
-          // FIX: Instead of using catch() on PromiseLike, use a proper then/catch chain
-          supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) })
-            .then(() => {
+          // FIX: Use async/await with try/catch instead of promise chains
+          (async () => {
+            try {
+              await supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) });
               console.log('Click count incremented');
-            })
-            .catch((err) => {
+            } catch (err) {
               console.error('Error incrementing click count:', err);
-            });
+            }
+          })();
         }
         
         console.log(`Redirecting to external website: ${tool.website}`);
@@ -627,141 +627,4 @@ const ToolDetail = () => {
                     </button>
                   </div>
                   
-                  <div className="space-y-4">
-                    <div className="rounded-xl border border-border/40 bg-background p-5">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <div className="h-10 w-10 rounded-full bg-secondary/80 flex items-center justify-center">
-                              <span className="font-medium">JS</span>
-                            </div>
-                            <div>
-                              <div className="font-medium">John Smith</div>
-                              <div className="text-sm text-muted-foreground">Marketing Specialist</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={14}
-                              className={i < 5 ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-muted-foreground">
-                        This tool has completely transformed my workflow. It helps me brainstorm ideas, draft outlines, and polish my work. The free tier is generous enough for my needs, though I sometimes hit the usage limits during busy periods.
-                      </p>
-                      <div className="mt-3 text-sm text-muted-foreground">
-                        May 12, 2023
-                      </div>
-                    </div>
-                    
-                    <div className="rounded-xl border border-border/40 bg-background p-5">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <div className="h-10 w-10 rounded-full bg-secondary/80 flex items-center justify-center">
-                              <span className="font-medium">AR</span>
-                            </div>
-                            <div>
-                              <div className="font-medium">Amanda Rodriguez</div>
-                              <div className="text-sm text-muted-foreground">Software Developer</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              size={14}
-                              className={i < 4 ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-muted-foreground">
-                        As a developer, I find this tool incredibly helpful for improving my productivity. It's not perfect - sometimes there are errors - but it's an excellent starting point and time-saver.
-                      </p>
-                      <div className="mt-3 text-sm text-muted-foreground">
-                        April 3, 2023
-                      </div>
-                    </div>
-                    
-                    <div className="text-center mt-6">
-                      <button className="inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors">
-                        Load more reviews
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-8">
-                <div className="rounded-xl border border-border/40 bg-background p-5">
-                  <h3 className="font-medium mb-3">Website Information</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Globe size={16} className="text-muted-foreground" />
-                      <a 
-                        href={tool.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline truncate"
-                      >
-                        {tool.website.replace(/^https?:\/\//, '')}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} className="text-muted-foreground" />
-                      <span>Updated: {tool.lastUpdated}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <BookOpen size={16} className="text-muted-foreground" />
-                      <a href="#" className="text-primary hover:underline">
-                        Documentation & Resources
-                      </a>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="rounded-xl border border-border/40 bg-background p-5">
-                  <h3 className="font-medium mb-3">Similar Tools</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">Similar Tool 1</div>
-                        <div className="text-xs text-muted-foreground">Similar Category</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">Similar Tool 2</div>
-                        <div className="text-xs text-muted-foreground">Similar Category</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-md bg-secondary/50"></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">Similar Tool 3</div>
-                        <div className="text-xs text-muted-foreground">Similar Category</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </MotionWrapper>
-        </div>
-      </main>
-      
-      <Footer />
-    </div>
-  );
-};
-
-export default ToolDetail;
+                  <div className="space
