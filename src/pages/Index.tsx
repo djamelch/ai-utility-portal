@@ -1,13 +1,13 @@
 
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
 import { CategorySection } from "@/components/home/CategorySection";
 import { FeatureSection } from "@/components/home/FeatureSection";
-import { ToolGrid } from "@/components/tools/ToolGrid";
+import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
 const Index = () => {
   return (
@@ -18,48 +18,37 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* Feature Section */}
+        {/* Featured Tools Section - Moved up after statistics */}
+        <ToolsSection 
+          title="Featured Tools" 
+          description="Discover our handpicked selection of the best AI tools"
+          queryType="featured"
+          limit={8}
+        />
+        
+        {/* Top Rated Tools Section - New */}
+        <ToolsSection 
+          title="Top Rated Tools" 
+          description="Explore the highest rated AI tools by our community"
+          queryType="top-rated"
+          limit={4}
+        />
+        
+        {/* Recently Added Tools Section - New */}
+        <ToolsSection 
+          title="Recently Added Tools" 
+          description="Check out the latest AI tools added to our collection"
+          queryType="recent"
+          limit={4}
+        />
+        
+        {/* Feature Section - Kept as is */}
         <FeatureSection />
         
-        {/* Categories Section */}
+        {/* Categories Section - Kept as is */}
         <CategorySection />
         
-        {/* Featured Tools Section */}
-        <section className="section-padding">
-          <div className="container-wide">
-            <MotionWrapper animation="fadeIn">
-              <div className="flex items-center justify-between mb-12">
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold">Featured Tools</h2>
-                  <p className="mt-2 text-muted-foreground">
-                    Discover our handpicked selection of the best AI tools
-                  </p>
-                </div>
-                <Link 
-                  to="/tools" 
-                  className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors"
-                >
-                  View all
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
-            </MotionWrapper>
-            
-            <ToolGrid limit={8} />
-            
-            <div className="mt-10 text-center sm:hidden">
-              <Link 
-                to="/tools" 
-                className="inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors"
-              >
-                View all tools
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </section>
-        
-        {/* CTA Section */}
+        {/* CTA Section - Kept as is */}
         <section className="section-padding bg-secondary/30 dark:bg-transparent">
           <div className="container-tight">
             <MotionWrapper animation="fadeIn">
