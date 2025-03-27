@@ -100,65 +100,52 @@ const ToolDetail = () => {
         console.log(`Fetching tool with id: ${id} or slug: ${slug}`);
         setLoading(true);
         
-        // Build the query
-        let query = supabase.from('tools').select('*');
-        
         // If we have a slug, search by slug
         if (slug) {
-          // Try to match by slug directly or by generating slug from company_name
+          console.log("Searching by slug:", slug);
+          // Try to match by slug directly
           const { data, error } = await supabase
             .from('tools')
             .select('*')
-            .or(`slug.eq.${slug},company_name.ilike.%${slug.replace(/-/g, '%')}%`)
-            .limit(1);
+            .eq('slug', slug)
+            .maybeSingle();
           
           if (error) {
+            console.error("Error fetching by slug:", error);
             throw error;
           }
           
-          if (data && data.length > 0) {
-            // Process found tool
-            const foundTool = data[0];
-            console.log('Found tool by slug:', foundTool);
-            
-            const parsedFaqs: { question: string; answer: string; }[] = processToolFaqs(foundTool.faqs);
-            
-            // Process the found tool
-            const processedTool: ToolDetailType = {
-              id: foundTool.id.toString(),
-              name: foundTool.company_name || 'Unknown Tool',
-              description: foundTool.short_description || '',
-              longDescription: foundTool.full_description || foundTool.short_description || '',
-              logo: foundTool.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
-              category: foundTool.primary_task || 'Uncategorized',
-              rating: 0,
-              reviewCount: 0,
-              pricing: {
-                model: foundTool.pricing || 'Unknown',
-                details: [foundTool.pricing || 'Pricing details unavailable']
-              },
-              url: foundTool.visit_website_url || '#',
-              website: foundTool.visit_website_url || '#',
-              isFeatured: false,
-              pros: Array.isArray(foundTool.pros) ? foundTool.pros.map(item => String(item)) : [],
-              cons: Array.isArray(foundTool.cons) ? foundTool.cons.map(item => String(item)) : [],
-              features: Array.isArray(foundTool.applicable_tasks) ? foundTool.applicable_tasks : [],
-              lastUpdated: foundTool.updated_at ? new Date(foundTool.updated_at).toLocaleDateString() : 'Recently',
-              faqs: parsedFaqs,
-              alternatives: []
-            };
-            
-            setTool(processedTool);
-            setLoading(false);
+          if (data) {
+            console.log('Found tool by exact slug:', data);
+            processToolData(data);
+            return;
+          }
+          
+          // If we didn't find by exact slug, try a broader search
+          console.log("No exact slug match, trying company name search");
+          const { data: nameData, error: nameError } = await supabase
+            .from('tools')
+            .select('*')
+            .ilike('company_name', `%${slug.replace(/-/g, ' ')}%`)
+            .limit(1);
+          
+          if (nameError) {
+            console.error("Error in company name search:", nameError);
+            throw nameError;
+          }
+          
+          if (nameData && nameData.length > 0) {
+            console.log('Found tool by company name search:', nameData[0]);
+            processToolData(nameData[0]);
             return;
           }
         }
         
-        // If we reach here, either we're looking for a tool by id or we couldn't find it by slug
+        // If we reach here, check by ID
         if (id) {
-          // FIX #1: Convert string id to number using parseInt instead of passing the string directly
+          console.log("Searching by ID:", id);
           const numericId = parseInt(id, 10);
-          // Only proceed if we have a valid number
+          
           if (!isNaN(numericId)) {
             const { data, error } = await supabase
               .from('tools')
@@ -167,99 +154,19 @@ const ToolDetail = () => {
               .maybeSingle();
             
             if (error) {
+              console.error("Error fetching by ID:", error);
               throw error;
             }
             
             if (data) {
               console.log('Found tool by id:', data);
-              
-              const parsedFaqs: { question: string; answer: string; }[] = processToolFaqs(data.faqs);
-              
-              // Process the found tool
-              const processedTool: ToolDetailType = {
-                id: data.id.toString(),
-                name: data.company_name || 'Unknown Tool',
-                description: data.short_description || '',
-                longDescription: data.full_description || data.short_description || '',
-                logo: data.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
-                category: data.primary_task || 'Uncategorized',
-                rating: 0,
-                reviewCount: 0,
-                pricing: {
-                  model: data.pricing || 'Unknown',
-                  details: [data.pricing || 'Pricing details unavailable']
-                },
-                url: data.visit_website_url || '#',
-                website: data.visit_website_url || '#',
-                isFeatured: false,
-                pros: Array.isArray(data.pros) ? data.pros.map(item => String(item)) : [],
-                cons: Array.isArray(data.cons) ? data.cons.map(item => String(item)) : [],
-                features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
-                lastUpdated: data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Recently',
-                faqs: parsedFaqs,
-                alternatives: []
-              };
-              
-              setTool(processedTool);
-              setLoading(false);
+              processToolData(data);
               return;
             }
           }
         }
         
-        // If we got here and still don't have a tool, try a more aggressive search by name
-        if (slug) {
-          // Try a broader search to find any match
-          const searchTerm = slug.replace(/-/g, ' ');
-          
-          const { data, error } = await supabase
-            .from('tools')
-            .select('*')
-            .ilike('company_name', `%${searchTerm}%`)
-            .limit(1);
-          
-          if (error) {
-            throw error;
-          }
-          
-          if (data && data.length > 0) {
-            console.log('Found tool by broad name search:', data[0]);
-            
-            const foundTool = data[0];
-            const parsedFaqs: { question: string; answer: string; }[] = processToolFaqs(foundTool.faqs);
-            
-            // Process the found tool
-            const processedTool: ToolDetailType = {
-              id: foundTool.id.toString(),
-              name: foundTool.company_name || 'Unknown Tool',
-              description: foundTool.short_description || '',
-              longDescription: foundTool.full_description || foundTool.short_description || '',
-              logo: foundTool.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
-              category: foundTool.primary_task || 'Uncategorized',
-              rating: 0,
-              reviewCount: 0,
-              pricing: {
-                model: foundTool.pricing || 'Unknown',
-                details: [foundTool.pricing || 'Pricing details unavailable']
-              },
-              url: foundTool.visit_website_url || '#',
-              website: foundTool.visit_website_url || '#',
-              isFeatured: false,
-              pros: Array.isArray(foundTool.pros) ? foundTool.pros.map(item => String(item)) : [],
-              cons: Array.isArray(foundTool.cons) ? foundTool.cons.map(item => String(item)) : [],
-              features: Array.isArray(foundTool.applicable_tasks) ? foundTool.applicable_tasks : [],
-              lastUpdated: foundTool.updated_at ? new Date(foundTool.updated_at).toLocaleDateString() : 'Recently',
-              faqs: parsedFaqs,
-              alternatives: []
-            };
-            
-            setTool(processedTool);
-            setLoading(false);
-            return;
-          }
-        }
-          
-        // Check fallback data if everything else fails
+        // If we got here, check fallback data
         console.log('Tool not found in database, checking fallback data');
         
         if (slug && toolDetails[slug]) {
@@ -269,7 +176,7 @@ const ToolDetail = () => {
           console.log('Using fallback data for id:', id);
           setTool(toolDetails[id]);
         } else {
-          console.log('No fallback data found');
+          console.log('No data found in any source');
           toast({
             title: "Tool Not Found",
             description: "The tool you're looking for doesn't exist or has been removed",
@@ -286,6 +193,36 @@ const ToolDetail = () => {
       } finally {
         setLoading(false);
       }
+    };
+    
+    const processToolData = (data: any) => {
+      const parsedFaqs = processToolFaqs(data.faqs);
+      
+      const processedTool: ToolDetailType = {
+        id: data.id.toString(),
+        name: data.company_name || 'Unknown Tool',
+        description: data.short_description || '',
+        longDescription: data.full_description || data.short_description || '',
+        logo: data.logo_url || 'https://via.placeholder.com/200?text=No+Logo',
+        category: data.primary_task || 'Uncategorized',
+        rating: 0,
+        reviewCount: 0,
+        pricing: {
+          model: data.pricing || 'Unknown',
+          details: [data.pricing || 'Pricing details unavailable']
+        },
+        url: data.visit_website_url || '#',
+        website: data.visit_website_url || '#',
+        isFeatured: false,
+        pros: Array.isArray(data.pros) ? data.pros.map((item: any) => String(item)) : [],
+        cons: Array.isArray(data.cons) ? data.cons.map((item: any) => String(item)) : [],
+        features: Array.isArray(data.applicable_tasks) ? data.applicable_tasks : [],
+        lastUpdated: data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Recently',
+        faqs: parsedFaqs,
+        alternatives: []
+      };
+      
+      setTool(processedTool);
     };
     
     fetchToolDetails();
