@@ -30,8 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/tools" element={<Tools />} />
-            {/* Update the route to use both formats */}
-            <Route path="/tools/:id" element={<ToolDetail />} />
+            {/* Using the slug format for tool detail pages */}
             <Route path="/tool/:slug" element={<ToolDetail />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<BlogPost />} />

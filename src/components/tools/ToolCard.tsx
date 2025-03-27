@@ -16,6 +16,7 @@ export interface Tool {
   reviewCount: number;
   pricing: string;
   url: string;
+  slug?: string;
   isFeatured?: boolean;
   isNew?: boolean;
 }
@@ -26,7 +27,7 @@ interface ToolCardProps {
 }
 
 export function ToolCard({ tool, className }: ToolCardProps) {
-  const { id, name, description, logo, category, rating, reviewCount, pricing, isFeatured, isNew } = tool;
+  const { id, name, description, logo, category, rating, reviewCount, pricing, isFeatured, isNew, slug } = tool;
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -35,8 +36,8 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   // Convert id to number for database operations if it's a string
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
-  // Create slug from name for the URL - handle special characters and spaces
-  const slug = name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+  // Use the slug from the tool object if available, otherwise generate one
+  const toolSlug = slug || name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
 
   useEffect(() => {
     // Check if user is authenticated
@@ -196,7 +197,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium truncate">
-              <Link to={`/tool/${slug}`} className="hover:text-primary transition-colors">
+              <Link to={`/tool/${toolSlug}`} className="hover:text-primary transition-colors">
                 {name}
               </Link>
             </h3>
@@ -237,7 +238,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       {/* Actions */}
       <div className="mt-auto pt-4 flex items-center gap-3 text-sm">
         <Link
-          to={`/tool/${slug}`}
+          to={`/tool/${toolSlug}`}
           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-center font-medium hover:bg-secondary/50 transition-colors"
         >
           View Details

@@ -78,7 +78,7 @@ export type Database = {
       }
       tools: {
         Row: {
-          applicable_tasks: string[] | null
+          applicable_tasks: Json[] | null
           click_count: number | null
           company_name: string | null
           cons: Json[] | null
@@ -98,7 +98,7 @@ export type Database = {
           visit_website_url: string | null
         }
         Insert: {
-          applicable_tasks?: string[] | null
+          applicable_tasks?: Json[] | null
           click_count?: number | null
           company_name?: string | null
           cons?: Json[] | null
@@ -118,7 +118,7 @@ export type Database = {
           visit_website_url?: string | null
         }
         Update: {
-          applicable_tasks?: string[] | null
+          applicable_tasks?: Json[] | null
           click_count?: number | null
           company_name?: string | null
           cons?: Json[] | null

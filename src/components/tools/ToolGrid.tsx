@@ -88,6 +88,7 @@ export function ToolGrid({
           reviewCount: 0, // We'll implement review counts later
           pricing: item.pricing || 'Unknown',
           url: `/tool/${item.slug || item.id}`,
+          slug: item.slug || `tool-${item.id}`,
           isFeatured: sortBy === 'featured',
           isNew: sortBy === 'newest'
         }));
