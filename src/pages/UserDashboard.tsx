@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
@@ -12,8 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { BookmarkX, Heart, Star, UserCircle, Loader2, PenSquare } from 'lucide-react';
+import { PromoteToAdmin } from '@/components/admin/PromoteToAdmin';
 
-// Tool type definition
 interface SavedTool {
   id: number;
   name: string;
@@ -24,7 +23,6 @@ interface SavedTool {
   favorite_id: string;
 }
 
-// Review type definition
 interface UserReview {
   id: string;
   tool_id: number;
@@ -72,9 +70,8 @@ export default function UserDashboard() {
 
       if (error) throw error;
 
-      // Transform the data to flatten the structure - fixed field mapping to match database structure
       const formattedTools = data
-        .filter(item => item.tools) // Filter out any null tools
+        .filter(item => item.tools)
         .map(item => ({
           id: item.tools.id,
           name: item.tools.company_name,
@@ -118,7 +115,6 @@ export default function UserDashboard() {
 
       if (error) throw error;
 
-      // Transform the data
       const formattedReviews = data.map(item => ({
         id: item.id,
         tool_id: item.tool_id,
@@ -433,6 +429,11 @@ export default function UserDashboard() {
                               >
                                 Update Password
                               </Button>
+                            </div>
+                            
+                            <div className="mt-6 pt-6 border-t">
+                              <h3 className="text-lg font-medium mb-4">Developer Options</h3>
+                              <PromoteToAdmin />
                             </div>
                           </div>
                         </div>
