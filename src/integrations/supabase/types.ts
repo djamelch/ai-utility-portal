@@ -171,6 +171,28 @@ export type Database = {
         }
         Returns: number
       }
+      count_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      create_new_profile: {
+        Args: {
+          user_id: string
+          user_role: string
+        }
+        Returns: undefined
+      }
+      get_profile_by_id: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          created_at: string
+          id: string
+          role: string
+          updated_at: string
+        }
+      }
       increment_tool_click_count: {
         Args: {
           tool_id: number

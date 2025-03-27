@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Fetching user profile for:', userId);
       
-      // Use a direct SQL query approach instead of using 'from' which triggers RLS policies
+      // Use custom RPC functions to avoid RLS recursion
       const { data, error } = await supabase.rpc('get_profile_by_id', {
         user_id: userId
       });
@@ -55,13 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Profile doesn't exist, create one
       // Check if this is the first user (would be admin)
-      const { count, error: countError } = await supabase.rpc('count_profiles');
+      const { data: countData, error: countError } = await supabase.rpc('count_profiles');
       
       if (countError) {
         throw countError;
       }
       
-      const isFirstUser = count === 0;
+      const isFirstUser = countData === 0;
       const role = isFirstUser ? 'admin' : 'user';
       
       // Create the user profile using a custom RPC function
