@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
@@ -12,13 +12,20 @@ import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  BarChart, Users, Settings, Database, Upload, AlertCircle, Loader2 
+  BarChart, Users, Settings, Database, Loader2 
 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
   const { isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Ensure that admin users can't access the regular user dashboard
+  useEffect(() => {
+    if (!isLoading && !isAdmin) {
+      navigate('/dashboard');
+    }
+  }, [isAdmin, isLoading, navigate]);
 
   if (isLoading) {
     return (

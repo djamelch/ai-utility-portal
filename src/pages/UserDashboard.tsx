@@ -1,11 +1,24 @@
 
+import { useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function UserDashboard() {
+  const { isAdmin } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect admin users to the admin dashboard
+  useEffect(() => {
+    if (isAdmin) {
+      navigate('/admin');
+    }
+  }, [isAdmin, navigate]);
+
   return (
     <RequireAuth>
       <div className="flex min-h-screen flex-col">

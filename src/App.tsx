@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import Index from "./pages/Index";
@@ -42,11 +42,15 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              
+              {/* User Dashboard - for non-admin users only */}
               <Route path="/dashboard" element={
                 <RequireAuth>
                   <UserDashboard />
                 </RequireAuth>
               } />
+              
+              {/* Admin Routes - only for admin users */}
               <Route path="/admin" element={
                 <RequireAuth requireAdmin={true}>
                   <AdminDashboard />
@@ -54,7 +58,7 @@ function App() {
               } />
               <Route path="/admin/tools" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminTools />
+                  <AdminDashboard />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/edit/:id" element={
@@ -72,6 +76,7 @@ function App() {
                   <CsvImport />
                 </RequireAuth>
               } />
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
