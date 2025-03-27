@@ -9,6 +9,7 @@ import { RequireAuth } from '@/components/auth/RequireAuth';
 import { AdminTools } from './AdminTools';
 import { AdminUsers } from './AdminUsers';
 import { AdminAnalytics } from './AdminAnalytics';
+import { AdminSettings } from './AdminSettings';
 import { useAuth } from '@/context/AuthContext';
 import { 
   BarChart, Users, Settings, Database, Upload, AlertCircle, Loader2 
@@ -90,21 +91,7 @@ export default function AdminDashboard() {
                 </TabsContent>
                 
                 <TabsContent value="settings">
-                  <div className="space-y-4">
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-md">
-                      <div className="flex gap-2">
-                        <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
-                        <div>
-                          <h3 className="font-medium text-yellow-800 dark:text-yellow-400">
-                            Settings Coming Soon
-                          </h3>
-                          <p className="text-sm text-yellow-700 dark:text-yellow-500 mt-1">
-                            This section is under development. Check back soon for site-wide settings management.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <AdminSettings />
                 </TabsContent>
               </Tabs>
             </MotionWrapper>
