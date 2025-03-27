@@ -22,19 +22,28 @@ export default function ToolDetail() {
   useEffect(() => {
     const fetchTool = async () => {
       setLoading(true);
+      setNotFound(false);
       
       try {
-        const { data, error } = await supabase
-          .from('tools')
-          .select('*')
-          .eq('slug', slug)
-          .maybeSingle();
+        let query = supabase.from('tools').select('*');
+        
+        // Check if the slug is a number (tool ID) or a string (slug)
+        if (slug && !isNaN(Number(slug))) {
+          // If it's a number, query by ID
+          query = query.eq('id', parseInt(slug, 10));
+        } else if (slug) {
+          // If it's a string, query by slug
+          query = query.eq('slug', slug);
+        }
+        
+        const { data, error } = await query.maybeSingle();
         
         if (error) {
           throw error;
         }
         
         if (!data) {
+          console.error('Tool not found with slug/id:', slug);
           setNotFound(true);
           return;
         }
@@ -48,6 +57,7 @@ export default function ToolDetail() {
           description: 'Failed to load tool details',
           variant: 'destructive',
         });
+        setNotFound(true);
       } finally {
         setLoading(false);
       }
