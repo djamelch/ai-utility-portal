@@ -22,8 +22,7 @@ export function PromoteToAdmin() {
     try {
       setIsLoading(true);
       
-      // Instead of directly updating the profile, make a fetch request to a special endpoint
-      // that will update the profile using admin privileges
+      // Make a fetch request to the API endpoint
       const response = await fetch('/api/promote-admin', {
         method: 'POST',
         headers: {
@@ -32,9 +31,10 @@ export function PromoteToAdmin() {
         body: JSON.stringify({ userId: user.id }),
       });
       
+      const data = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to promote to admin');
+        throw new Error(data.message || 'Failed to promote to admin');
       }
       
       toast({

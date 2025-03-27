@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
     
     // Call the Supabase Edge Function with the authorization token
-    const supabaseUrl = process.env.SUPABASE_URL || '';
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const functionUrl = `${supabaseUrl}/functions/v1/promote-admin`;
     
     const response = await fetch(functionUrl, {
@@ -27,14 +27,15 @@ export async function POST(req: Request) {
       body: JSON.stringify({ userId }),
     });
     
-    const data = await response.json();
-    
     if (!response.ok) {
+      const errorData = await response.json();
       return new Response(
-        JSON.stringify({ message: data.message || 'Failed to promote to admin' }),
+        JSON.stringify({ message: errorData.message || 'Failed to promote to admin' }),
         { status: response.status, headers: { 'Content-Type': 'application/json' } }
       );
     }
+    
+    const data = await response.json();
     
     return new Response(
       JSON.stringify({ message: 'Successfully promoted to admin' }),
