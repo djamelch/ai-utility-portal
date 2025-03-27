@@ -16,6 +16,7 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import { AdminTools } from "./pages/admin/AdminTools";
 import CsvImport from "./pages/admin/CsvImport";
 import UserDashboard from "./pages/UserDashboard";
 import { useState } from "react";
@@ -47,6 +48,21 @@ function App() {
                 </RequireAuth>
               } />
               <Route path="/admin" element={
+                <RequireAuth requireAdmin={true}>
+                  <AdminDashboard />
+                </RequireAuth>
+              } />
+              <Route path="/admin/tools" element={
+                <RequireAuth requireAdmin={true}>
+                  <AdminTools />
+                </RequireAuth>
+              } />
+              <Route path="/admin/tools/edit/:id" element={
+                <RequireAuth requireAdmin={true}>
+                  <AdminDashboard />
+                </RequireAuth>
+              } />
+              <Route path="/admin/tools/new" element={
                 <RequireAuth requireAdmin={true}>
                   <AdminDashboard />
                 </RequireAuth>

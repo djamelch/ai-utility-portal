@@ -72,16 +72,18 @@ export default function UserDashboard() {
 
       if (error) throw error;
 
-      // Transform the data to flatten the structure
-      const formattedTools = data.map(item => ({
-        id: item.tools.id,
-        name: item.tools.company_name,
-        short_description: item.tools.short_description,
-        logo_url: item.tools.logo_url,
-        primary_task: item.tools.primary_task,
-        pricing: item.tools.pricing,
-        favorite_id: item.id
-      }));
+      // Transform the data to flatten the structure - fixed field mapping to match database structure
+      const formattedTools = data
+        .filter(item => item.tools) // Filter out any null tools
+        .map(item => ({
+          id: item.tools.id,
+          name: item.tools.company_name,
+          short_description: item.tools.short_description,
+          logo_url: item.tools.logo_url,
+          primary_task: item.tools.primary_task,
+          pricing: item.tools.pricing,
+          favorite_id: item.id
+        }));
 
       setSavedTools(formattedTools);
     } catch (error) {
