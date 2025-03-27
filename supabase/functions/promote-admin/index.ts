@@ -72,6 +72,27 @@ serve(async (req) => {
       )
     }
 
+    // Check if any admin user already exists
+    const { data: existingAdmins, error: checkError } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('role', 'admin')
+      .limit(1)
+    
+    if (checkError) {
+      return new Response(
+        JSON.stringify({ message: 'Failed to check existing admins', error: checkError }),
+        { status: 500, headers: corsHeaders }
+      )
+    }
+    
+    if (existingAdmins && existingAdmins.length > 0) {
+      return new Response(
+        JSON.stringify({ message: 'An admin user already exists' }),
+        { status: 403, headers: corsHeaders }
+      )
+    }
+
     // Update the profile role to admin using the admin client
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
