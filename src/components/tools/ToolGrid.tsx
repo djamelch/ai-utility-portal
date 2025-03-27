@@ -1,24 +1,11 @@
 
-import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 
-interface ToolGridProps {
-  limit?: number;
-  queryType?: "featured" | "top-rated" | "recent";
-  searchTerm?: string;
-  categoryFilter?: string;
-  // Add these new props to match what's used in Tools.tsx
-  searchQuery?: string;
-  category?: string;
-  pricing?: string;
-  sortBy?: string;
-}
-
 // Define Tool interface to match expected properties
-interface Tool {
+export interface Tool {
   id: number;
   name?: string;
   short_description?: string;
@@ -32,7 +19,6 @@ interface Tool {
   click_count?: number;
   created_at?: string;
   updated_at?: string;
-  // Add any other required properties
   applicable_tasks?: any[];
   company_name?: string;
   cons?: any[];
@@ -41,12 +27,22 @@ interface Tool {
   detail_url?: string;
 }
 
+interface ToolGridProps {
+  limit?: number;
+  queryType?: "featured" | "top-rated" | "recent" | "popular";
+  searchTerm?: string;
+  categoryFilter?: string;
+  searchQuery?: string;
+  category?: string;
+  pricing?: string;
+  sortBy?: string;
+}
+
 export function ToolGrid({ 
   limit, 
   queryType = "featured",
   searchTerm,
   categoryFilter,
-  // Add support for the new props
   searchQuery = "",
   category = "",
   pricing = "",
@@ -55,16 +51,17 @@ export function ToolGrid({
   // Use both searchTerm and searchQuery (preference to searchQuery if both exist)
   const effectiveSearchTerm = searchQuery || searchTerm || "";
   const effectiveCategoryFilter = category || categoryFilter || "";
+  const effectiveSortBy = sortBy !== "featured" ? sortBy : queryType;
   
   // Fetch tools based on query type and filters
   const { data: tools = [], isLoading } = useQuery({
-    queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, sortBy],
+    queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, effectiveSortBy],
     queryFn: async () => {
       let query = supabase.from("tools").select("*");
       
       // Apply search filter if provided
       if (effectiveSearchTerm) {
-        query = query.or(`short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
+        query = query.or(`name.ilike.%${effectiveSearchTerm}%,short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
       }
       
       // Apply category filter if provided
@@ -90,13 +87,11 @@ export function ToolGrid({
       }
       
       // Apply specific ordering based on query type or sortBy
-      const effectiveSort = sortBy !== "featured" ? sortBy : queryType;
-      
-      switch (effectiveSort) {
+      switch (effectiveSortBy) {
         case "top-rated":
           // For top-rated, we'd ideally join with reviews and order by average rating
           // This is a simplified approach
-          query = query.order("id", { ascending: false }); // Replace with actual rating logic
+          query = query.order("id", { ascending: false }); // Replace with actual rating logic when available
           break;
         case "newest":
         case "recent":
@@ -129,27 +124,11 @@ export function ToolGrid({
   });
   
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {Array(limit || 8).fill(0).map((_, index) => (
-          <div 
-            key={index} 
-            className="h-[320px] rounded-xl bg-secondary/20 animate-pulse"
-          />
-        ))}
-      </div>
-    );
+    return <ToolGridSkeleton count={limit || 8} />;
   }
   
   if (!tools.length) {
-    return (
-      <div className="text-center p-8">
-        <h3 className="text-xl font-medium">No tools found</h3>
-        <p className="text-muted-foreground mt-2">
-          Try adjusting your search criteria
-        </p>
-      </div>
-    );
+    return <EmptyToolsMessage />;
   }
   
   return (
@@ -160,9 +139,34 @@ export function ToolGrid({
           animation="fadeIn" 
           delay={`delay-${Math.min(Math.floor(index * 100), 500)}` as "delay-100" | "delay-200" | "delay-300" | "delay-400" | "delay-500" | "none"}
         >
-          <ToolCard tool={tool as any} />
+          <ToolCard tool={tool} />
         </MotionWrapper>
       ))}
+    </div>
+  );
+}
+
+// Separate components for better organization
+function ToolGridSkeleton({ count }: { count: number }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {Array(count).fill(0).map((_, index) => (
+        <div 
+          key={index} 
+          className="h-[320px] rounded-xl bg-secondary/20 animate-pulse"
+        />
+      ))}
+    </div>
+  );
+}
+
+function EmptyToolsMessage() {
+  return (
+    <div className="text-center p-8">
+      <h3 className="text-xl font-medium">No tools found</h3>
+      <p className="text-muted-foreground mt-2">
+        Try adjusting your search criteria
+      </p>
     </div>
   );
 }
