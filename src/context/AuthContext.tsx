@@ -39,16 +39,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Fetching user profile for:', userId);
       
-      // Use custom RPC functions to avoid RLS recursion
-      const { data, error } = await supabase.rpc('get_profile_by_id', {
-        user_id: userId
-      });
+      // Use direct query instead of RPC to avoid type issues
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
       
       if (error) {
-        throw error;
-      }
-      
-      if (data) {
+        // If the profile doesn't exist, this will error with 'No rows returned'
+        if (error.code !== 'PGRST116') { // Not a 'no rows returned' error
+          throw error;
+        }
+      } else if (data) {
         // Profile exists
         setProfile(data as UserProfile);
         return;
@@ -56,20 +59,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Profile doesn't exist, create one
       // Check if this is the first user (would be admin)
-      const { data: countData, error: countError } = await supabase.rpc('count_profiles');
+      const { count, error: countError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
       
       if (countError) {
         throw countError;
       }
       
-      const isFirstUser = countData === 0;
+      const isFirstUser = count === 0;
       const role = isFirstUser ? 'admin' : 'user';
       
-      // Create the user profile using a custom RPC function
-      const { error: insertError } = await supabase.rpc('create_new_profile', {
-        user_id: userId,
-        user_role: role
-      });
+      // Create the user profile
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          role: role,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
       
       if (insertError) {
         throw insertError;
