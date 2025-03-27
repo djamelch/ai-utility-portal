@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { 
   BarChart as BarChartIcon, 
   Users, 
-  Tool, 
+  Wrench, // Changed from Tool to Wrench
   MousePointerClick,
   Star,
   TrendingUp,
@@ -196,7 +196,7 @@ export function AdminAnalytics() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Tools</CardTitle>
-            <Tool className="h-4 w-4 text-muted-foreground" />
+            <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analyticsData.totalTools}</div>
