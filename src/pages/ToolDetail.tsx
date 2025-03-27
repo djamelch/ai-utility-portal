@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { 
   ArrowUpRight, Star, BookOpen, DollarSign, Tag, 
@@ -627,4 +628,67 @@ const ToolDetail = () => {
                     </button>
                   </div>
                   
-                  <div className="space
+                  <div className="rounded-xl border border-border/40 bg-background p-6 text-center">
+                    <p className="text-muted-foreground">No reviews yet. Be the first to review {tool.name}!</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-8">
+                {tool.alternatives && tool.alternatives.length > 0 && (
+                  <div className="rounded-xl border border-border/40 bg-background p-5">
+                    <h3 className="font-medium mb-4">Alternatives to {tool.name}</h3>
+                    <ul className="space-y-3">
+                      {tool.alternatives.map((alternative, index) => (
+                        <li key={index}>
+                          <a href={`/tool/${alternative}`} className="flex items-center gap-2 rounded-lg p-2 hover:bg-secondary/50 transition-colors">
+                            <div className="h-8 w-8 overflow-hidden rounded-md bg-secondary/50">
+                              <img 
+                                src={`https://via.placeholder.com/80?text=${alternative.charAt(0).toUpperCase()}`} 
+                                alt={`${alternative} logo`} 
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <span className="font-medium capitalize">{alternative}</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                <div className="rounded-xl border border-border/40 bg-background p-5">
+                  <h3 className="font-medium mb-4">Connect with {tool.name}</h3>
+                  
+                  <a href={tool.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg p-2 hover:bg-secondary/50 transition-colors">
+                    <Globe size={18} className="text-primary" />
+                    <span>Official Website</span>
+                  </a>
+                  
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground">Have you used {tool.name}? Share your experience and help others make informed decisions.</p>
+                    <button className="mt-3 w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                      Write a Review
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="rounded-xl border border-border/40 bg-background p-5">
+                  <h3 className="font-medium mb-4">Report an Issue</h3>
+                  <p className="text-sm text-muted-foreground">Found incorrect information about {tool.name}? Let us know and we'll fix it.</p>
+                  <button className="mt-3 w-full rounded-lg border border-input bg-background px-4 py-2 font-medium hover:bg-secondary/50 transition-colors">
+                    Report Issue
+                  </button>
+                </div>
+              </div>
+            </div>
+          </MotionWrapper>
+        </div>
+      </main>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default ToolDetail;
