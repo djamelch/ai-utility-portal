@@ -4,18 +4,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 
-// Define Tool interface to match expected properties
+// Define Tool interface to match the properties expected by ToolCard
 export interface Tool {
-  id: number;
-  name?: string;
+  id: number | string;
+  name: string;
+  description: string;
+  logo: string;
+  category: string;
+  rating: number;
+  reviewCount: number;
+  pricing: string;
+  url: string;
+  slug?: string;
+  isFeatured?: boolean;
+  isNew?: boolean;
+  
+  // Additional properties from database
   short_description?: string;
   full_description?: string;
   logo_url?: string;
   primary_task?: string;
-  pricing?: string;
   visit_website_url?: string;
   featured_image_url?: string;
-  slug?: string;
   click_count?: number;
   created_at?: string;
   updated_at?: string;
@@ -54,7 +64,7 @@ export function ToolGrid({
   const effectiveSortBy = sortBy !== "featured" ? sortBy : queryType;
   
   // Fetch tools based on query type and filters
-  const { data: tools = [], isLoading } = useQuery({
+  const { data: dbTools = [], isLoading } = useQuery({
     queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, effectiveSortBy],
     queryFn: async () => {
       let query = supabase.from("tools").select("*");
@@ -119,9 +129,28 @@ export function ToolGrid({
         return [];
       }
       
-      return data as Tool[];
+      return data as any[];
     }
   });
+
+  // Map database tools to the format expected by ToolCard
+  const tools = dbTools.map(dbTool => ({
+    id: dbTool.id,
+    name: dbTool.name || "",
+    description: dbTool.short_description || "",
+    logo: dbTool.logo_url || "",
+    category: dbTool.primary_task || "",
+    rating: 4, // Default or placeholder value
+    reviewCount: 0, // Default or placeholder value
+    pricing: dbTool.pricing || "",
+    url: dbTool.visit_website_url || "",
+    slug: dbTool.slug || "",
+    // Optionally add featured or new flags based on some criteria
+    isFeatured: false,
+    isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
+    // Include original properties for reference
+    ...dbTool
+  }));
   
   if (isLoading) {
     return <ToolGridSkeleton count={limit || 8} />;
