@@ -10,44 +10,100 @@ interface ToolGridProps {
   queryType?: "featured" | "top-rated" | "recent";
   searchTerm?: string;
   categoryFilter?: string;
+  // Add these new props to match what's used in Tools.tsx
+  searchQuery?: string;
+  category?: string;
+  pricing?: string;
+  sortBy?: string;
+}
+
+// Define Tool interface to match expected properties
+interface Tool {
+  id: number;
+  name?: string;
+  short_description?: string;
+  full_description?: string;
+  logo_url?: string;
+  primary_task?: string;
+  pricing?: string;
+  visit_website_url?: string;
+  featured_image_url?: string;
+  slug?: string;
+  click_count?: number;
+  created_at?: string;
+  updated_at?: string;
+  // Add any other required properties
+  applicable_tasks?: any[];
+  company_name?: string;
+  cons?: any[];
+  pros?: any[];
+  faqs?: any;
+  detail_url?: string;
 }
 
 export function ToolGrid({ 
   limit, 
   queryType = "featured",
   searchTerm,
-  categoryFilter 
+  categoryFilter,
+  // Add support for the new props
+  searchQuery = "",
+  category = "",
+  pricing = "",
+  sortBy = "featured"
 }: ToolGridProps) {
+  // Use both searchTerm and searchQuery (preference to searchQuery if both exist)
+  const effectiveSearchTerm = searchQuery || searchTerm || "";
+  const effectiveCategoryFilter = category || categoryFilter || "";
+  
   // Fetch tools based on query type and filters
   const { data: tools = [], isLoading } = useQuery({
-    queryKey: ["tools", queryType, limit, searchTerm, categoryFilter],
+    queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, sortBy],
     queryFn: async () => {
       let query = supabase.from("tools").select("*");
       
       // Apply search filter if provided
-      if (searchTerm) {
-        query = query.or(`short_description.ilike.%${searchTerm}%,full_description.ilike.%${searchTerm}%`);
+      if (effectiveSearchTerm) {
+        query = query.or(`short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
       }
       
       // Apply category filter if provided
-      if (categoryFilter) {
-        const formattedCategory = categoryFilter
-          .split('-')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+      if (effectiveCategoryFilter) {
+        // Handle category filter both in formatted and slug form
+        const isSlug = effectiveCategoryFilter.includes('-');
         
-        query = query.eq("primary_task", formattedCategory);
+        if (isSlug) {
+          const formattedCategory = effectiveCategoryFilter
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+          
+          query = query.eq("primary_task", formattedCategory);
+        } else {
+          query = query.eq("primary_task", effectiveCategoryFilter);
+        }
       }
       
-      // Apply specific ordering based on query type
-      switch (queryType) {
+      // Apply pricing filter if provided
+      if (pricing) {
+        query = query.eq("pricing", pricing);
+      }
+      
+      // Apply specific ordering based on query type or sortBy
+      const effectiveSort = sortBy !== "featured" ? sortBy : queryType;
+      
+      switch (effectiveSort) {
         case "top-rated":
           // For top-rated, we'd ideally join with reviews and order by average rating
           // This is a simplified approach
           query = query.order("id", { ascending: false }); // Replace with actual rating logic
           break;
+        case "newest":
         case "recent":
           query = query.order("created_at", { ascending: false });
+          break;
+        case "popular":
+          query = query.order("click_count", { ascending: false });
           break;
         case "featured":
         default:
@@ -68,7 +124,7 @@ export function ToolGrid({
         return [];
       }
       
-      return data;
+      return data as Tool[];
     }
   });
   
@@ -102,9 +158,9 @@ export function ToolGrid({
         <MotionWrapper 
           key={tool.id} 
           animation="fadeIn" 
-          delay={`delay-${Math.min(index * 100, 500)}`}
+          delay={`delay-${Math.min(Math.floor(index * 100), 500)}` as "delay-100" | "delay-200" | "delay-300" | "delay-400" | "delay-500" | "none"}
         >
-          <ToolCard tool={tool} />
+          <ToolCard tool={tool as any} />
         </MotionWrapper>
       ))}
     </div>

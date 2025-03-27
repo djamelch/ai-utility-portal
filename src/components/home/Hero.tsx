@@ -24,7 +24,7 @@ interface Category {
 
 export function Hero() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all"); // Changed from empty string to "all"
   const navigate = useNavigate();
   
   // Fetch categories with their tool counts
@@ -116,7 +116,7 @@ export function Hero() {
       queryParams.append("search", searchTerm);
     }
     
-    if (selectedCategory) {
+    if (selectedCategory && selectedCategory !== "all") { // Don't add "all" to query params
       queryParams.append("category", selectedCategory);
     }
     
@@ -166,7 +166,7 @@ export function Hero() {
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}

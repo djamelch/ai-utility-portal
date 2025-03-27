@@ -264,7 +264,7 @@ const Tools = () => {
               </button>
             </div>
             
-            {/* Tools Grid */}
+            {/* Tools Grid - Update to use the renamed props */}
             <ToolGrid 
               searchQuery={searchQuery}
               category={category}
