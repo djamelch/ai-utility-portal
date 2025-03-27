@@ -12,6 +12,10 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['lucide-react', '@/components/ui'],
+  },
 };
 
 module.exports = nextConfig;
