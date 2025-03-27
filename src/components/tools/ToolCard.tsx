@@ -159,20 +159,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         )}
       </div>
 
-      {/* Favorite button */}
-      <button 
-        className={cn(
-          "absolute top-4 left-4 rounded-full p-1.5 transition-colors",
-          isFavorite 
-            ? "text-red-500 hover:text-red-600" 
-            : "text-muted-foreground hover:text-primary"
-        )}
-        aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
-        onClick={handleFavoriteClick}
-      >
-        <Heart size={16} className={isFavorite ? "fill-current" : ""} />
-      </button>
-
       {/* Logo and content */}
       <div className="flex items-start gap-4">
         <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/50">
@@ -236,13 +222,26 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       </div>
 
       {/* Actions */}
-      <div className="mt-auto pt-4 flex items-center gap-3 text-sm">
+      <div className="mt-auto pt-4 flex items-center gap-2 text-sm">
         <Link
           to={`/tool/${toolSlug}`}
           className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-center font-medium hover:bg-secondary/50 transition-colors"
         >
           View Details
         </Link>
+        
+        {/* Favorite button - now positioned between the action buttons */}
+        <button 
+          className={cn(
+            "rounded-lg border border-input bg-background p-2 transition-colors hover:bg-secondary/50",
+            isFavorite ? "text-red-500" : "text-muted-foreground"
+          )}
+          aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
+          onClick={handleFavoriteClick}
+        >
+          <Heart size={18} className={isFavorite ? "fill-current" : ""} />
+        </button>
+        
         <a
           href={tool.url}
           target="_blank"
