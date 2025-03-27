@@ -22,19 +22,13 @@ export function PromoteToAdmin() {
     try {
       setIsLoading(true);
       
-      // Make a fetch request to the API endpoint
-      const response = await fetch('/api/promote-admin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: user.id }),
+      // Call the Supabase Edge Function directly
+      const { data, error } = await supabase.functions.invoke('promote-admin', {
+        body: { userId: user.id },
       });
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to promote to admin');
+      if (error) {
+        throw new Error(error.message || 'Failed to promote to admin');
       }
       
       toast({
