@@ -43,7 +43,7 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               
-              {/* User Dashboard - for non-admin users only */}
+              {/* User Dashboard - redirects to admin dashboard if user is admin */}
               <Route path="/dashboard" element={
                 <RequireAuth>
                   <UserDashboard />
@@ -58,7 +58,7 @@ function App() {
               } />
               <Route path="/admin/tools" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminTools />
+                  <AdminDashboard />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/edit/:id" element={

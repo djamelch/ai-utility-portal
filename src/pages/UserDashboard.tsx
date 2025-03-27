@@ -7,17 +7,30 @@ import { RequireAuth } from '@/components/auth/RequireAuth';
 import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 
 export default function UserDashboard() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   
   // Redirect admin users to the admin dashboard
   useEffect(() => {
-    if (isAdmin) {
+    if (!isLoading && isAdmin) {
       navigate('/admin');
     }
-  }, [isAdmin, navigate]);
+  }, [isAdmin, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <RequireAuth>

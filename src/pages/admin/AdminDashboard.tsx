@@ -25,6 +25,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (location.pathname.includes('/admin/tools')) {
       setActiveTab('tools');
+    } else if (location.pathname === '/admin') {
+      setActiveTab('analytics');
     }
   }, [location.pathname]);
 
