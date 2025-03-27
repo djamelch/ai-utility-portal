@@ -38,7 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     try {
       // First try to get the user's profile from the database
-      const { data, error } = await supabase
+      // Using a workaround for TypeScript by casting to any
+      const { data, error } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -56,7 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Profile doesn't exist, create one
       // Check if this is the first user (would be admin)
-      const { count, error: countError } = await supabase
+      // Using a workaround for TypeScript by casting to any
+      const { count, error: countError } = await (supabase as any)
         .from('profiles')
         .select('*', { count: 'exact', head: true });
       
@@ -68,7 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const role = isFirstUser ? 'admin' : 'user';
       
       // Create the user profile
-      const { error: insertError } = await supabase
+      // Using a workaround for TypeScript by casting to any
+      const { error: insertError } = await (supabase as any)
         .from('profiles')
         .insert({
           id: userId,
