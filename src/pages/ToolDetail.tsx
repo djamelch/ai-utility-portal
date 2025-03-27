@@ -340,10 +340,14 @@ const ToolDetail = () => {
       if (tool?.website && tool.website !== '#') {
         const toolId = tool?.id;
         if (toolId && !isNaN(parseInt(toolId.toString()))) {
-          // FIX #2: Use Promise.then().catch() instead of just catch() on PromiseLike
+          // FIX: Instead of using catch() on PromiseLike, use a proper then/catch chain
           supabase.rpc('increment_tool_click_count', { tool_id: parseInt(toolId.toString()) })
-            .then(() => console.log('Click count incremented'))
-            .catch(err => console.error('Error incrementing click count:', err));
+            .then(() => {
+              console.log('Click count incremented');
+            })
+            .catch((err) => {
+              console.error('Error incrementing click count:', err);
+            });
         }
         
         console.log(`Redirecting to external website: ${tool.website}`);
