@@ -25,6 +25,7 @@ interface ToolDetailType extends Omit<Tool, 'pricing'> {
   website: string;
   faqs: { question: string; answer: string; }[];
   alternatives: string[];
+  detail_url?: string; // Add detail_url property
 }
 
 const fallbackToolDetails: { [key: string]: ToolDetailType } = {
@@ -47,6 +48,7 @@ const fallbackToolDetails: { [key: string]: ToolDetailType } = {
     },
     url: "https://chat.openai.com",
     website: "https://chat.openai.com",
+    detail_url: "https://chat.openai.com", // Added detail_url
     isFeatured: true,
     pros: [
       "Highly versatile and can handle a wide range of queries",
@@ -277,6 +279,7 @@ const ToolDetail = () => {
         },
         url: data.visit_website_url || '#',
         website: data.visit_website_url || '#',
+        detail_url: data.detail_url || data.visit_website_url || '#', // Added detail_url
         isFeatured: false,
         isNew: false,
         pros: processPros,
@@ -297,7 +300,10 @@ const ToolDetail = () => {
   
   const handleVisitWebsite = () => {
     try {
-      if (tool?.website && tool.website !== '#') {
+      // Prioritize detail_url if available, otherwise fall back to website
+      const visitUrl = tool?.detail_url || tool?.website || '#';
+      
+      if (visitUrl && visitUrl !== '#') {
         const toolId = tool?.id;
         if (toolId && !isNaN(parseInt(toolId.toString()))) {
           // Fix: Use async/await with try/catch
@@ -311,8 +317,8 @@ const ToolDetail = () => {
           })();
         }
         
-        console.log(`Redirecting to external website: ${tool.website}`);
-        window.open(tool.website, '_blank', 'noopener,noreferrer');
+        console.log(`Redirecting to external website: ${visitUrl}`);
+        window.open(visitUrl, '_blank', 'noopener,noreferrer');
       } else {
         toast({
           title: "Website URL not available",
@@ -367,8 +373,8 @@ const ToolDetail = () => {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="h-16 w-16 overflow-hidden rounded-xl bg-secondary/50">
                     <img 
-                      src={tool.logo} 
-                      alt={`${tool.name} logo`} 
+                      src={tool?.logo} 
+                      alt={`${tool?.name} logo`} 
                       className="h-full w-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200?text=AI+Tool';
@@ -378,8 +384,8 @@ const ToolDetail = () => {
                   
                   <div>
                     <div className="flex items-center gap-2">
-                      <h1 className="text-2xl md:text-3xl font-bold">{tool.name}</h1>
-                      {tool.isFeatured && (
+                      <h1 className="text-2xl md:text-3xl font-bold">{tool?.name}</h1>
+                      {tool?.isFeatured && (
                         <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                           Featured
                         </span>
@@ -388,21 +394,21 @@ const ToolDetail = () => {
                     <div className="mt-1 flex items-center gap-3">
                       <span className="flex items-center gap-1 text-sm">
                         <Tag size={14} className="text-muted-foreground" />
-                        {tool.category}
+                        {tool?.category}
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <DollarSign size={14} className="text-muted-foreground" />
-                        {tool.pricing.model}
+                        {tool?.pricing.model}
                       </span>
                       <span className="flex items-center gap-1 text-sm">
                         <Calendar size={14} className="text-muted-foreground" />
-                        Updated: {tool.lastUpdated}
+                        Updated: {tool?.lastUpdated}
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <p className="text-muted-foreground">{tool.description}</p>
+                <p className="text-muted-foreground">{tool?.description}</p>
                 
                 <div className="mt-4 flex items-center gap-4">
                   <div className="flex items-center gap-1">
@@ -411,13 +417,13 @@ const ToolDetail = () => {
                         <Star
                           key={i}
                           size={16}
-                          className={i < Math.round(tool.rating || 0) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
+                          className={i < Math.round(tool?.rating || 0) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
                         />
                       ))}
                     </div>
-                    <span className="text-sm font-medium">{tool.rating.toFixed(1)}</span>
+                    <span className="text-sm font-medium">{tool?.rating.toFixed(1)}</span>
                     <span className="text-sm text-muted-foreground">
-                      ({tool.reviewCount} reviews)
+                      ({tool?.reviewCount} reviews)
                     </span>
                   </div>
                 </div>

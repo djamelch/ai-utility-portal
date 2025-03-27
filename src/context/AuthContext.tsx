@@ -35,14 +35,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Helper function to create a mock profile
-  const createMockProfile = (userId: string): UserProfile => {
-    return {
-      id: userId,
-      role: 'admin', // Default to admin for testing purposes
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      // First try to get the user's profile from the database
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data) {
+        // Profile exists
+        setProfile(data as UserProfile);
+        return;
+      }
+
+      // Profile doesn't exist, create one
+      // Check if this is the first user (would be admin)
+      const { count, error: countError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      if (countError) {
+        throw countError;
+      }
+      
+      const isFirstUser = count === 0;
+      const role = isFirstUser ? 'admin' : 'user';
+      
+      // Create the user profile
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          role: role,
+        });
+      
+      if (insertError) {
+        throw insertError;
+      }
+      
+      // Set the profile in state
+      setProfile({
+        id: userId,
+        role: role,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('Error handling user profile:', err);
+      // Fallback to create a mock profile for authentication to continue working
+      setProfile({
+        id: userId,
+        role: 'user', // Default to user role
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    }
   };
 
   useEffect(() => {
@@ -56,15 +109,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          try {
-            // Since the profiles table doesn't exist in the Supabase schema yet,
-            // we'll create a mock profile for authenticated users
-            const mockProfile = createMockProfile(session.user.id);
-            setProfile(mockProfile);
-          } catch (err) {
-            console.error('Error in profile fetch:', err);
-            setProfile(null);
-          }
+          // Fetch or create the user profile
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
         } else {
           setProfile(null);
         }
@@ -82,14 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          try {
-            // Create a mock profile for the authenticated user
-            const mockProfile = createMockProfile(session.user.id);
-            setProfile(mockProfile);
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-            setProfile(null);
-          }
+          await fetchUserProfile(session.user.id);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
