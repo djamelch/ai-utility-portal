@@ -1,3 +1,4 @@
+
 import { Star, ExternalLink, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -7,17 +8,33 @@ import { useToast } from "@/hooks/use-toast";
 
 export interface Tool {
   id: string | number;
-  name: string;
-  description: string;
-  logo: string;
-  category: string;
-  rating: number;
-  reviewCount: number;
-  pricing: string;
-  url: string;
+  name?: string;
+  company_name?: string; // Added for database compatibility
+  description?: string;
+  short_description?: string; // Added for database compatibility
+  logo?: string;
+  logo_url?: string; // Added for database compatibility
+  category?: string;
+  primary_task?: string; // Added for database compatibility
+  rating?: number;
+  reviewCount?: number;
+  pricing?: string;
+  url?: string;
+  visit_website_url?: string; // Added for database compatibility
+  detail_url?: string; // Added for database compatibility
   slug?: string;
   isFeatured?: boolean;
   isNew?: boolean;
+  // Additional properties from database
+  full_description?: string;
+  featured_image_url?: string;
+  click_count?: number;
+  created_at?: string;
+  updated_at?: string;
+  applicable_tasks?: any[];
+  cons?: any[];
+  pros?: any[];
+  faqs?: any;
 }
 
 interface ToolCardProps {
@@ -26,15 +43,28 @@ interface ToolCardProps {
 }
 
 export function ToolCard({ tool, className }: ToolCardProps) {
-  const { id, name, description, logo, category, rating, reviewCount, pricing, isFeatured, isNew, slug } = tool;
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [imgError, setImgError] = useState(false);
 
+  // Get name from either name or company_name property
+  const name = tool.name || tool.company_name || "";
+  // Get description from either description or short_description property
+  const description = tool.description || tool.short_description || "";
+  // Get logo from either logo or logo_url property
+  const logo = tool.logo || tool.logo_url || "";
+  // Get category from either category or primary_task property
+  const category = tool.category || tool.primary_task || "";
+  // Get URL from visit_website_url, detail_url, or url property
+  const url = tool.visit_website_url || tool.detail_url || tool.url || "#";
+  // Use existing properties for the rest
+  const { id, rating = 0, reviewCount = 0, pricing = "", isFeatured, isNew } = tool;
+
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
-  const toolSlug = slug || tool.company_name?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '') || `id-${id}`;
+  // Use the slug if available, otherwise create one from the company name
+  const toolSlug = tool.slug || name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -120,7 +150,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
     try {
       await supabase.rpc('increment_tool_click_count', { tool_id: numericId });
       
-      console.log(`Visit clicked for tool: ${name} (ID: ${numericId}), redirecting to: ${tool.url}`);
+      console.log(`Visit clicked for tool: ${name} (ID: ${numericId}), redirecting to: ${url}`);
     } catch (error) {
       console.error('Error incrementing click count:', error);
     }
@@ -227,7 +257,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         </button>
         
         <a
-          href={tool.url}
+          href={url}
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"

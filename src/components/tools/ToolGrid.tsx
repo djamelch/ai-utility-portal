@@ -7,14 +7,14 @@ import { MotionWrapper } from "@/components/ui/MotionWrapper";
 // Define Tool interface to match the properties expected by ToolCard
 export interface Tool {
   id: number | string;
-  name: string;
-  description: string;
-  logo: string;
-  category: string;
-  rating: number;
-  reviewCount: number;
-  pricing: string;
-  url: string;
+  name?: string;
+  description?: string;
+  logo?: string;
+  category?: string;
+  rating?: number;
+  reviewCount?: number;
+  pricing?: string;
+  url?: string;
   slug?: string;
   isFeatured?: boolean;
   isNew?: boolean;
@@ -71,7 +71,7 @@ export function ToolGrid({
       
       // Apply search filter if provided
       if (effectiveSearchTerm) {
-        query = query.or(`name.ilike.%${effectiveSearchTerm}%,short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
+        query = query.or(`company_name.ilike.%${effectiveSearchTerm}%,short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
       }
       
       // Apply category filter if provided
@@ -137,13 +137,19 @@ export function ToolGrid({
   const tools = dbTools.map(dbTool => ({
     id: dbTool.id,
     name: dbTool.company_name || "",
+    company_name: dbTool.company_name || "",
     description: dbTool.short_description || "",
+    short_description: dbTool.short_description || "",
     logo: dbTool.logo_url || "",
+    logo_url: dbTool.logo_url || "",
     category: dbTool.primary_task || "",
+    primary_task: dbTool.primary_task || "",
     rating: 4, // Default or placeholder value
     reviewCount: 0, // Default or placeholder value
     pricing: dbTool.pricing || "",
     url: dbTool.visit_website_url || dbTool.detail_url || "#",
+    visit_website_url: dbTool.visit_website_url || "",
+    detail_url: dbTool.detail_url || "",
     slug: dbTool.slug || "",
     // Optionally add featured or new flags based on some criteria
     isFeatured: false,

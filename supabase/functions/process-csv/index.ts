@@ -85,7 +85,7 @@ serve(async (req) => {
           featured_image_url: row.featured_image_url,
           visit_website_url: row.visit_website_url,
           detail_url: row.detail_url,
-          slug: slug, // Add the generated slug
+          slug: slug, // Just use the clean slug without appending ID
           updated_at: new Date().toISOString(),
         };
 
