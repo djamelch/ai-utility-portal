@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -12,8 +11,9 @@ import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  BarChart, Users, Settings, Database, Loader2 
+  BarChart, Users, Settings, Database
 } from 'lucide-react';
+import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -37,23 +37,9 @@ export default function AdminDashboard() {
     }
   }, [isAdmin, isLoading, navigate]);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
     <RequireAuth requireAdmin={true}>
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        
+      <PageLoadingWrapper isLoading={isLoading} loadingText="Loading admin dashboard...">
         <main className="flex-1 pt-24 pb-16">
           <div className="container max-w-screen-xl mx-auto px-4">
             <MotionWrapper animation="fadeIn">
@@ -114,9 +100,7 @@ export default function AdminDashboard() {
             </MotionWrapper>
           </div>
         </main>
-        
-        <Footer />
-      </div>
+      </PageLoadingWrapper>
     </RequireAuth>
   );
 }

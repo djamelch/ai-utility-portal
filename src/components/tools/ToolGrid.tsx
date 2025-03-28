@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
+import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 
 export interface Tool {
   id: number | string;

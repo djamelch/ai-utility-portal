@@ -32,6 +32,6 @@ const NotFound = () => {
       </MotionWrapper>
     </div>
   );
-};
+}
 
 export default NotFound;
