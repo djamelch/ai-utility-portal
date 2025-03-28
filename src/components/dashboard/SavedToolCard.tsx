@@ -44,54 +44,55 @@ export function SavedToolCard({
   };
   
   return (
-    <div className="border border-border/60 dark:border-border/30 rounded-lg overflow-hidden bg-background/80 backdrop-blur-sm dark:bg-card/40 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 dark:hover:border-border/50">
-      <div className="p-4">
+    <div className="relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md border border-border/80 dark:border-border/40">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-50 pointer-events-none" />
+      <div className="p-5 relative">
         <div className="flex justify-between items-start">
           <div className="flex gap-3 items-center">
             {logo_url ? (
               <img 
                 src={logo_url} 
                 alt={name} 
-                className="w-10 h-10 object-contain rounded bg-secondary/80 dark:bg-secondary/30 p-1"
+                className="w-12 h-12 object-contain rounded-md bg-secondary/90 dark:bg-secondary/20 p-1 border border-border/20 shadow-sm"
               />
             ) : (
-              <div className="w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
+              <div className="w-12 h-12 bg-primary/15 dark:bg-primary/20 rounded-md flex items-center justify-center shadow-sm border border-border/20">
                 <span className="text-lg font-bold text-primary">
                   {name.charAt(0)}
                 </span>
               </div>
             )}
-            <h3 className="font-semibold">{name}</h3>
+            <h3 className="font-semibold text-lg">{name}</h3>
           </div>
           <Button 
             variant="ghost" 
             size="icon"
             onClick={() => onRemove(favorite_id)}
-            className="text-muted-foreground hover:text-destructive"
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           >
             <BookmarkX className="h-4 w-4" />
           </Button>
         </div>
-        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+        <p className="mt-3 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2">
           {short_description}
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           {primary_task && (
-            <span className="text-xs px-2 py-1 bg-secondary/80 dark:bg-secondary/30 text-foreground/70 dark:text-foreground/80 rounded-full">
+            <span className="text-xs px-2.5 py-1 bg-secondary/90 dark:bg-secondary/30 text-foreground/80 dark:text-foreground/90 rounded-full font-medium border border-border/20">
               {primary_task}
             </span>
           )}
           {pricing && (
-            <span className="text-xs px-2 py-1 bg-secondary/80 dark:bg-secondary/30 text-foreground/70 dark:text-foreground/80 rounded-full">
+            <span className="text-xs px-2.5 py-1 bg-secondary/90 dark:bg-secondary/30 text-foreground/80 dark:text-foreground/90 rounded-full font-medium border border-border/20">
               {pricing}
             </span>
           )}
         </div>
-        <div className="mt-4 flex gap-2">
+        <div className="mt-5 flex gap-2">
           <Button 
             variant="outline" 
             size="sm" 
-            className="flex-1"
+            className="flex-1 border-border/80 dark:border-border/30 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:text-foreground"
             onClick={() => navigate(`/tool/${id}`)}
           >
             View Details
@@ -101,7 +102,7 @@ export function SavedToolCard({
             <Button
               variant="default"
               size="sm"
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
               onClick={handleVisit}
             >
               Visit
