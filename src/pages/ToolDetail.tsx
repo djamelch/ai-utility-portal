@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
@@ -27,12 +26,8 @@ export default function ToolDetail() {
       try {
         let query = supabase.from('tools').select('*');
         
-        // Check if the slug is a number (tool ID) or a string (slug)
-        if (slug && !isNaN(Number(slug))) {
-          // If it's a number, query by ID
-          query = query.eq('id', parseInt(slug, 10));
-        } else if (slug) {
-          // If it's a string, query by slug
+        // Only query by slug
+        if (slug) {
           query = query.eq('slug', slug);
         }
         
@@ -43,7 +38,7 @@ export default function ToolDetail() {
         }
         
         if (!data) {
-          console.error('Tool not found with slug/id:', slug);
+          console.error('Tool not found with slug:', slug);
           setNotFound(true);
           return;
         }
