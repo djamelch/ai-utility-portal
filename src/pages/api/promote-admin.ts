@@ -25,6 +25,8 @@ export async function POST(req: Request) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const functionUrl = `${supabaseUrl}/functions/v1/promote-admin`;
     
+    console.log('Calling promote-admin function at:', functionUrl);
+    
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
@@ -34,22 +36,30 @@ export async function POST(req: Request) {
       body: JSON.stringify({ userId }),
     });
     
+    const responseData = await response.json();
+    console.log('Function response:', responseData);
+    
     if (!response.ok) {
-      const errorData = await response.json();
       return new Response(
-        JSON.stringify({ message: errorData.message || 'Failed to promote to admin' }),
+        JSON.stringify({ 
+          message: responseData.message || 'Failed to promote to admin',
+          details: responseData 
+        }),
         { status: response.status, headers: { 'Content-Type': 'application/json' } }
       );
     }
     
     return new Response(
-      JSON.stringify({ message: 'Successfully promoted to admin' }),
+      JSON.stringify({ 
+        message: 'Successfully promoted to admin',
+        profile: responseData.profile
+      }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('API error:', error);
     return new Response(
-      JSON.stringify({ message: 'Internal server error' }),
+      JSON.stringify({ message: 'Internal server error', error: String(error) }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }

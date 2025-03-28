@@ -21,6 +21,8 @@ export function PromoteToAdmin() {
     try {
       setIsLoading(true);
       
+      console.log('Requesting admin promotion for user:', user.id);
+      
       // Call the API route instead of the Edge Function directly
       const response = await fetch('/api/promote-admin', {
         method: 'POST',
@@ -30,14 +32,16 @@ export function PromoteToAdmin() {
         body: JSON.stringify({ userId: user.id }),
       });
       
+      const data = await response.json();
+      console.log('Admin promotion response:', data);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to promote to admin');
+        throw new Error(data.message || 'Failed to promote to admin');
       }
       
       toast({
         title: 'Success!',
-        description: 'You have been promoted to admin. Please refresh the page.',
+        description: 'You have been promoted to admin. The page will refresh shortly.',
         variant: 'default',
       });
       

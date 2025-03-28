@@ -72,29 +72,51 @@ serve(async (req) => {
       )
     }
 
+    console.log('Promoting user to admin:', userId);
+
     // Update the profile role to admin using the admin client
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({ role: 'admin' })
-      .eq('id', userId)
+      .eq('id', userId);
 
     if (updateError) {
-      console.error('Update error:', updateError)
+      console.error('Update error:', updateError);
       return new Response(
         JSON.stringify({ message: 'Failed to update profile', error: updateError }),
         { status: 500, headers: corsHeaders }
-      )
+      );
     }
 
+    // Check if the profile was actually updated
+    const { data: updatedProfile, error: checkError } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (checkError) {
+      console.error('Error checking profile update:', checkError);
+      return new Response(
+        JSON.stringify({ message: 'Failed to verify profile update', error: checkError }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    console.log('Profile updated successfully:', updatedProfile);
+
     return new Response(
-      JSON.stringify({ message: 'Successfully promoted to admin' }),
+      JSON.stringify({ 
+        message: 'Successfully promoted to admin',
+        profile: updatedProfile
+      }),
       { status: 200, headers: corsHeaders }
-    )
+    );
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ message: 'Internal server error', error: String(error) }),
       { status: 500, headers: corsHeaders }
-    )
+    );
   }
-})
+});
