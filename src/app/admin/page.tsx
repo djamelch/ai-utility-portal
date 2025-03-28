@@ -2,45 +2,31 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { AdminTools } from '@/pages/admin/AdminTools';
-import { AdminUsers } from '@/pages/admin/AdminUsers';
-import { AdminAnalytics } from '@/pages/admin/AdminAnalytics';
-import { AdminSettings } from '@/pages/admin/AdminSettings';
+import { AdminTools } from '@/components/admin/AdminTools';
+import { AdminUsers } from '@/components/admin/AdminUsers';
+import { AdminAnalytics } from '@/components/admin/AdminAnalytics';
+import { AdminSettings } from '@/components/admin/AdminSettings';
 import { 
   BarChart, Users, Settings, Database, Loader2 
 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
-  const { isAdmin, isLoading, user } = useAuth();
+  const { isAdmin, isLoading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-
-  // Set the active tab based on the current route
-  useEffect(() => {
-    if (pathname?.includes('/admin/tools')) {
-      setActiveTab('tools');
-    } else if (pathname === '/admin') {
-      setActiveTab('analytics');
-    }
-  }, [pathname]);
 
   // Ensure that non-admin users can't access the admin dashboard
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        router.push('/auth?from=/admin');
-      } else if (!isAdmin) {
-        router.push('/dashboard');
-      }
+    if (!isLoading && !isAdmin) {
+      router.push('/dashboard');
     }
-  }, [isAdmin, isLoading, user, router]);
+  }, [isAdmin, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -52,10 +38,6 @@ export default function AdminDashboard() {
         <Footer />
       </div>
     );
-  }
-
-  if (!user || !isAdmin) {
-    return null; // Will redirect via the effect
   }
 
   return (
@@ -81,30 +63,23 @@ export default function AdminDashboard() {
             <Tabs 
               defaultValue="analytics" 
               value={activeTab} 
-              onValueChange={(value) => {
-                setActiveTab(value);
-                if (value === 'analytics') {
-                  router.push('/admin');
-                } else if (value === 'tools') {
-                  router.push('/admin/tools');
-                }
-              }}
+              onValueChange={setActiveTab}
               className="w-full"
             >
               <TabsList className="mb-6">
-                <TabsTrigger value="analytics">
+                <TabsTrigger value="analytics" onClick={() => setActiveTab('analytics')}>
                   <BarChart className="h-4 w-4 mr-2" />
                   Analytics
                 </TabsTrigger>
-                <TabsTrigger value="tools">
+                <TabsTrigger value="tools" onClick={() => setActiveTab('tools')}>
                   <Database className="h-4 w-4 mr-2" />
                   Tools
                 </TabsTrigger>
-                <TabsTrigger value="users">
+                <TabsTrigger value="users" onClick={() => setActiveTab('users')}>
                   <Users className="h-4 w-4 mr-2" />
                   Users
                 </TabsTrigger>
-                <TabsTrigger value="settings">
+                <TabsTrigger value="settings" onClick={() => setActiveTab('settings')}>
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </TabsTrigger>

@@ -3,9 +3,10 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { Database } from '@/lib/database.types';
 
 // Define the UserProfile type for our profiles table
 interface UserProfile {
@@ -38,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createClientComponentClient<Database>();
 
   const fetchUserProfile = async (userId: string) => {
     try {

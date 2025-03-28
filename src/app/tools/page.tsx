@@ -1,279 +1,178 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, Filter, SlidersHorizontal } from "lucide-react";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { ToolGrid } from "@/components/tools/ToolGrid";
-import { MotionWrapper } from "@/components/ui/MotionWrapper";
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useState, useEffect } from 'react';
+import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
+import { MotionWrapper } from '@/components/ui/MotionWrapper';
+import { ToolGrid } from '@/components/tools/ToolGrid';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { supabase } from '@/lib/supabase-client';
+import { Search, Filter, X } from 'lucide-react';
 
 export default function Tools() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [taskFilter, setTaskFilter] = useState('');
+  const [tasks, setTasks] = useState<string[]>([]);
+  const [priceFilter, setPriceFilter] = useState('');
+  const [prices, setPrices] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [category, setCategory] = useState("");
-  const [pricing, setPricing] = useState("");
-  const [sortBy, setSortBy] = useState("featured");
-  const [categories, setCategories] = useState<string[]>([]);
-  const [pricingOptions, setPricingOptions] = useState<string[]>([]);
-  const supabase = createClientComponentClient();
-
+  
   useEffect(() => {
-    // Fetch available categories
-    const fetchCategories = async () => {
+    async function fetchFilters() {
       try {
-        const { data, error } = await supabase
+        // Fetch unique primary tasks
+        const { data: taskData, error: taskError } = await supabase
           .from('tools')
           .select('primary_task')
-          .not('primary_task', 'is', null);
+          .order('primary_task');
         
-        if (error) throw error;
+        if (taskError) throw taskError;
         
-        // Extract unique categories
-        const uniqueCategories = Array.from(new Set(
-          data.map(item => item.primary_task).filter(Boolean)
-        ));
+        if (taskData) {
+          // Extract unique values
+          const uniqueTasks = Array.from(new Set(taskData.map(item => 
+            item.primary_task
+          ))).filter(task => task); // Filter out null/empty
+          
+          setTasks(uniqueTasks);
+        }
         
-        setCategories(uniqueCategories);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    
-    // Fetch available pricing options
-    const fetchPricing = async () => {
-      try {
-        const { data, error } = await supabase
+        // Fetch unique pricing options
+        const { data: priceData, error: priceError } = await supabase
           .from('tools')
           .select('pricing')
-          .not('pricing', 'is', null);
+          .order('pricing');
         
-        if (error) throw error;
+        if (priceError) throw priceError;
         
-        // Extract unique pricing options
-        const uniquePricing = Array.from(new Set(
-          data.map(item => item.pricing).filter(Boolean)
-        ));
-        
-        setPricingOptions(uniquePricing);
+        if (priceData) {
+          // Extract unique values
+          const uniquePrices = Array.from(new Set(priceData.map(item => 
+            item.pricing
+          ))).filter(price => price); // Filter out null/empty
+          
+          setPrices(uniquePrices);
+        }
       } catch (error) {
-        console.error('Error fetching pricing options:', error);
+        console.error('Error fetching filters:', error);
       }
-    };
+    }
     
-    fetchCategories();
-    fetchPricing();
-  }, [supabase]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Search is already applied via the input change event
-  };
-
+    fetchFilters();
+  }, []);
+  
   const clearFilters = () => {
-    setSearchQuery("");
-    setCategory("");
-    setPricing("");
-    setSortBy("featured");
+    setSearchQuery('');
+    setTaskFilter('');
+    setPriceFilter('');
   };
-
-  const hasActiveFilters = searchQuery || category || pricing || sortBy !== "featured";
 
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       
       <main className="flex-1 pt-24 pb-16">
-        <div className="container-wide">
+        <div className="container mx-auto px-4">
           <MotionWrapper animation="fadeIn">
             <div className="mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold">
-                AI Tools Directory
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                AI Tools Explorer
               </h1>
-              <p className="mt-2 text-muted-foreground">
-                Discover the best AI-powered tools for every need
+              <p className="text-muted-foreground mb-6 max-w-2xl">
+                Discover the best AI tools for your workflow. Browse our curated collection of 
+                AI-powered applications to improve your productivity and creativity.
               </p>
-            </div>
-          </MotionWrapper>
-          
-          <MotionWrapper animation="fadeIn" delay="delay-200">
-            {/* Search and Filters */}
-            <div className="mb-8">
-              <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Search for tools..."
-                    className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4"
+              
+              {/* Search and Filters */}
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-grow">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search AI tools..."
+                    className="pl-10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 
-                <button
-                  type="button"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="md:hidden inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2"
-                >
-                  <Filter size={18} />
-                  Filters
-                </button>
-                
-                <div className="hidden md:flex items-center gap-3">
-                  <select 
-                    className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="whitespace-nowrap"
                   >
-                    <option value="">All Categories</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                    <Filter className="h-4 w-4 mr-2" />
+                    {showFilters ? 'Hide Filters' : 'Show Filters'}
+                  </Button>
                   
-                  <select 
-                    className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    value={pricing}
-                    onChange={(e) => setPricing(e.target.value)}
-                  >
-                    <option value="">All Pricing</option>
-                    {pricingOptions.map((price) => (
-                      <option key={price} value={price}>
-                        {price}
-                      </option>
-                    ))}
-                  </select>
-                  
-                  <select 
-                    className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                  >
-                    <option value="featured">Featured</option>
-                    <option value="newest">Newest</option>
-                    <option value="popular">Most Popular</option>
-                  </select>
+                  {(taskFilter || priceFilter) && (
+                    <Button variant="ghost" onClick={clearFilters}>
+                      <X className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
                 </div>
-              </form>
+              </div>
               
-              {/* Mobile filters */}
               {showFilters && (
-                <div className="mt-4 grid grid-cols-2 gap-3 md:hidden">
-                  <select 
-                    className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="text-sm font-medium block mb-2">
+                      Task Type
+                    </label>
+                    <Select value={taskFilter} onValueChange={setTaskFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Task Types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Task Types</SelectItem>
+                        {tasks.map((task) => (
+                          <SelectItem key={task} value={task}>
+                            {task}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   
-                  <select 
-                    className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    value={pricing}
-                    onChange={(e) => setPricing(e.target.value)}
-                  >
-                    <option value="">All Pricing</option>
-                    {pricingOptions.map((price) => (
-                      <option key={price} value={price}>
-                        {price}
-                      </option>
-                    ))}
-                  </select>
-                  
-                  <select 
-                    className="col-span-2 rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                  >
-                    <option value="featured">Featured</option>
-                    <option value="newest">Newest</option>
-                    <option value="popular">Most Popular</option>
-                  </select>
-                </div>
-              )}
-              
-              {/* Active filters */}
-              {hasActiveFilters && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {searchQuery && (
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      Search: {searchQuery}
-                      <button aria-label="Remove filter" onClick={() => setSearchQuery("")}>
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-                  
-                  {category && (
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      Category: {category}
-                      <button aria-label="Remove filter" onClick={() => setCategory("")}>
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-                  
-                  {pricing && (
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      Pricing: {pricing}
-                      <button aria-label="Remove filter" onClick={() => setPricing("")}>
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-                  
-                  {sortBy !== "featured" && (
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      Sort: {sortBy === "newest" ? "Newest" : "Most Popular"}
-                      <button aria-label="Remove filter" onClick={() => setSortBy("featured")}>
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-                  
-                  <button 
-                    onClick={clearFilters}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-                  >
-                    Clear All Filters
-                  </button>
+                  <div>
+                    <label className="text-sm font-medium block mb-2">
+                      Pricing
+                    </label>
+                    <Select value={priceFilter} onValueChange={setPriceFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Pricing" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Pricing</SelectItem>
+                        {prices.map((price) => (
+                          <SelectItem key={price} value={price}>
+                            {price}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
             </div>
           </MotionWrapper>
           
-          <MotionWrapper animation="fadeIn" delay="delay-300">
-            <div className="mb-6 flex items-center justify-between">
-              <button className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-                <SlidersHorizontal size={16} />
-                Advanced filters
-              </button>
-            </div>
-            
-            {/* Tools Grid */}
-            <ToolGrid 
+          <MotionWrapper animation="fadeIn" delay="delay-200">
+            <ToolGrid
               searchQuery={searchQuery}
-              category={category}
-              pricing={pricing}
-              sortBy={sortBy}
-              queryType="featured"
+              taskFilter={taskFilter}
+              priceFilter={priceFilter}
             />
           </MotionWrapper>
         </div>

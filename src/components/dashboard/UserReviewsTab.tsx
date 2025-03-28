@@ -1,7 +1,9 @@
 
+"use client";
+
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase-client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +25,7 @@ export function UserReviewsTab() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -49,13 +51,13 @@ export function UserReviewsTab() {
             company_name
           )
         `)
-        .match({ user_id: user.id })
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       // Safely transform the data with proper error checking
-      const formattedReviews = (data || []).filter(item => item && item.tools).map(item => ({
+      const formattedReviews = data.map(item => ({
         id: item.id,
         tool_id: item.tool_id,
         rating: item.rating,
@@ -78,7 +80,7 @@ export function UserReviewsTab() {
   };
 
   const handleEditReview = (reviewId: string, toolId: number) => {
-    navigate(`/tool/${toolId}`, { state: { editReviewId: reviewId } });
+    router.push(`/tool/${toolId}?editReviewId=${reviewId}`);
   };
 
   const handleDeleteReview = async (reviewId: string) => {
@@ -86,7 +88,7 @@ export function UserReviewsTab() {
       const { error } = await supabase
         .from('reviews')
         .delete()
-        .match({ id: reviewId });
+        .eq('id', reviewId);
 
       if (error) throw error;
 
@@ -142,7 +144,7 @@ export function UserReviewsTab() {
             <p className="text-muted-foreground mb-4">
               You haven't reviewed any AI tools yet
             </p>
-            <Button onClick={() => navigate('/tools')}>
+            <Button onClick={() => router.push('/tools')}>
               Browse Tools to Review
             </Button>
           </div>
