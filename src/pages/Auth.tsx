@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { GitHub, Mail } from "lucide-react";
+import { Github, Mail } from "lucide-react";
 
 const signUpSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -333,7 +332,7 @@ export default function Auth() {
                         onClick={signInWithGitHub}
                         className="w-full"
                       >
-                        <GitHub className="mr-2 h-4 w-4" />
+                        <Github className="mr-2 h-4 w-4" />
                         GitHub
                       </Button>
                       <Button
@@ -412,7 +411,7 @@ export default function Auth() {
                         onClick={signInWithGitHub}
                         className="w-full"
                       >
-                        <GitHub className="mr-2 h-4 w-4" />
+                        <Github className="mr-2 h-4 w-4" />
                         GitHub
                       </Button>
                       <Button

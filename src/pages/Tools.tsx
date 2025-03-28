@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { ToolGrid } from "@/components/tools/ToolGrid";
@@ -12,6 +13,10 @@ import { Search } from "lucide-react";
 
 export default function Tools() {
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedPricing, setSelectedPricing] = useState("");
+  const [selectedSort, setSelectedSort] = useState("newest");
   
   useEffect(() => {
     // Simulate loading time or use for actual data fetching
@@ -21,6 +26,10 @@ export default function Tools() {
     
     return () => clearTimeout(timer);
   }, []);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
     <PageWrapper isLoading={isLoading}>
@@ -44,17 +53,28 @@ export default function Tools() {
                   <h3 className="text-xl font-semibold mb-4">Search</h3>
                   <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search tools..." className="pl-8" />
+                    <Input 
+                      placeholder="Search tools..." 
+                      className="pl-8" 
+                      value={searchQuery}
+                      onChange={handleSearch}
+                    />
                   </div>
                 </div>
               </MotionWrapper>
               
               <MotionWrapper animation="fadeIn" delay="delay-200">
-                <CategoryFilter />
+                <CategoryFilter 
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                />
               </MotionWrapper>
               
               <MotionWrapper animation="fadeIn" delay="delay-300">
-                <PricingFilter />
+                <PricingFilter 
+                  selectedPricing={selectedPricing}
+                  setSelectedPricing={setSelectedPricing}
+                />
               </MotionWrapper>
             </aside>
             
@@ -64,11 +84,19 @@ export default function Tools() {
                   <p className="text-sm text-muted-foreground">
                     Displaying 1 - 20 of 142 tools
                   </p>
-                  <SortFilter />
+                  <SortFilter 
+                    selectedSort={selectedSort}
+                    setSelectedSort={setSelectedSort}
+                  />
                 </div>
               </MotionWrapper>
               
-              <ToolGrid />
+              <ToolGrid 
+                searchQuery={searchQuery}
+                category={selectedCategory}
+                pricing={selectedPricing}
+                sortBy={selectedSort}
+              />
             </div>
           </div>
         </div>
