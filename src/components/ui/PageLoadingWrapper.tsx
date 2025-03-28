@@ -23,9 +23,10 @@ export function PageLoadingWrapper({
       {isLoading ? (
         <main className="flex-1 flex items-center justify-center">
           <EnhancedLoadingIndicator 
-            size={36} 
+            size={48} 
             text={loadingText} 
             variant={variant} 
+            className="text-primary"
           />
         </main>
       ) : (

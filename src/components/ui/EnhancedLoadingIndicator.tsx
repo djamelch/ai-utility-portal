@@ -49,7 +49,6 @@ export function EnhancedLoadingIndicator({
               key={i}
               className={cn(
                 "h-3 w-3 rounded-full bg-primary animate-pulse",
-                `animation-delay-${i * 200}`,
                 className
               )}
               style={{
@@ -77,13 +76,20 @@ export function EnhancedLoadingIndicator({
 }
 
 // Add animation delay utility for sequenced animations
-const styles = document.createElement("style");
-styles.innerHTML = `
-  .animation-delay-200 {
-    animation-delay: 200ms;
+if (typeof document !== 'undefined') {
+  // Avoid running in SSR context
+  const styleId = 'enhanced-loading-indicator-styles';
+  if (!document.getElementById(styleId)) {
+    const styles = document.createElement("style");
+    styles.id = styleId;
+    styles.innerHTML = `
+      .animation-delay-200 {
+        animation-delay: 200ms;
+      }
+      .animation-delay-400 {
+        animation-delay: 400ms;
+      }
+    `;
+    document.head.appendChild(styles);
   }
-  .animation-delay-400 {
-    animation-delay: 400ms;
-  }
-`;
-document.head.appendChild(styles);
+}

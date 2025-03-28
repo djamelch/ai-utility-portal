@@ -19,7 +19,7 @@ const Tools = () => {
   const [pricing, setPricing] = useState("");
   const [sortBy, setSortBy] = useState("featured");
 
-  // Fetch categories and pricing options
+  // Fetch categories with improved error handling
   const { 
     data: categories = [], 
     isLoading: isCategoriesLoading, 
@@ -34,7 +34,10 @@ const Tools = () => {
           .select('primary_task')
           .not('primary_task', 'is', null);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error fetching categories:', error);
+          throw error;
+        }
         
         // Extract unique categories
         return Array.from(new Set(
@@ -45,10 +48,12 @@ const Tools = () => {
         throw error;
       }
     },
-    retry: 2,
-    retryDelay: 1000
+    retry: 3,
+    retryDelay: 2000,
+    staleTime: 1000 * 60 * 5 // 5 minutes
   });
   
+  // Fetch pricing options with improved error handling
   const { 
     data: pricingOptions = [], 
     isLoading: isPricingLoading,
@@ -63,7 +68,10 @@ const Tools = () => {
           .select('pricing')
           .not('pricing', 'is', null);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error fetching pricing options:', error);
+          throw error;
+        }
         
         // Extract unique pricing options
         return Array.from(new Set(
@@ -74,8 +82,9 @@ const Tools = () => {
         throw error;
       }
     },
-    retry: 2,
-    retryDelay: 1000
+    retry: 3,
+    retryDelay: 2000,
+    staleTime: 1000 * 60 * 5 // 5 minutes
   });
 
   const isLoading = isCategoriesLoading || isPricingLoading;
@@ -101,7 +110,11 @@ const Tools = () => {
   };
 
   return (
-    <PageLoadingWrapper isLoading={isLoading && !hasError} loadingText="Loading AI tools directory...">
+    <PageLoadingWrapper 
+      isLoading={isLoading && !hasError} 
+      loadingText="Loading AI tools directory..."
+      variant="pulse"
+    >
       <div className="flex min-h-screen flex-col">
         <Navbar />
         
@@ -128,7 +141,7 @@ const Tools = () => {
                     onClick={retryFetching} 
                     variant="outline" 
                     size="sm" 
-                    className="mr-2 mt-2"
+                    className="ml-2 mt-2"
                   >
                     Try Again
                   </Button>
@@ -306,7 +319,7 @@ const Tools = () => {
                 </button>
               </div>
               
-              {/* Tools Grid - Update to use the renamed props */}
+              {/* Tools Grid with enhanced error handling */}
               <ToolGrid 
                 searchQuery={searchQuery}
                 category={category}

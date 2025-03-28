@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ImagePlaceholder } from "lucide-react";
 
 export interface Tool {
   id: string | number;
@@ -46,6 +47,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get name from either name or company_name property
   const name = tool.name || tool.company_name || "";
@@ -67,18 +69,30 @@ export function ToolCard({ tool, className }: ToolCardProps) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-      
-      if (session) {
-        const { data } = await supabase
-          .from('favorites')
-          .select('id')
-          .eq('tool_id', numericId)
-          .eq('user_id', session.user.id)
-          .maybeSingle();
+      try {
+        setIsLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
         
-        setIsFavorite(!!data);
+        if (session) {
+          try {
+            const { data, error } = await supabase
+              .from('favorites')
+              .select('id')
+              .eq('tool_id', numericId)
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+            
+            if (error) throw error;
+            setIsFavorite(!!data);
+          } catch (error) {
+            console.error('Error checking favorite status:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     

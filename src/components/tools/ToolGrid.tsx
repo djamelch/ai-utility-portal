@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
-import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
 import { EnhancedLoadingIndicator } from "@/components/ui/EnhancedLoadingIndicator";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -119,7 +118,7 @@ export function ToolGrid({
         const { data, error } = await query;
         
         if (error) {
-          console.error("Error fetching tools:", error);
+          console.error("Supabase error fetching tools:", error);
           throw error;
         }
         
@@ -129,9 +128,10 @@ export function ToolGrid({
         throw error;
       }
     },
-    retry: 2,
-    retryDelay: 1000,
+    retry: 3,
+    retryDelay: 2000,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false
   });
 
   const tools = (dbTools || []).map(dbTool => ({
@@ -165,14 +165,16 @@ export function ToolGrid({
       <Alert variant="destructive" className="mb-6">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Loading Error</AlertTitle>
-        <AlertDescription>
-          An error occurred while loading tools. Please try again later.
-          <button 
+        <AlertDescription className="flex flex-col gap-2">
+          <p>An error occurred while loading tools. Please try again later.</p>
+          <Button 
             onClick={() => refetch()} 
-            className="underline ml-2 font-medium"
+            className="w-fit"
+            variant="outline"
+            size="sm"
           >
             Try Again
-          </button>
+          </Button>
         </AlertDescription>
       </Alert>
     );
@@ -265,3 +267,6 @@ function EmptyToolsMessage() {
     </div>
   );
 }
+
+// Add missing Button import
+import { Button } from "@/components/ui/button";
