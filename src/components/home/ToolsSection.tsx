@@ -1,5 +1,5 @@
 
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { ToolGrid } from "@/components/tools/ToolGrid";
@@ -29,7 +29,7 @@ export function ToolsSection({
               </p>
             </div>
             <Link 
-              href="/tools" 
+              to="/tools" 
               className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors"
             >
               View all
@@ -42,7 +42,7 @@ export function ToolsSection({
         
         <div className="mt-10 text-center sm:hidden">
           <Link 
-            href="/tools" 
+            to="/tools" 
             className="inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors"
           >
             View all tools
