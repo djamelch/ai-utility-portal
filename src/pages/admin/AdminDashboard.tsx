@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -37,7 +38,11 @@ export default function AdminDashboard() {
 
   return (
     <RequireAuth requireAdmin={true}>
-      <PageLoadingWrapper isLoading={isLoading} loadingText="Loading admin dashboard...">
+      <PageLoadingWrapper 
+        isLoading={isLoading} 
+        loadingText="Loading admin dashboard..."
+        variant="progress"
+      >
         <main className="flex-1 pt-24 pb-16">
           <div className="container max-w-screen-xl mx-auto px-4">
             <MotionWrapper animation="fadeIn">

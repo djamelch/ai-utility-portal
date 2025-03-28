@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
+import { EnhancedLoadingIndicator } from "@/components/ui/EnhancedLoadingIndicator";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -234,13 +235,22 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
   }
   
   return (
-    <div className={`grid ${gridColsClasses} gap-4`}>
-      {Array(count).fill(0).map((_, index) => (
-        <div 
-          key={index} 
-          className="h-[320px] rounded-xl bg-secondary/20 animate-pulse"
-        />
-      ))}
+    <div className="flex flex-col items-center justify-center py-8">
+      <EnhancedLoadingIndicator 
+        variant="dots" 
+        text="Loading tools..." 
+        size={30}
+        className="text-primary"
+      />
+      
+      <div className={`grid ${gridColsClasses} gap-4 mt-8 w-full opacity-60`}>
+        {Array(count).fill(0).map((_, index) => (
+          <div 
+            key={index} 
+            className="h-[320px] rounded-xl bg-secondary/20 animate-pulse"
+          />
+        ))}
+      </div>
     </div>
   );
 }
