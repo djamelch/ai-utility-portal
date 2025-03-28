@@ -1,20 +1,20 @@
 
-import { NextRequest, NextResponse } from "next/server";
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { supabase } from '@/lib/supabase-client';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-    
     // Check if the current user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      return NextResponse.json(
-        { message: 'Not authenticated' },
-        { status: 401 }
+      return new Response(
+        JSON.stringify({ message: 'Not authenticated' }),
+        { 
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
     }
     
@@ -22,9 +22,14 @@ export async function POST(req: NextRequest) {
     const { userId } = await req.json();
     
     if (!userId) {
-      return NextResponse.json(
-        { message: 'User ID is required' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ message: 'User ID is required' }),
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
     }
     
@@ -36,9 +41,14 @@ export async function POST(req: NextRequest) {
     
     if (countError) {
       console.error('Error checking admin count:', countError);
-      return NextResponse.json(
-        { message: 'Failed to check admin status' },
-        { status: 500 }
+      return new Response(
+        JSON.stringify({ message: 'Failed to check admin status' }),
+        { 
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
     }
     
@@ -52,9 +62,14 @@ export async function POST(req: NextRequest) {
         .single();
       
       if (!adminCheck || adminCheck.role !== 'admin') {
-        return NextResponse.json(
-          { message: 'Unauthorized - must be an admin' },
-          { status: 403 }
+        return new Response(
+          JSON.stringify({ message: 'Unauthorized - must be an admin' }),
+          { 
+            status: 403,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
         );
       }
     }
@@ -67,21 +82,36 @@ export async function POST(req: NextRequest) {
     
     if (error) {
       console.error('Error promoting user:', error);
-      return NextResponse.json(
-        { message: 'Failed to promote user to admin' },
-        { status: 500 }
+      return new Response(
+        JSON.stringify({ message: 'Failed to promote user to admin' }),
+        { 
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
     }
     
-    return NextResponse.json(
-      { message: 'Successfully promoted to admin' },
-      { status: 200 }
+    return new Response(
+      JSON.stringify({ message: 'Successfully promoted to admin' }),
+      { 
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
   } catch (error) {
     console.error('API error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ message: 'Internal server error' }),
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
   }
 }
