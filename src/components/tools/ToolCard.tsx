@@ -1,10 +1,9 @@
-import { Star, ExternalLink, Heart } from "lucide-react";
+import { Star, ExternalLink, Heart, Image } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ImagePlaceholder } from "lucide-react";
 
 export interface Tool {
   id: string | number;
@@ -49,22 +48,15 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   const [imgError, setImgError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get name from either name or company_name property
   const name = tool.name || tool.company_name || "";
-  // Get description from either description or short_description property
   const description = tool.description || tool.short_description || "";
-  // Get logo from either logo or logo_url property
   const logo = tool.logo || tool.logo_url || "";
-  // Get category from either category or primary_task property
   const category = tool.category || tool.primary_task || "";
-  // Get URL from visit_website_url, detail_url, or url property
   const url = tool.visit_website_url || tool.detail_url || tool.url || "#";
-  // Use existing properties for the rest
   const { id, rating = 0, reviewCount = 0, pricing = "", isFeatured, isNew } = tool;
 
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
-  // Use the slug if available, otherwise create one from the company name
   const toolSlug = tool.slug || name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
 
   useEffect(() => {
@@ -178,10 +170,8 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         className
       )}
     >
-      {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-50 rounded-xl pointer-events-none" />
       
-      {/* Glass-like highlight effect on top */}
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
