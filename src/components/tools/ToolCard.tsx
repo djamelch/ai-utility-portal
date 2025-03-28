@@ -1,4 +1,3 @@
-
 import { Star, ExternalLink, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -161,7 +160,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   return (
     <div 
       className={cn(
-        "group relative h-full flex flex-col rounded-xl border border-border/60 dark:border-accent/10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md p-5",
+        "group relative h-full flex flex-col rounded-xl border border-border/60 dark:border-accent/10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md p-4",
         className
       )}
     >
@@ -185,7 +184,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         )}
       </div>
 
-      <div className="flex items-start gap-4 relative">
+      <div className="flex items-start gap-3 relative">
         <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/90 dark:bg-secondary/20 shadow-sm border border-border/50 dark:border-border/20">
           {!imgError ? (
             <img 
@@ -229,26 +228,21 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         </div>
       </div>
 
-      <p className="mt-4 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem] relative">
+      <p className="mt-3 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem] relative">
         {description}
       </p>
 
-      <div className="mt-4 flex items-center gap-1 relative min-h-[1.25rem]">
-        <div className="flex">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              size={14}
-              className={i < Math.round(rating) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
-            />
-          ))}
-        </div>
-        <span className="text-xs text-muted-foreground">
-          ({reviewCount} reviews)
-        </span>
+      <div className="mt-3 flex items-center gap-1 relative min-h-[1.25rem]">
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            size={14}
+            className={i < Math.round(rating) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
+          />
+        ))}
       </div>
 
-      <div className="mt-auto pt-5 flex items-center gap-2 text-sm relative">
+      <div className="mt-auto pt-4 flex items-center gap-2 text-sm relative">
         <Link
           to={`/tool/${toolSlug}`}
           className="flex-1 rounded-lg border border-border/80 dark:border-border/30 bg-background/80 dark:bg-background/20 px-3 py-2 text-center font-medium hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary transition-colors"

@@ -1,10 +1,8 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 
-// Define Tool interface to match the properties expected by ToolCard
 export interface Tool {
   id: number | string;
   name?: string;
@@ -19,7 +17,6 @@ export interface Tool {
   isFeatured?: boolean;
   isNew?: boolean;
   
-  // Additional properties from database
   short_description?: string;
   full_description?: string;
   logo_url?: string;
@@ -58,25 +55,20 @@ export function ToolGrid({
   pricing = "",
   sortBy = "featured"
 }: ToolGridProps) {
-  // Use both searchTerm and searchQuery (preference to searchQuery if both exist)
   const effectiveSearchTerm = searchQuery || searchTerm || "";
   const effectiveCategoryFilter = category || categoryFilter || "";
   const effectiveSortBy = sortBy !== "featured" ? sortBy : queryType;
   
-  // Fetch tools based on query type and filters
   const { data: dbTools = [], isLoading } = useQuery({
     queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, effectiveSortBy],
     queryFn: async () => {
       let query = supabase.from("tools").select("*");
       
-      // Apply search filter if provided
       if (effectiveSearchTerm) {
         query = query.or(`company_name.ilike.%${effectiveSearchTerm}%,short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
       }
       
-      // Apply category filter if provided
       if (effectiveCategoryFilter) {
-        // Handle category filter both in formatted and slug form
         const isSlug = effectiveCategoryFilter.includes('-');
         
         if (isSlug) {
@@ -91,17 +83,13 @@ export function ToolGrid({
         }
       }
       
-      // Apply pricing filter if provided
       if (pricing) {
         query = query.eq("pricing", pricing);
       }
       
-      // Apply specific ordering based on query type or sortBy
       switch (effectiveSortBy) {
         case "top-rated":
-          // For top-rated, we'd ideally join with reviews and order by average rating
-          // This is a simplified approach
-          query = query.order("id", { ascending: false }); // Replace with actual rating logic when available
+          query = query.order("id", { ascending: false });
           break;
         case "newest":
         case "recent":
@@ -112,12 +100,10 @@ export function ToolGrid({
           break;
         case "featured":
         default:
-          // For featured, we're using a random selection
           query = query.order("id");
           break;
       }
       
-      // Apply limit if provided
       if (limit) {
         query = query.limit(limit);
       }
@@ -133,7 +119,6 @@ export function ToolGrid({
     }
   });
 
-  // Map database tools to the format expected by ToolCard
   const tools = dbTools.map(dbTool => ({
     id: dbTool.id,
     name: dbTool.company_name || "",
@@ -144,17 +129,15 @@ export function ToolGrid({
     logo_url: dbTool.logo_url || "",
     category: dbTool.primary_task || "",
     primary_task: dbTool.primary_task || "",
-    rating: 4, // Default or placeholder value
-    reviewCount: 0, // Default or placeholder value
+    rating: 4,
+    reviewCount: 0,
     pricing: dbTool.pricing || "",
     url: dbTool.visit_website_url || dbTool.detail_url || "#",
     visit_website_url: dbTool.visit_website_url || "",
     detail_url: dbTool.detail_url || "",
     slug: dbTool.slug || "",
-    // Optionally add featured or new flags based on some criteria
     isFeatured: false,
     isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
-    // Include original properties for reference
     ...dbTool
   }));
   
@@ -167,7 +150,7 @@ export function ToolGrid({
   }
   
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {tools.map((tool, index) => (
         <MotionWrapper 
           key={tool.id} 
@@ -181,10 +164,9 @@ export function ToolGrid({
   );
 }
 
-// Separate components for better organization
 function ToolGridSkeleton({ count }: { count: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {Array(count).fill(0).map((_, index) => (
         <div 
           key={index} 

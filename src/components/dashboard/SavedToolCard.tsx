@@ -51,7 +51,7 @@ export function SavedToolCard({
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
-      <div className="p-5 relative flex-1 flex flex-col">
+      <div className="p-4 relative flex-1 flex flex-col">
         <div className="flex justify-between items-start">
           <div className="flex gap-3 items-center">
             {logo_url ? (
@@ -78,10 +78,10 @@ export function SavedToolCard({
             <BookmarkX className="h-4 w-4" />
           </Button>
         </div>
-        <p className="mt-3 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem]">
+        <p className="mt-2 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem]">
           {short_description}
         </p>
-        <div className="mt-4 flex flex-wrap gap-2 min-h-[2rem]">
+        <div className="mt-3 flex flex-wrap gap-2 min-h-[2rem]">
           {primary_task && (
             <span className="text-xs px-2.5 py-1 bg-secondary/90 dark:bg-secondary/30 text-foreground/80 dark:text-foreground/90 rounded-full font-medium border border-border/20">
               {primary_task}
@@ -93,7 +93,7 @@ export function SavedToolCard({
             </span>
           )}
         </div>
-        <div className="mt-auto pt-5 flex gap-2">
+        <div className="mt-auto pt-4 flex gap-2">
           <Button 
             variant="outline" 
             size="sm" 
