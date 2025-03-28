@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
@@ -43,6 +44,7 @@ interface ToolGridProps {
   category?: string;
   pricing?: string;
   sortBy?: string;
+  columnsPerRow?: number;
 }
 
 export function ToolGrid({ 
@@ -53,7 +55,8 @@ export function ToolGrid({
   searchQuery = "",
   category = "",
   pricing = "",
-  sortBy = "featured"
+  sortBy = "featured",
+  columnsPerRow = 4
 }: ToolGridProps) {
   const effectiveSearchTerm = searchQuery || searchTerm || "";
   const effectiveCategoryFilter = category || categoryFilter || "";
@@ -142,15 +145,33 @@ export function ToolGrid({
   }));
   
   if (isLoading) {
-    return <ToolGridSkeleton count={limit || 8} />;
+    return <ToolGridSkeleton count={limit || 8} columnsPerRow={columnsPerRow} />;
   }
   
   if (!tools.length) {
     return <EmptyToolsMessage />;
   }
   
+  // Use different grid column settings based on columnsPerRow prop
+  let gridColsClasses = "";
+  switch (columnsPerRow) {
+    case 1:
+      gridColsClasses = "grid-cols-1";
+      break;
+    case 2:
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2";
+      break;
+    case 3:
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+      break;
+    case 4:
+    default:
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+      break;
+  }
+  
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className={`grid ${gridColsClasses} gap-4`}>
       {tools.map((tool, index) => (
         <MotionWrapper 
           key={tool.id} 
@@ -164,9 +185,27 @@ export function ToolGrid({
   );
 }
 
-function ToolGridSkeleton({ count }: { count: number }) {
+function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columnsPerRow?: number }) {
+  // Use different grid column settings based on columnsPerRow prop
+  let gridColsClasses = "";
+  switch (columnsPerRow) {
+    case 1:
+      gridColsClasses = "grid-cols-1";
+      break;
+    case 2:
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2";
+      break;
+    case 3:
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+      break;
+    case 4:
+    default:
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+      break;
+  }
+  
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className={`grid ${gridColsClasses} gap-4`}>
       {Array(count).fill(0).map((_, index) => (
         <div 
           key={index} 

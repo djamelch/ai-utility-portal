@@ -23,7 +23,7 @@ const Index = () => {
           title="Featured Tools" 
           description="Discover our handpicked selection of the best AI tools"
           queryType="featured"
-          limit={8}
+          limit={6}
         />
         
         {/* Top Rated Tools Section - New */}
@@ -31,7 +31,7 @@ const Index = () => {
           title="Top Rated Tools" 
           description="Explore the highest rated AI tools by our community"
           queryType="top-rated"
-          limit={4}
+          limit={3}
         />
         
         {/* Recently Added Tools Section - New */}
@@ -39,7 +39,7 @@ const Index = () => {
           title="Recently Added Tools" 
           description="Check out the latest AI tools added to our collection"
           queryType="recent"
-          limit={4}
+          limit={3}
         />
         
         {/* Feature Section - Kept as is */}
