@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { LoadingIndicator } from "@/components/ui/LoadingIndicator";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export interface Tool {
   id: number | string;
@@ -63,67 +65,75 @@ export function ToolGrid({
   const effectiveCategoryFilter = category || categoryFilter || "";
   const effectiveSortBy = sortBy !== "featured" ? sortBy : queryType;
   
-  const { data: dbTools = [], isLoading } = useQuery({
+  const { data: dbTools = [], isLoading, error, refetch } = useQuery({
     queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, effectiveSortBy],
     queryFn: async () => {
-      let query = supabase.from("tools").select("*");
-      
-      if (effectiveSearchTerm) {
-        query = query.or(`company_name.ilike.%${effectiveSearchTerm}%,short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
-      }
-      
-      if (effectiveCategoryFilter) {
-        const isSlug = effectiveCategoryFilter.includes('-');
+      try {
+        let query = supabase.from("tools").select("*");
         
-        if (isSlug) {
-          const formattedCategory = effectiveCategoryFilter
-            .split('-')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-          
-          query = query.eq("primary_task", formattedCategory);
-        } else {
-          query = query.eq("primary_task", effectiveCategoryFilter);
+        if (effectiveSearchTerm) {
+          query = query.or(`company_name.ilike.%${effectiveSearchTerm}%,short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
         }
+        
+        if (effectiveCategoryFilter) {
+          const isSlug = effectiveCategoryFilter.includes('-');
+          
+          if (isSlug) {
+            const formattedCategory = effectiveCategoryFilter
+              .split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+            
+            query = query.eq("primary_task", formattedCategory);
+          } else {
+            query = query.eq("primary_task", effectiveCategoryFilter);
+          }
+        }
+        
+        if (pricing) {
+          query = query.eq("pricing", pricing);
+        }
+        
+        switch (effectiveSortBy) {
+          case "top-rated":
+            query = query.order("id", { ascending: false });
+            break;
+          case "newest":
+          case "recent":
+            query = query.order("created_at", { ascending: false });
+            break;
+          case "popular":
+            query = query.order("click_count", { ascending: false });
+            break;
+          case "featured":
+          default:
+            query = query.order("id");
+            break;
+        }
+        
+        if (limit) {
+          query = query.limit(limit);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error("Error fetching tools:", error);
+          throw error;
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error("Error in tools query:", error);
+        throw error;
       }
-      
-      if (pricing) {
-        query = query.eq("pricing", pricing);
-      }
-      
-      switch (effectiveSortBy) {
-        case "top-rated":
-          query = query.order("id", { ascending: false });
-          break;
-        case "newest":
-        case "recent":
-          query = query.order("created_at", { ascending: false });
-          break;
-        case "popular":
-          query = query.order("click_count", { ascending: false });
-          break;
-        case "featured":
-        default:
-          query = query.order("id");
-          break;
-      }
-      
-      if (limit) {
-        query = query.limit(limit);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error("Error fetching tools:", error);
-        return [];
-      }
-      
-      return data as any[];
-    }
+    },
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const tools = dbTools.map(dbTool => ({
+  const tools = (dbTools || []).map(dbTool => ({
     id: dbTool.id,
     name: dbTool.company_name || "",
     company_name: dbTool.company_name || "",
@@ -147,6 +157,24 @@ export function ToolGrid({
   
   if (isLoading) {
     return <ToolGridSkeleton count={limit || 8} columnsPerRow={columnsPerRow} />;
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive" className="mb-6">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>خطأ في التحميل</AlertTitle>
+        <AlertDescription>
+          حدث خطأ أثناء تحميل الأدوات. يرجى المحاولة مرة أخرى لاحقاً.
+          <button 
+            onClick={() => refetch()} 
+            className="underline ml-2 font-medium"
+          >
+            إعادة المحاولة
+          </button>
+        </AlertDescription>
+      </Alert>
+    );
   }
   
   if (!tools.length) {
@@ -220,9 +248,9 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
 function EmptyToolsMessage() {
   return (
     <div className="text-center p-8">
-      <h3 className="text-xl font-medium">No tools found</h3>
+      <h3 className="text-xl font-medium">لم يتم العثور على أدوات</h3>
       <p className="text-muted-foreground mt-2">
-        Try adjusting your search criteria
+        حاول تعديل معايير البحث
       </p>
     </div>
   );
