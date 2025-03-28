@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 export interface Tool {
   id: string | number;
@@ -43,10 +44,14 @@ interface ToolCardProps {
 
 export function ToolCard({ tool, className }: ToolCardProps) {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+  const [isRatingSubmitting, setIsRatingSubmitting] = useState(false);
 
   const name = tool.name || tool.company_name || "";
   const description = tool.description || tool.short_description || "";
@@ -68,17 +73,29 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         
         if (session) {
           try {
-            const { data, error } = await supabase
+            const { data: favData, error: favError } = await supabase
               .from('favorites')
               .select('id')
               .eq('tool_id', numericId)
               .eq('user_id', session.user.id)
               .maybeSingle();
             
-            if (error) throw error;
-            setIsFavorite(!!data);
+            if (favError) throw favError;
+            setIsFavorite(!!favData);
+            
+            const { data: ratingData, error: ratingError } = await supabase
+              .from('reviews')
+              .select('rating')
+              .eq('tool_id', numericId)
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+              
+            if (ratingError) throw ratingError;
+            if (ratingData) {
+              setUserRating(ratingData.rating);
+            }
           } catch (error) {
-            console.error('Error checking favorite status:', error);
+            console.error('Error checking favorite/rating status:', error);
           }
         }
       } catch (error) {
@@ -161,6 +178,79 @@ export function ToolCard({ tool, className }: ToolCardProps) {
     }
   };
 
+  const handleRatingClick = async (star: number) => {
+    e: React.MouseEvent<HTMLButtonElement>;
+    if (!isAuthenticated || authLoading) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to rate tools",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsRatingSubmitting(true);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("Session expired. Please log in again.");
+      }
+      
+      const { data: existingRating, error: checkError } = await supabase
+        .from('reviews')
+        .select('id, rating')
+        .eq('tool_id', numericId)
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+        
+      if (checkError) throw checkError;
+      
+      if (existingRating) {
+        const { error: updateError } = await supabase
+          .from('reviews')
+          .update({
+            rating: star,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingRating.id);
+          
+        if (updateError) throw updateError;
+        
+        toast({
+          title: "Rating Updated",
+          description: `You've updated your rating for ${name}`,
+        });
+      } else {
+        const { error: insertError } = await supabase.from('reviews').insert({
+          tool_id: numericId,
+          user_id: session.user.id,
+          rating: star,
+          comment: null
+        });
+        
+        if (insertError) throw insertError;
+        
+        toast({
+          title: "Rating Submitted",
+          description: `Thank you for rating ${name}!`,
+        });
+      }
+      
+      setUserRating(star);
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit your rating. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRatingSubmitting(false);
+    }
+  };
+
   const placeholderImage = 'https://via.placeholder.com/80?text=AI+Tool';
 
   return (
@@ -237,13 +327,48 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       </p>
 
       <div className="mt-3 flex items-center gap-1 relative min-h-[1.25rem]">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            size={14}
-            className={i < Math.round(rating) ? "fill-brand-400 text-brand-400" : "text-muted-foreground/30"}
-          />
-        ))}
+        {isRatingSubmitting ? (
+          <div className="flex items-center text-xs text-muted-foreground">
+            <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Submitting...
+          </div>
+        ) : (
+          <>
+            {[...Array(5)].map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                className="focus:outline-none transition-transform hover:scale-110"
+                onClick={() => handleRatingClick(i + 1)}
+                onMouseEnter={() => isAuthenticated && setHoveredRating(i + 1)}
+                onMouseLeave={() => setHoveredRating(null)}
+                disabled={isRatingSubmitting || authLoading}
+              >
+                <Star
+                  size={16}
+                  className={cn(
+                    hoveredRating !== null && i < hoveredRating 
+                      ? "fill-yellow-400 text-yellow-400" 
+                      : userRating && i < userRating 
+                        ? "fill-yellow-400 text-yellow-400" 
+                        : i < Math.round(rating) 
+                          ? "fill-brand-400 text-brand-400" 
+                          : "text-muted-foreground/30",
+                    "transition-colors"
+                  )}
+                />
+              </button>
+            ))}
+            {isAuthenticated && userRating && (
+              <span className="text-xs text-muted-foreground ml-1">
+                (Your rating: {userRating})
+              </span>
+            )}
+          </>
+        )}
       </div>
 
       <div className="mt-auto pt-4 flex items-center gap-2 text-sm relative">
