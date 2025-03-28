@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
+import { PageWrapper } from "@/components/layout/PageWrapper";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,8 +15,18 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const { signIn, signUp, signInWithGoogle, isLoading, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Simulate loading time
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Redirect to home if already logged in
   if (user && !isLoading) {
@@ -49,22 +58,12 @@ export default function Auth() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </main>
-        <Footer />
-      </div>
-    );
+    return <PageWrapper isLoading={true} />;
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      
-      <main className="flex-1 pt-24 pb-16">
+    <PageWrapper isLoading={pageLoading}>
+      <div className="pt-24 pb-16">
         <div className="container max-w-md mx-auto px-4">
           <MotionWrapper animation="fadeIn">
             <h1 className="text-3xl font-bold text-center mb-8">Welcome</h1>
@@ -226,9 +225,7 @@ export default function Auth() {
             </Card>
           </MotionWrapper>
         </div>
-      </main>
-      
-      <Footer />
-    </div>
+      </div>
+    </PageWrapper>
   );
 }

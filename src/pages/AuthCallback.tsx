@@ -1,11 +1,12 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { LoadingPage } from '@/components/ui/loading-page';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const [status, setStatus] = useState('Authenticating...');
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
@@ -13,12 +14,17 @@ export default function AuthCallback() {
         // Get auth from URL hash
         const { data, error } = await supabase.auth.getSession();
         
-        if (error) throw error;
+        if (error) {
+          setStatus('Authentication failed');
+          throw error;
+        }
         
         if (data?.session) {
+          setStatus('Authentication successful');
           // Successfully signed in, redirect to home
           navigate('/', { replace: true });
         } else {
+          setStatus('No session found');
           // No session found, redirect to auth page
           navigate('/auth', { replace: true });
         }
@@ -34,8 +40,8 @@ export default function AuthCallback() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-        <p className="text-lg">Completing authentication...</p>
+        <LoadingPage />
+        <p className="text-lg mt-4">{status}</p>
       </div>
     </div>
   );
