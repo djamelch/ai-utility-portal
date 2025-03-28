@@ -34,6 +34,9 @@ export function UserReviewsTab() {
   const fetchUserReviews = async () => {
     try {
       setIsLoading(true);
+      
+      if (!user?.id) return;
+      
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -46,18 +49,19 @@ export function UserReviewsTab() {
             company_name
           )
         `)
-        .eq('user_id', user?.id)
+        .match({ user_id: user.id })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const formattedReviews = data.map(item => ({
+      // Safely transform the data with proper error checking
+      const formattedReviews = (data || []).filter(item => item && item.tools).map(item => ({
         id: item.id,
         tool_id: item.tool_id,
         rating: item.rating,
         comment: item.comment,
-        tool_name: item.tools.company_name,
-        created_at: new Date(item.created_at).toLocaleDateString()
+        tool_name: item.tools?.company_name || 'Unknown Tool',
+        created_at: new Date(item.created_at || Date.now()).toLocaleDateString()
       }));
 
       setUserReviews(formattedReviews);
@@ -82,7 +86,7 @@ export function UserReviewsTab() {
       const { error } = await supabase
         .from('reviews')
         .delete()
-        .eq('id', reviewId);
+        .match({ id: reviewId });
 
       if (error) throw error;
 

@@ -35,6 +35,9 @@ export function SavedToolsTab() {
   const fetchSavedTools = async () => {
     try {
       setIsLoading(true);
+      
+      if (!user?.id) return;
+      
       const { data, error } = await supabase
         .from('favorites')
         .select(`
@@ -49,21 +52,20 @@ export function SavedToolsTab() {
             pricing
           )
         `)
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
-      const formattedTools = data
-        .filter(item => item.tools)
-        .map(item => ({
-          id: item.tools.id,
-          name: item.tools.company_name,
-          short_description: item.tools.short_description,
-          logo_url: item.tools.logo_url,
-          primary_task: item.tools.primary_task,
-          pricing: item.tools.pricing,
-          favorite_id: item.id
-        }));
+      // Safely transform the data with proper error checking
+      const formattedTools = (data || []).filter(item => item && item.tools).map(item => ({
+        id: item.tools?.id,
+        name: item.tools?.company_name,
+        short_description: item.tools?.short_description || '',
+        logo_url: item.tools?.logo_url,
+        primary_task: item.tools?.primary_task,
+        pricing: item.tools?.pricing,
+        favorite_id: item.id
+      }));
 
       setSavedTools(formattedTools);
     } catch (error) {
@@ -83,7 +85,7 @@ export function SavedToolsTab() {
       const { error } = await supabase
         .from('favorites')
         .delete()
-        .eq('id', favoriteId);
+        .match({ id: favoriteId });
 
       if (error) throw error;
 

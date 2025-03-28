@@ -30,10 +30,10 @@ export default function ToolDetail() {
         // Check if the slug is a number (tool ID) or a string (slug)
         if (slug && !isNaN(Number(slug))) {
           // If it's a number, query by ID
-          query = query.eq('id', parseInt(slug, 10));
+          query = query.match({ id: parseInt(slug, 10) });
         } else if (slug) {
           // If it's a string, query by slug
-          query = query.eq('slug', slug);
+          query = query.match({ slug: slug });
         }
         
         const { data, error } = await query.maybeSingle();

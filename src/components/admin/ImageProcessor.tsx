@@ -11,7 +11,7 @@ export function ImageProcessor() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [tools, setTools] = useState([]);
+  const [tools, setTools] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [processed, setProcessed] = useState(0);
 
@@ -26,11 +26,11 @@ export function ImageProcessor() {
       
       if (error) throw error;
       
-      setTools(data);
-      setTotal(data.length);
+      setTools(data || []);
+      setTotal(data?.length || 0);
       toast({
         title: 'Ready to process',
-        description: `Found ${data.length} tools with images to process`,
+        description: `Found ${data?.length || 0} tools with images to process`,
       });
     } catch (error) {
       console.error('Error fetching tools:', error);
@@ -149,10 +149,10 @@ export function ImageProcessor() {
   };
 
   // Helper function to get file extension from URL
-  const getFileExtension = (url) => {
+  const getFileExtension = (url: string) => {
     if (!url) return '';
     const segments = url.split('.');
-    return segments.length > 1 ? segments.pop().split('?')[0].toLowerCase() : '';
+    return segments.length > 1 ? segments.pop()?.split('?')[0].toLowerCase() : '';
   };
 
   return (

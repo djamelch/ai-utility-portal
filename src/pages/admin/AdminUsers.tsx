@@ -63,9 +63,13 @@ export function AdminUsers() {
       
       if (profilesError) throw profilesError;
       
+      // Safety check for null values
+      const profilesData = profiles || [];
+      const authUsersData = authUsers?.users || [];
+      
       // Map auth users with profile data
-      const mappedUsers: User[] = authUsers?.users.map(user => {
-        const profile = profiles?.find(p => p.id === user.id);
+      const mappedUsers: User[] = authUsersData.map(user => {
+        const profile = profilesData.find(p => p?.id === user.id);
         return {
           id: user.id,
           email: user.email || 'No email',
@@ -74,7 +78,7 @@ export function AdminUsers() {
           // Check if role in profile is 'admin'
           is_admin: profile?.role === 'admin'
         };
-      }) || [];
+      });
       
       setUsers(mappedUsers);
     } catch (error) {
@@ -130,7 +134,7 @@ export function AdminUsers() {
       const { error } = await supabase
         .from('profiles')
         .update({ role: newRole })
-        .eq('id', userToToggleAdmin.id);
+        .match({ id: userToToggleAdmin.id });
       
       if (error) throw error;
       

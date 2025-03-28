@@ -73,8 +73,10 @@ export function AdminTools() {
 
       if (error) throw error;
 
-      setTools(data || []);
-      setFilteredTools(data || []);
+      // Convert to the correct type explicitly
+      const toolsData: Tool[] = data || [];
+      setTools(toolsData);
+      setFilteredTools(toolsData);
     } catch (error) {
       console.error('Error fetching tools:', error);
       toast({
@@ -140,7 +142,7 @@ export function AdminTools() {
       const { error } = await supabase
         .from('tools')
         .delete()
-        .eq('id', deleteToolId);
+        .match({ id: deleteToolId });
 
       if (error) throw error;
 
