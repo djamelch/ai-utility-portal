@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
@@ -51,7 +50,6 @@ export default function ToolDetail() {
       try {
         let query = supabase.from('tools').select('*');
         
-        // Only query by slug
         if (slug) {
           query = query.eq('slug', slug);
         }
@@ -71,7 +69,6 @@ export default function ToolDetail() {
         console.log('Tool data:', data);
         setTool(data);
         
-        // After fetching tool, fetch reviews
         fetchReviews(data.id);
       } catch (error) {
         console.error('Error fetching tool:', error);
@@ -88,7 +85,6 @@ export default function ToolDetail() {
     
     fetchTool();
     
-    // Check if redirected with state to edit review
     if (location.state?.editReviewId) {
       setEditingReviewId(location.state.editReviewId);
       setReviewDialogOpen(true);
@@ -100,7 +96,6 @@ export default function ToolDetail() {
     
     setReviewsLoading(true);
     try {
-      // Fetch reviews for this tool
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -108,38 +103,51 @@ export default function ToolDetail() {
           rating,
           comment,
           created_at,
-          user_id,
-          user_id(email)
+          user_id
         `)
         .eq('tool_id', toolId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      // Format reviews data
+      const userIdsSet = new Set(data.map(review => review.user_id));
+      const userIds = Array.from(userIdsSet);
+      
+      const userEmailMap = new Map<string, string>();
+      
+      if (userIds.length > 0) {
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('id')
+          .in('id', userIds);
+          
+        if (!userError && userData) {
+          for (const user of userData) {
+            userEmailMap.set(user.id, `User-${user.id.substring(0, 8)}`);
+          }
+        }
+      }
+      
       const formattedReviews = data.map(review => ({
         id: review.id,
         rating: review.rating,
         comment: review.comment,
         created_at: new Date(review.created_at).toLocaleDateString(),
         user_id: review.user_id,
-        user_email: review.user_id?.email || 'Anonymous'
+        user_email: userEmailMap.get(review.user_id) || 'Anonymous'
       }));
       
       setReviews(formattedReviews);
       
-      // Calculate average rating
       if (formattedReviews.length > 0) {
         const total = formattedReviews.reduce((sum, review) => sum + review.rating, 0);
         setAverageRating(Number((total / formattedReviews.length).toFixed(1)));
       }
       
-      // Check if current user has already reviewed
       if (user) {
         const userReview = formattedReviews.find(review => review.user_id === user.id);
         if (userReview) {
           setUserHasReviewed(true);
-          // If editing this review, set the form values
           if (location.state?.editReviewId === userReview.id) {
             setUserRating(userReview.rating);
             setUserReview(userReview.comment || '');
@@ -165,10 +173,8 @@ export default function ToolDetail() {
     if (!tool) return;
     
     try {
-      // Increment click count
       await supabase.rpc('increment_tool_click_count', { tool_id: tool.id });
       
-      // Open website in new tab
       const url = tool.visit_website_url || tool.detail_url || '#';
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (error) {
@@ -180,7 +186,6 @@ export default function ToolDetail() {
     try {
       setSubmitting(true);
       
-      // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -194,7 +199,6 @@ export default function ToolDetail() {
       }
       
       if (editingReviewId) {
-        // Update existing review
         const { error } = await supabase.from('reviews')
           .update({
             rating: userRating,
@@ -210,7 +214,6 @@ export default function ToolDetail() {
           description: "Your review has been updated successfully",
         });
       } else {
-        // Submit a new review
         const { error } = await supabase.from('reviews').insert({
           tool_id: tool.id,
           user_id: session.user.id,
@@ -226,15 +229,12 @@ export default function ToolDetail() {
         });
       }
       
-      // Reset form and close dialog
       setUserReview('');
       setUserRating(5);
       setReviewDialogOpen(false);
       setEditingReviewId(null);
       
-      // Refetch reviews to show the new one
       fetchReviews(tool.id);
-      
     } catch (error) {
       console.error('Error submitting review:', error);
       toast({
@@ -263,7 +263,6 @@ export default function ToolDetail() {
         description: "Your review has been removed",
       });
       
-      // Update reviews list
       fetchReviews(tool.id);
     } catch (error) {
       console.error('Error deleting review:', error);
@@ -275,7 +274,6 @@ export default function ToolDetail() {
     }
   };
   
-  // Star rating component for the review form
   const StarRating = () => {
     return (
       <div className="flex gap-2">
@@ -300,7 +298,6 @@ export default function ToolDetail() {
     );
   };
   
-  // Display read-only stars for a given rating
   const RatingStars = ({ rating }: { rating: number }) => {
     return (
       <div className="flex">
@@ -319,7 +316,6 @@ export default function ToolDetail() {
     );
   };
   
-  // Reviews list component
   const ReviewsList = () => {
     if (reviewsLoading) {
       return (
@@ -542,9 +538,7 @@ export default function ToolDetail() {
             </Button>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Main content */}
               <div className="lg:col-span-2 space-y-8">
-                {/* Header */}
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 overflow-hidden rounded-lg border bg-background flex-shrink-0">
                     <img 
@@ -563,7 +557,6 @@ export default function ToolDetail() {
                   </div>
                 </div>
                 
-                {/* Featured image */}
                 {tool.featured_image_url && (
                   <div className="rounded-xl overflow-hidden aspect-video bg-secondary/30">
                     <img 
@@ -577,7 +570,6 @@ export default function ToolDetail() {
                   </div>
                 )}
                 
-                {/* Tabs */}
                 <Tabs defaultValue="overview" className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -725,7 +717,6 @@ export default function ToolDetail() {
                 </Tabs>
               </div>
               
-              {/* Sidebar */}
               <div className="space-y-6">
                 <div className="border rounded-xl p-6 sticky top-24">
                   <div className="flex items-center gap-2 mb-4">
