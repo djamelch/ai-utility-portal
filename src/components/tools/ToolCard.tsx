@@ -1,3 +1,4 @@
+
 import { Star, ExternalLink, Heart, Image } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -179,7 +180,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   };
 
   const handleRatingClick = async (star: number) => {
-    e: React.MouseEvent<HTMLButtonElement>;
     if (!isAuthenticated || authLoading) {
       toast({
         title: "Authentication Required",
