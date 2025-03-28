@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
@@ -9,6 +10,9 @@ import { ExternalLink, Star, User, Calendar, Tag, Clock, ChevronLeft, Loader2 } 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ToolDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -17,6 +21,10 @@ export default function ToolDetail() {
   const [tool, setTool] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [userReview, setUserReview] = useState('');
+  const [userRating, setUserRating] = useState(5);
+  const [submitting, setSubmitting] = useState(false);
   
   useEffect(() => {
     const fetchTool = async () => {
@@ -74,6 +82,82 @@ export default function ToolDetail() {
     } catch (error) {
       console.error('Error tracking click:', error);
     }
+  };
+  
+  const handleReviewSubmit = async () => {
+    try {
+      setSubmitting(true);
+      
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to submit a review",
+          variant: "destructive",
+        });
+        setReviewDialogOpen(false);
+        return;
+      }
+      
+      // Submit the review
+      const { error } = await supabase.from('reviews').insert({
+        tool_id: tool.id,
+        user_id: session.user.id,
+        rating: userRating,
+        comment: userReview
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Review submitted",
+        description: "Thank you for your feedback!",
+      });
+      
+      // Reset form and close dialog
+      setUserReview('');
+      setUserRating(5);
+      setReviewDialogOpen(false);
+      
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit your review. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  
+  // Star rating component for the review form
+  const StarRating = () => {
+    return (
+      <div className="flex gap-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            className="focus:outline-none"
+            onClick={() => setUserRating(star)}
+          >
+            <Star
+              size={24}
+              className={`${
+                star <= userRating
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-muted-foreground"
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+    );
   };
   
   if (loading) {
@@ -314,7 +398,55 @@ export default function ToolDetail() {
                       <p className="text-muted-foreground mb-6">
                         Be the first to review this tool and help others make better decisions.
                       </p>
-                      <Button>Write a Review</Button>
+                      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button>Write a Review</Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Write a Review</DialogTitle>
+                            <DialogDescription>
+                              Share your experience with {tool.company_name} to help others.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-4 space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="rating">Rating</Label>
+                              <StarRating />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="review">Your Review</Label>
+                              <Textarea
+                                id="review"
+                                placeholder="What did you like or dislike about this tool?"
+                                rows={5}
+                                value={userReview}
+                                onChange={(e) => setUserReview(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setReviewDialogOpen(false)}
+                              disabled={submitting}
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              onClick={handleReviewSubmit}
+                              disabled={submitting}
+                            >
+                              {submitting ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Submitting...
+                                </>
+                              ) : 'Submit Review'}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </TabsContent>
                 </Tabs>
