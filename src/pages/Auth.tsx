@@ -1,230 +1,506 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+
+import { useState } from "react";
 import { PageWrapper } from "@/components/layout/PageWrapper";
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { MotionWrapper } from '@/components/ui/MotionWrapper';
-import { useAuth } from '@/context/AuthContext';
-import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { MotionWrapper } from "@/components/ui/MotionWrapper";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { GitHub, Mail } from "lucide-react";
+
+const signUpSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long" }),
+});
+
+const signInSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(1, { message: "Please enter your password" }),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+});
 
 export default function Auth() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-  const { signIn, signUp, signInWithGoogle, isLoading, user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("sign-in");
+  const [isResetRequested, setIsResetRequested] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setPageLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
-  }, []);
+  const signUpForm = useForm<z.infer<typeof signUpSchema>>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  // Redirect to home if already logged in
-  if (user && !isLoading) {
-    return <Navigate to="/" />;
-  }
+  const signInForm = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+  const forgotPasswordForm = useForm<z.infer<typeof forgotPasswordSchema>>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const onSignUp = async (values: z.infer<typeof signUpSchema>) => {
     try {
-      await signIn(email, password);
-      navigate('/');
+      setIsLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Account created",
+        description:
+          "Please check your email for a confirmation link to complete your registration.",
+      });
+      setActiveTab("sign-in");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create an account",
+        variant: "destructive",
+      });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+  const onSignIn = async (values: z.infer<typeof signInSchema>) => {
     try {
-      await signUp(email, password);
-      // Don't navigate - user needs to verify email first
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      });
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in",
+        variant: "destructive",
+      });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
+    }
+  };
+
+  const onForgotPassword = async (
+    values: z.infer<typeof forgotPasswordSchema>
+  ) => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setIsResetRequested(true);
+      toast({
+        title: "Password reset email sent",
+        description:
+          "Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send password reset email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signInWithGitHub = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in with GitHub",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const signInWithEmail = async () => {
+    try {
+      setIsLoading(true);
+      // This is just a placeholder for a "magic link" authentication
+      const email = signInForm.getValues().email;
+      if (!email) {
+        throw new Error("Please enter your email address");
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Magic link sent",
+        description:
+          "Check your email for a sign in link. If it doesn't appear within a few minutes, check your spam folder.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send magic link",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   if (isLoading) {
-    return <PageWrapper isLoading={true} />;
+    return (
+      <PageWrapper>
+        <div className="container flex items-center justify-center min-h-[70vh]">
+          <MotionWrapper animation="fadeIn" className="text-center">
+            <LoadingSpinner size="lg" />
+            <p className="mt-4 text-muted-foreground animate-pulse">
+              Please wait...
+            </p>
+          </MotionWrapper>
+        </div>
+      </PageWrapper>
+    );
   }
 
   return (
-    <PageWrapper isLoading={pageLoading}>
-      <div className="pt-24 pb-16">
-        <div className="container max-w-md mx-auto px-4">
-          <MotionWrapper animation="fadeIn">
-            <h1 className="text-3xl font-bold text-center mb-8">Welcome</h1>
-            
-            <Card className="p-6">
-              <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid grid-cols-2 w-full mb-6">
-                  <TabsTrigger value="signin">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="signin">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="your@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="pl-10"
-                          required
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-0 top-0 h-10 w-10"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
+    <PageWrapper>
+      <div className="container flex items-center justify-center py-10 md:py-20">
+        <MotionWrapper animation="fadeIn" className="w-full max-w-md">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">
+                {activeTab === "sign-up"
+                  ? "Create an Account"
+                  : activeTab === "forgot-password"
+                  ? "Reset Password"
+                  : "Welcome Back"}
+              </CardTitle>
+              <CardDescription className="text-center">
+                {activeTab === "sign-up"
+                  ? "Sign up to access all features"
+                  : activeTab === "forgot-password"
+                  ? "Enter your email to receive a password reset link"
+                  : "Sign in to your account"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {activeTab !== "forgot-password" ? (
+                <Tabs
+                  defaultValue={activeTab}
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="sign-in">Sign In</TabsTrigger>
+                    <TabsTrigger value="sign-up">Sign Up</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="sign-in" className="space-y-4">
+                    <Form {...signInForm}>
+                      <form
+                        onSubmit={signInForm.handleSubmit(onSignIn)}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={signInForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="email@example.com"
+                                  type="email"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
                           )}
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Signing in...
-                        </>
-                      ) : (
-                        <>
-                          <LogIn className="mr-2 h-4 w-4" />
+                        />
+                        <FormField
+                          control={signInForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center justify-between">
+                                <FormLabel>Password</FormLabel>
+                                <Button
+                                  type="button"
+                                  variant="link"
+                                  className="p-0 h-auto text-xs"
+                                  onClick={() => setActiveTab("forgot-password")}
+                                >
+                                  Forgot Password?
+                                </Button>
+                              </div>
+                              <FormControl>
+                                <Input
+                                  placeholder="••••••••"
+                                  type="password"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="submit" className="w-full">
                           Sign In
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="signup">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="your@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="signup-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="pl-10"
-                          required
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-0 top-0 h-10 w-10"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
                         </Button>
+                      </form>
+                    </Form>
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          Or continue with
+                        </span>
                       </div>
                     </div>
-                    
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating account...
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          Sign Up
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
-              
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                  </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={signInWithGitHub}
+                        className="w-full"
+                      >
+                        <GitHub className="mr-2 h-4 w-4" />
+                        GitHub
+                      </Button>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={signInWithEmail}
+                        className="w-full"
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        Email
+                      </Button>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="sign-up" className="space-y-4">
+                    <Form {...signUpForm}>
+                      <form
+                        onSubmit={signUpForm.handleSubmit(onSignUp)}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={signUpForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="email@example.com"
+                                  type="email"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signUpForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="••••••••"
+                                  type="password"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Must be at least 8 characters
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="submit" className="w-full">
+                          Create Account
+                        </Button>
+                      </form>
+                    </Form>
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          Or continue with
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={signInWithGitHub}
+                        className="w-full"
+                      >
+                        <GitHub className="mr-2 h-4 w-4" />
+                        GitHub
+                      </Button>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={signInWithEmail}
+                        className="w-full"
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        Email
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              ) : (
+                <div className="space-y-4">
+                  {isResetRequested ? (
+                    <div className="text-center py-6">
+                      <MotionWrapper animation="fadeIn">
+                        <div className="text-center mb-4">
+                          <Mail className="mx-auto h-10 w-10 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-medium mb-2">
+                          Check your email
+                        </h3>
+                        <p className="text-muted-foreground">
+                          We sent a password reset link to your email address.
+                        </p>
+                        <Button
+                          className="mt-4"
+                          variant="outline"
+                          onClick={() => {
+                            setIsResetRequested(false);
+                            setActiveTab("sign-in");
+                          }}
+                        >
+                          Back to Sign In
+                        </Button>
+                      </MotionWrapper>
+                    </div>
+                  ) : (
+                    <Form {...forgotPasswordForm}>
+                      <form
+                        onSubmit={forgotPasswordForm.handleSubmit(
+                          onForgotPassword
+                        )}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={forgotPasswordForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="email@example.com"
+                                  type="email"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="submit" className="w-full">
+                          Send Reset Link
+                        </Button>
+                      </form>
+                    </Form>
+                  )}
                 </div>
-                
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-center">
+              {activeTab === "forgot-password" && !isResetRequested && (
                 <Button
                   type="button"
-                  variant="outline"
-                  className="w-full mt-4"
-                  onClick={signInWithGoogle}
+                  variant="link"
+                  className="text-sm"
+                  onClick={() => setActiveTab("sign-in")}
                 >
-                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 mr-2" />
-                  Google
+                  Back to Sign In
                 </Button>
-              </div>
-            </Card>
-          </MotionWrapper>
-        </div>
+              )}
+            </CardFooter>
+          </Card>
+        </MotionWrapper>
       </div>
     </PageWrapper>
   );

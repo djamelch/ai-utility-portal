@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Star, StarHalf, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Star, StarHalf, Edit, Trash2, Loader2 } from "lucide-react";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Button } from "@/components/ui/button";
 import { ToolDetailHeader } from "@/components/tools/ToolDetailHeader";
@@ -241,9 +242,13 @@ export default function ToolDetail() {
 
       if (editReviewId) {
         // Update existing review
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('reviews')
-          .update({ ...values, user_id: user.id })
+          .update({ 
+            rating: values.rating, 
+            comment: values.comment, 
+            user_id: user.id 
+          })
           .eq('id', editReviewId);
 
         if (error) throw error;
@@ -254,9 +259,14 @@ export default function ToolDetail() {
         });
       } else {
         // Create new review
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('reviews')
-          .insert([{ ...values, tool_id: tool.id, user_id: user.id }]);
+          .insert({
+            tool_id: tool.id,
+            user_id: user.id,
+            rating: values.rating,
+            comment: values.comment
+          });
 
         if (error) throw error;
 
@@ -472,6 +482,7 @@ export default function ToolDetail() {
                                 {[1, 2, 3, 4, 5].map((index) => (
                                   <Button
                                     key={index}
+                                    type="button"
                                     variant="outline"
                                     className={form.watch("rating") === index ? "bg-primary text-primary-foreground hover:bg-primary/80" : ""}
                                     onClick={() => field.onChange(index)}
@@ -511,6 +522,7 @@ export default function ToolDetail() {
                       <div className="flex justify-end gap-2">
                         {editReviewId && (
                           <Button 
+                            type="button"
                             variant="destructive"
                             onClick={handleDeleteReview}
                             disabled={isDeleting}
@@ -528,7 +540,7 @@ export default function ToolDetail() {
                             )}
                           </Button>
                         )}
-                        <Button type="submit" disabled={!form.isValid}>
+                        <Button type="submit">
                           {editReviewId ? 'Update Review' : 'Submit Review'}
                         </Button>
                       </div>
