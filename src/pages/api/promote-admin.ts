@@ -5,6 +5,13 @@ export async function POST(req: Request) {
   try {
     const { userId } = await req.json();
     
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ message: 'User ID is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    
     // Get the user's session to pass along the JWT
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -34,8 +41,6 @@ export async function POST(req: Request) {
         { status: response.status, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    
-    const data = await response.json();
     
     return new Response(
       JSON.stringify({ message: 'Successfully promoted to admin' }),

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,29 +38,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Fetching user profile for:', userId);
       
-      // Use direct query instead of RPC to avoid type issues
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      // Use RPC call instead of direct query to avoid infinite recursion
+      const { data, error } = await supabase.rpc('get_profile_by_id', {
+        user_id: userId
+      });
       
       if (error) {
-        // If the profile doesn't exist, this will error with 'No rows returned'
-        if (error.code !== 'PGRST116') { // Not a 'no rows returned' error
-          throw error;
-        }
-      } else if (data) {
-        // Profile exists
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      
+      if (data) {
         setProfile(data as UserProfile);
         return;
       }
 
       // Profile doesn't exist, create one
       // Check if this is the first user (would be admin)
-      const { count, error: countError } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
+      const { count, error: countError } = await supabase.rpc('count_profiles');
       
       if (countError) {
         throw countError;
@@ -70,18 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isFirstUser = count === 0;
       const role = isFirstUser ? 'admin' : 'user';
       
-      // Create the user profile
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          role: role,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+      // Create the user profile using RPC
+      const { error: createError } = await supabase.rpc('create_new_profile', {
+        user_id: userId,
+        user_role: role
+      });
       
-      if (insertError) {
-        throw insertError;
+      if (createError) {
+        throw createError;
       }
       
       // Set the profile in state

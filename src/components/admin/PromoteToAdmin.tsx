@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 
@@ -22,13 +21,18 @@ export function PromoteToAdmin() {
     try {
       setIsLoading(true);
       
-      // Call the Supabase Edge Function directly
-      const { data, error } = await supabase.functions.invoke('promote-admin', {
-        body: { userId: user.id },
+      // Call the API route instead of the Edge Function directly
+      const response = await fetch('/api/promote-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id }),
       });
       
-      if (error) {
-        throw new Error(error.message || 'Failed to promote to admin');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to promote to admin');
       }
       
       toast({
