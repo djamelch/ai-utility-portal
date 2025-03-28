@@ -96,7 +96,7 @@ export default function ToolDetail() {
     
     setReviewsLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: reviewsData, error: reviewsError } = await supabase
         .from('reviews')
         .select(`
           id,
@@ -108,33 +108,15 @@ export default function ToolDetail() {
         .eq('tool_id', toolId)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (reviewsError) throw reviewsError;
       
-      const userIdsSet = new Set(data.map(review => review.user_id));
-      const userIds = Array.from(userIdsSet);
-      
-      const userEmailMap = new Map<string, string>();
-      
-      if (userIds.length > 0) {
-        const { data: userData, error: userError } = await supabase
-          .from('profiles')
-          .select('id')
-          .in('id', userIds);
-          
-        if (!userError && userData) {
-          for (const user of userData) {
-            userEmailMap.set(user.id, `User-${user.id.substring(0, 8)}`);
-          }
-        }
-      }
-      
-      const formattedReviews = data.map(review => ({
+      const formattedReviews = reviewsData.map(review => ({
         id: review.id,
         rating: review.rating,
         comment: review.comment,
         created_at: new Date(review.created_at).toLocaleDateString(),
         user_id: review.user_id,
-        user_email: userEmailMap.get(review.user_id) || 'Anonymous'
+        user_email: `User-${review.user_id.substring(0, 8)}`
       }));
       
       setReviews(formattedReviews);
