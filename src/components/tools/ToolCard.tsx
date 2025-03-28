@@ -1,5 +1,5 @@
 
-import { Star, ExternalLink, Heart, Image } from "lucide-react";
+import { Star, ExternalLink, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
