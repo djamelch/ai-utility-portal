@@ -1,9 +1,7 @@
 
-"use client";
-
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase-client';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +23,7 @@ export function UserReviewsTab() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -36,9 +34,6 @@ export function UserReviewsTab() {
   const fetchUserReviews = async () => {
     try {
       setIsLoading(true);
-      
-      if (!user?.id) return;
-      
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -51,19 +46,18 @@ export function UserReviewsTab() {
             company_name
           )
         `)
-        .eq('user_id', user.id)
+        .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Safely transform the data with proper error checking
       const formattedReviews = data.map(item => ({
         id: item.id,
         tool_id: item.tool_id,
         rating: item.rating,
         comment: item.comment,
-        tool_name: item.tools?.company_name || 'Unknown Tool',
-        created_at: new Date(item.created_at || Date.now()).toLocaleDateString()
+        tool_name: item.tools.company_name,
+        created_at: new Date(item.created_at).toLocaleDateString()
       }));
 
       setUserReviews(formattedReviews);
@@ -80,7 +74,7 @@ export function UserReviewsTab() {
   };
 
   const handleEditReview = (reviewId: string, toolId: number) => {
-    router.push(`/tool/${toolId}?editReviewId=${reviewId}`);
+    navigate(`/tool/${toolId}`, { state: { editReviewId: reviewId } });
   };
 
   const handleDeleteReview = async (reviewId: string) => {
@@ -144,7 +138,7 @@ export function UserReviewsTab() {
             <p className="text-muted-foreground mb-4">
               You haven't reviewed any AI tools yet
             </p>
-            <Button onClick={() => router.push('/tools')}>
+            <Button onClick={() => navigate('/tools')}>
               Browse Tools to Review
             </Button>
           </div>

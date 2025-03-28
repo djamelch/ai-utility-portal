@@ -1,11 +1,8 @@
 
-"use client";
-
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
-import { supabase } from "@/lib/supabase-client";
 
 // Define Tool interface to match the properties expected by ToolCard
 export interface Tool {
@@ -46,9 +43,7 @@ interface ToolGridProps {
   searchTerm?: string;
   categoryFilter?: string;
   searchQuery?: string;
-  taskFilter?: string; // Support for old property name
   category?: string;
-  priceFilter?: string; // Support for old property name
   pricing?: string;
   sortBy?: string;
 }
@@ -59,22 +54,18 @@ export function ToolGrid({
   searchTerm,
   categoryFilter,
   searchQuery = "",
-  taskFilter = "", // Add default value
   category = "",
-  priceFilter = "", // Add default value
   pricing = "",
   sortBy = "featured"
 }: ToolGridProps) {
   // Use both searchTerm and searchQuery (preference to searchQuery if both exist)
   const effectiveSearchTerm = searchQuery || searchTerm || "";
-  // Support both property naming conventions
-  const effectiveCategoryFilter = category || categoryFilter || taskFilter || "";
-  const effectivePricing = pricing || priceFilter || "";
+  const effectiveCategoryFilter = category || categoryFilter || "";
   const effectiveSortBy = sortBy !== "featured" ? sortBy : queryType;
   
   // Fetch tools based on query type and filters
   const { data: dbTools = [], isLoading } = useQuery({
-    queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, effectivePricing, effectiveSortBy],
+    queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, effectiveSortBy],
     queryFn: async () => {
       let query = supabase.from("tools").select("*");
       
@@ -101,8 +92,8 @@ export function ToolGrid({
       }
       
       // Apply pricing filter if provided
-      if (effectivePricing) {
-        query = query.eq("pricing", effectivePricing);
+      if (pricing) {
+        query = query.eq("pricing", pricing);
       }
       
       // Apply specific ordering based on query type or sortBy

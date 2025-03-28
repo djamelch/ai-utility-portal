@@ -50,10 +50,8 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         const { data } = await supabase
           .from('favorites')
           .select('id')
-          .match({
-            tool_id: numericId,
-            user_id: session.user.id
-          })
+          .eq('tool_id', numericId)
+          .eq('user_id', session.user.id)
           .maybeSingle();
         
         setIsFavorite(!!data);
@@ -88,10 +86,8 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         const { error } = await supabase
           .from('favorites')
           .delete()
-          .match({
-            tool_id: numericId,
-            user_id: session.user.id
-          });
+          .eq('tool_id', numericId)
+          .eq('user_id', session.user.id);
         
         if (error) throw error;
         
@@ -106,7 +102,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
           .from('favorites')
           .insert({
             tool_id: numericId,
-            user_id: session.user.id
+            user_id: session.user.id,
           });
         
         if (error) throw error;

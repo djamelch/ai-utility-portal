@@ -1,20 +1,34 @@
 
-import { supabase } from '@/lib/supabase-client';
+import { NextRequest, NextResponse } from "next/server";
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    // Check if the current user is authenticated
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    
+    // Check if the current user is admin
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      return new Response(
-        JSON.stringify({ message: 'Not authenticated' }),
-        { 
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+      return NextResponse.json(
+        { message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+    
+    // Check if the current user is an admin
+    const { data: adminCheck } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+    
+    if (!adminCheck || adminCheck.role !== 'admin') {
+      return NextResponse.json(
+        { message: 'Unauthorized - must be an admin' },
+        { status: 403 }
       );
     }
     
@@ -22,56 +36,10 @@ export async function POST(req: Request) {
     const { userId } = await req.json();
     
     if (!userId) {
-      return new Response(
-        JSON.stringify({ message: 'User ID is required' }),
-        { 
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+      return NextResponse.json(
+        { message: 'User ID is required' },
+        { status: 400 }
       );
-    }
-    
-    // Check if any admin already exists
-    const { count, error: countError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'admin');
-    
-    if (countError) {
-      console.error('Error checking admin count:', countError);
-      return new Response(
-        JSON.stringify({ message: 'Failed to check admin status' }),
-        { 
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-    }
-    
-    // If an admin already exists, check if current user is admin
-    if (count && count > 0) {
-      // Check if the current user is an admin
-      const { data: adminCheck } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-      
-      if (!adminCheck || adminCheck.role !== 'admin') {
-        return new Response(
-          JSON.stringify({ message: 'Unauthorized - must be an admin' }),
-          { 
-            status: 403,
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-      }
     }
     
     // Update the user's role to admin
@@ -82,36 +50,21 @@ export async function POST(req: Request) {
     
     if (error) {
       console.error('Error promoting user:', error);
-      return new Response(
-        JSON.stringify({ message: 'Failed to promote user to admin' }),
-        { 
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+      return NextResponse.json(
+        { message: 'Failed to promote user to admin' },
+        { status: 500 }
       );
     }
     
-    return new Response(
-      JSON.stringify({ message: 'Successfully promoted to admin' }),
-      { 
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
+    return NextResponse.json(
+      { message: 'Successfully promoted to admin' },
+      { status: 200 }
     );
   } catch (error) {
     console.error('API error:', error);
-    return new Response(
-      JSON.stringify({ message: 'Internal server error' }),
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
+    return NextResponse.json(
+      { message: 'Internal server error' },
+      { status: 500 }
     );
   }
 }

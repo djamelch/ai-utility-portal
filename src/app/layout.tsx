@@ -1,5 +1,5 @@
 
-import "@/styles/globals.css";
+import "@/index.css";
 import { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "AI Utility Portal",
   description: "Discover the best AI tools for your workflow",
   openGraph: {
-    images: ["https://lovable.dev/opengraph-image.png"],
+    images: ["https://lovable.dev/opengraph-image-p98pqg.png"],
   },
 };
 

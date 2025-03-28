@@ -1,8 +1,5 @@
 
-"use client";
-
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -13,24 +10,9 @@ type RequireAuthProps = {
 
 export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps) {
   const { user, isLoading, isAdmin } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isChecking, setIsChecking] = useState(true);
+  const location = useLocation();
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        // Redirect to the auth page, but save the current location
-        router.push(`/auth?from=${encodeURIComponent(pathname || '/')}`);
-      } else if (requireAdmin && !isAdmin) {
-        // User is logged in but not an admin, and we require admin access
-        router.push('/');
-      }
-      setIsChecking(false);
-    }
-  }, [user, isLoading, isAdmin, requireAdmin, router, pathname]);
-
-  if (isLoading || isChecking) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -39,11 +21,13 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
   }
 
   if (!user) {
-    return null;
+    // Redirect to the auth page, but save the current location
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (requireAdmin && !isAdmin) {
-    return null;
+    // User is logged in but not an admin, and we require admin access
+    return <Navigate to="/" replace />;
   }
 
   // User is logged in (and is admin if required)

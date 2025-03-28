@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
 
@@ -14,7 +14,6 @@ export function PromoteToAdmin() {
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
   const { toast } = useToast();
   const { user, profile } = useAuth();
-  const supabase = createClientComponentClient();
   
   // Check if any admin users already exist using a safer approach
   useEffect(() => {
@@ -44,7 +43,7 @@ export function PromoteToAdmin() {
     };
     
     checkIfAdminExists();
-  }, [supabase]);
+  }, []);
   
   // Don't show the button if user is already an admin
   if (profile?.role === 'admin') {
@@ -85,11 +84,12 @@ export function PromoteToAdmin() {
         return;
       }
       
-      // Call our API endpoint
+      // Call our API endpoint instead of directly accessing supabaseUrl
       const response = await fetch('/api/promote-admin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
         },
         body: JSON.stringify({ userId: user.id }),
       });

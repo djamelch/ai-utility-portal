@@ -1,11 +1,8 @@
-"use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase-client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Database } from '@/lib/database.types';
 
 // Define the UserProfile type for our profiles table
 interface UserProfile {
@@ -37,12 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('Fetching user profile for:', userId);
       
+      // Use direct query instead of RPC to avoid type issues
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -50,14 +47,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
       
       if (error) {
-        if (error.code !== 'PGRST116') {
+        // If the profile doesn't exist, this will error with 'No rows returned'
+        if (error.code !== 'PGRST116') { // Not a 'no rows returned' error
           throw error;
         }
       } else if (data) {
+        // Profile exists
         setProfile(data as UserProfile);
         return;
       }
 
+      // Profile doesn't exist, create one
+      // Check if this is the first user (would be admin)
       const { count, error: countError } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
@@ -69,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isFirstUser = count === 0;
       const role = isFirstUser ? 'admin' : 'user';
       
+      // Create the user profile
       const { error: insertError } = await supabase
         .from('profiles')
         .insert({
@@ -82,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw insertError;
       }
       
+      // Set the profile in state
       setProfile({
         id: userId,
         role: role,
@@ -90,9 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (err) {
       console.error('Error handling user profile:', err);
+      // Fallback to create a mock profile for authentication to continue working
       setProfile({
         id: userId,
-        role: 'user',
+        role: 'user', // Default to user role
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -100,14 +104,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Set loading state
     setIsLoading(true);
 
+    // First, set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Use setTimeout to defer profile fetching to avoid recursion
+          // This is important to prevent the infinite recursion issue
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
@@ -119,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Then check for existing session
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -138,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth();
 
+    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
@@ -251,8 +261,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: error.message,
           variant: "destructive",
         });
-      } else {
-        navigate('/');
       }
     } catch (error) {
       console.error('Error signing out:', error);

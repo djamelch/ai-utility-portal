@@ -1,4 +1,6 @@
 
+"use client";
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
@@ -7,6 +9,7 @@ import { FeatureSection } from "@/components/home/FeatureSection";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
   return (
