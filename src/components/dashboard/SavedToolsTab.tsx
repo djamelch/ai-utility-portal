@@ -17,6 +17,7 @@ interface SavedTool {
   primary_task: string | null;
   pricing: string | null;
   favorite_id: string;
+  visit_website_url?: string;
 }
 
 export function SavedToolsTab() {
@@ -46,7 +47,8 @@ export function SavedToolsTab() {
             short_description,
             logo_url,
             primary_task,
-            pricing
+            pricing,
+            visit_website_url
           )
         `)
         .eq('user_id', user?.id);
@@ -62,7 +64,8 @@ export function SavedToolsTab() {
           logo_url: item.tools.logo_url,
           primary_task: item.tools.primary_task,
           pricing: item.tools.pricing,
-          favorite_id: item.id
+          favorite_id: item.id,
+          visit_website_url: item.tools.visit_website_url
         }));
 
       setSavedTools(formattedTools);
@@ -104,7 +107,7 @@ export function SavedToolsTab() {
   };
 
   return (
-    <Card>
+    <Card className="border-border/60 dark:border-accent/10 shadow-md">
       <CardHeader>
         <CardTitle>Your Saved AI Tools</CardTitle>
         <CardDescription>
@@ -128,6 +131,7 @@ export function SavedToolsTab() {
                 primary_task={tool.primary_task}
                 pricing={tool.pricing}
                 favorite_id={tool.favorite_id}
+                visit_website_url={tool.visit_website_url}
                 onRemove={handleRemoveSaved}
               />
             ))}

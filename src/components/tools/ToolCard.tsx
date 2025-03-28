@@ -161,11 +161,16 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   return (
     <div 
       className={cn(
-        "group relative flex flex-col rounded-xl border border-border/60 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md p-5",
+        "group relative h-full flex flex-col rounded-xl border border-border/60 dark:border-accent/10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md p-5",
         className
       )}
     >
+      {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-50 rounded-xl pointer-events-none" />
+      
+      {/* Glass-like highlight effect on top */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
+      <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
       <div className="absolute top-4 right-4 flex flex-col gap-2">
         {isFeatured && (
@@ -181,7 +186,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       </div>
 
       <div className="flex items-start gap-4 relative">
-        <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/90 dark:bg-secondary/20 shadow-sm border border-border/20">
+        <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/90 dark:bg-secondary/20 shadow-sm border border-border/50 dark:border-border/20">
           {!imgError ? (
             <img 
               src={logo || placeholderImage} 
@@ -209,7 +214,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
             </h3>
           </div>
           
-          <div className="mt-1 flex items-center gap-2 flex-wrap">
+          <div className="mt-1 flex items-center gap-2 flex-wrap min-h-[1.75rem]">
             {category && (
               <span className="rounded-full bg-secondary/90 px-2.5 py-0.5 text-xs font-medium text-foreground/80 dark:bg-secondary/30 dark:text-foreground/90 border border-border/20">
                 {category}
@@ -224,11 +229,11 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         </div>
       </div>
 
-      <p className="mt-4 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 relative">
+      <p className="mt-4 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem] relative">
         {description}
       </p>
 
-      <div className="mt-4 flex items-center gap-1 relative">
+      <div className="mt-4 flex items-center gap-1 relative min-h-[1.25rem]">
         <div className="flex">
           {[...Array(5)].map((_, i) => (
             <Star
@@ -243,7 +248,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         </span>
       </div>
 
-      <div className="mt-5 flex items-center gap-2 text-sm relative">
+      <div className="mt-auto pt-5 flex items-center gap-2 text-sm relative">
         <Link
           to={`/tool/${toolSlug}`}
           className="flex-1 rounded-lg border border-border/80 dark:border-border/30 bg-background/80 dark:bg-background/20 px-3 py-2 text-center font-medium hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary transition-colors"
