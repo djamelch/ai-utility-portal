@@ -23,7 +23,7 @@ export function PromoteToAdmin() {
       
       console.log('Requesting admin promotion for user:', user.id);
       
-      // Call the API route instead of the Edge Function directly
+      // Call the API route
       const response = await fetch('/api/promote-admin', {
         method: 'POST',
         headers: {
