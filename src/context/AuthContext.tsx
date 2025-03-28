@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const router = useNavigate();
+  const navigate = useNavigate();
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -252,8 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           variant: "destructive",
         });
       } else {
-        router.push('/');
-        router.refresh();
+        navigate('/');
       }
     } catch (error) {
       console.error('Error signing out:', error);
