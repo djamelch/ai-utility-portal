@@ -32,7 +32,18 @@ export function PromoteToAdmin() {
         body: JSON.stringify({ userId: user.id }),
       });
       
-      const data = await response.json();
+      // First get response as text
+      const responseText = await response.text();
+      let data;
+      
+      try {
+        // Try to parse the response as JSON
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        console.error('Error parsing response:', responseText);
+        throw new Error('Failed to parse server response');
+      }
+      
       console.log('Admin promotion response:', data);
       
       if (!response.ok) {

@@ -27,35 +27,57 @@ export async function POST(req: Request) {
     
     console.log('Calling promote-admin function at:', functionUrl);
     
-    const response = await fetch(functionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify({ userId }),
-    });
-    
-    const responseData = await response.json();
-    console.log('Function response:', responseData);
-    
-    if (!response.ok) {
+    try {
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ userId }),
+      });
+      
+      // Make sure we read the response regardless of status
+      const text = await response.text();
+      let responseData;
+      
+      try {
+        // Try to parse as JSON if possible
+        responseData = text ? JSON.parse(text) : {};
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', text);
+        responseData = { message: 'Invalid response format' };
+      }
+      
+      console.log('Function response:', responseData);
+      
+      if (!response.ok) {
+        return new Response(
+          JSON.stringify({ 
+            message: responseData?.message || 'Failed to promote to admin',
+            details: responseData 
+          }),
+          { status: response.status, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ 
-          message: responseData.message || 'Failed to promote to admin',
-          details: responseData 
+          message: 'Successfully promoted to admin',
+          profile: responseData?.profile || null
         }),
-        { status: response.status, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    } catch (fetchError) {
+      console.error('Fetch error:', fetchError);
+      return new Response(
+        JSON.stringify({ 
+          message: 'Error communicating with function', 
+          error: String(fetchError) 
+        }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    
-    return new Response(
-      JSON.stringify({ 
-        message: 'Successfully promoted to admin',
-        profile: responseData.profile
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
   } catch (error) {
     console.error('API error:', error);
     return new Response(
