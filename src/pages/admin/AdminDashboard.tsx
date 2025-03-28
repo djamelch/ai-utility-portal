@@ -21,7 +21,6 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Set the active tab based on the current route
   useEffect(() => {
     if (location.pathname.includes('/admin/tools')) {
       setActiveTab('tools');
@@ -30,7 +29,6 @@ export default function AdminDashboard() {
     }
   }, [location.pathname]);
 
-  // Ensure that non-admin users can't access the admin dashboard
   useEffect(() => {
     if (!isLoading && !isAdmin) {
       navigate('/dashboard');

@@ -101,7 +101,7 @@ const Tools = () => {
   };
 
   return (
-    <PageLoadingWrapper isLoading={isLoading && !hasError} loadingText="جاري تحميل دليل الأدوات...">
+    <PageLoadingWrapper isLoading={isLoading && !hasError} loadingText="Loading AI tools directory...">
       <div className="flex min-h-screen flex-col">
         <Navbar />
         
@@ -110,10 +110,10 @@ const Tools = () => {
             <MotionWrapper animation="fadeIn">
               <div className="mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold">
-                  دليل أدوات الذكاء الاصطناعي
+                  AI Tools Directory
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                  اكتشف أفضل أدوات الذكاء الاصطناعي لكل احتياجاتك
+                  Discover the best AI tools for all your needs
                 </p>
               </div>
             </MotionWrapper>
@@ -121,16 +121,16 @@ const Tools = () => {
             {hasError ? (
               <Alert variant="destructive" className="mb-6">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>خطأ في التحميل</AlertTitle>
+                <AlertTitle>Loading Error</AlertTitle>
                 <AlertDescription>
-                  حدث خطأ أثناء تحميل بيانات الفلاتر. يرجى المحاولة مرة أخرى لاحقاً.
+                  An error occurred while loading filter data. Please try again later.
                   <Button 
                     onClick={retryFetching} 
                     variant="outline" 
                     size="sm" 
                     className="mr-2 mt-2"
                   >
-                    إعادة المحاولة
+                    Try Again
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -143,7 +143,7 @@ const Tools = () => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                       <input
                         type="text"
-                        placeholder="البحث عن أدوات..."
+                        placeholder="Search for tools..."
                         className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,7 +156,7 @@ const Tools = () => {
                       className="md:hidden inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2"
                     >
                       <Filter size={18} />
-                      الفلاتر
+                      Filters
                     </button>
                     
                     <div className="hidden md:flex items-center gap-3">
@@ -165,7 +165,7 @@ const Tools = () => {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                       >
-                        <option value="">كل الفئات</option>
+                        <option value="">All Categories</option>
                         {categories.map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
@@ -178,7 +178,7 @@ const Tools = () => {
                         value={pricing}
                         onChange={(e) => setPricing(e.target.value)}
                       >
-                        <option value="">كل التسعيرات</option>
+                        <option value="">All Pricing</option>
                         {pricingOptions.map((price) => (
                           <option key={price} value={price}>
                             {price}
@@ -191,9 +191,9 @@ const Tools = () => {
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
                       >
-                        <option value="featured">المميزة</option>
-                        <option value="newest">الأحدث</option>
-                        <option value="popular">الأكثر شعبية</option>
+                        <option value="featured">Featured</option>
+                        <option value="newest">Newest</option>
+                        <option value="popular">Most Popular</option>
                       </select>
                     </div>
                   </form>
@@ -206,7 +206,7 @@ const Tools = () => {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                       >
-                        <option value="">كل الفئات</option>
+                        <option value="">All Categories</option>
                         {categories.map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
@@ -219,7 +219,7 @@ const Tools = () => {
                         value={pricing}
                         onChange={(e) => setPricing(e.target.value)}
                       >
-                        <option value="">كل التسعيرات</option>
+                        <option value="">All Pricing</option>
                         {pricingOptions.map((price) => (
                           <option key={price} value={price}>
                             {price}
@@ -232,9 +232,9 @@ const Tools = () => {
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
                       >
-                        <option value="featured">المميزة</option>
-                        <option value="newest">الأحدث</option>
-                        <option value="popular">الأكثر شعبية</option>
+                        <option value="featured">Featured</option>
+                        <option value="newest">Newest</option>
+                        <option value="popular">Most Popular</option>
                       </select>
                     </div>
                   )}
@@ -244,8 +244,8 @@ const Tools = () => {
                     <div className="mt-4 flex flex-wrap gap-2">
                       {searchQuery && (
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          البحث: {searchQuery}
-                          <button aria-label="إزالة الفلتر" onClick={() => setSearchQuery("")}>
+                          Search: {searchQuery}
+                          <button aria-label="Remove filter" onClick={() => setSearchQuery("")}>
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -255,8 +255,8 @@ const Tools = () => {
                       
                       {category && (
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          الفئة: {category}
-                          <button aria-label="إزالة الفلتر" onClick={() => setCategory("")}>
+                          Category: {category}
+                          <button aria-label="Remove filter" onClick={() => setCategory("")}>
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -266,8 +266,8 @@ const Tools = () => {
                       
                       {pricing && (
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          التسعير: {pricing}
-                          <button aria-label="إزالة الفلتر" onClick={() => setPricing("")}>
+                          Pricing: {pricing}
+                          <button aria-label="Remove filter" onClick={() => setPricing("")}>
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -277,8 +277,8 @@ const Tools = () => {
                       
                       {sortBy !== "featured" && (
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          الترتيب: {sortBy === "newest" ? "الأحدث" : "الأكثر شعبية"}
-                          <button aria-label="إزالة الفلتر" onClick={() => setSortBy("featured")}>
+                          Sort: {sortBy === "newest" ? "Newest" : "Most Popular"}
+                          <button aria-label="Remove filter" onClick={() => setSortBy("featured")}>
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -290,7 +290,7 @@ const Tools = () => {
                         onClick={clearFilters}
                         className="inline-flex items-center gap-1.5 rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
                       >
-                        إزالة جميع الفلاتر
+                        Remove All Filters
                       </button>
                     </div>
                   )}
@@ -302,7 +302,7 @@ const Tools = () => {
               <div className="mb-6 flex items-center justify-between">
                 <button className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
                   <SlidersHorizontal size={16} />
-                  فلاتر متقدمة
+                  Advanced Filters
                 </button>
               </div>
               
