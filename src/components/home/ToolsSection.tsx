@@ -27,7 +27,7 @@ export function ToolsSection({
   title, 
   description, 
   queryType,
-  limit = 8 
+  limit = 6 
 }: ToolsSectionProps) {
   const isMobile = useIsMobile();
   

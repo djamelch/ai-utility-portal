@@ -26,20 +26,20 @@ const Index = () => {
           limit={6}
         />
         
-        {/* Top Rated Tools Section - New */}
+        {/* Top Rated Tools Section - Updated limit to 6 */}
         <ToolsSection 
           title="Top Rated Tools" 
           description="Explore the highest rated AI tools by our community"
           queryType="top-rated"
-          limit={3}
+          limit={6}
         />
         
-        {/* Recently Added Tools Section - New */}
+        {/* Recently Added Tools Section - Updated limit to 6 */}
         <ToolsSection 
           title="Recently Added Tools" 
           description="Check out the latest AI tools added to our collection"
           queryType="recent"
-          limit={3}
+          limit={6}
         />
         
         {/* Feature Section - Kept as is */}
