@@ -4,7 +4,6 @@ import { ArrowRight } from "lucide-react";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { ToolGrid } from "@/components/tools/ToolGrid";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { 
   Carousel, 
   CarouselContent, 
@@ -113,9 +112,11 @@ export function ToolsSection({
             <Carousel className="w-full">
               <CarouselContent className="-ml-2 md:-ml-4">
                 {isLoading ? (
-                  <div className="w-full flex items-center justify-center py-16">
-                    <LoadingSpinner size="md" />
-                  </div>
+                  Array(4).fill(0).map((_, index) => (
+                    <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-full">
+                      <div className="h-[320px] rounded-xl bg-secondary/20 animate-pulse" />
+                    </CarouselItem>
+                  ))
                 ) : tools.length === 0 ? (
                   <CarouselItem className="pl-2 md:pl-4 basis-full sm:basis-full">
                     <div className="text-center p-8">
@@ -145,13 +146,7 @@ export function ToolsSection({
             </Carousel>
           </div>
         ) : (
-          isLoading ? (
-            <div className="w-full flex items-center justify-center py-16">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <ToolGrid queryType={queryType} limit={limit} columnsPerRow={3} />
-          )
+          <ToolGrid queryType={queryType} limit={limit} columnsPerRow={3} />
         )}
         
         <div className="mt-6 text-center sm:hidden">

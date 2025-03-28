@@ -1,563 +1,385 @@
-
-import { useState, useEffect } from "react";
-import { PageWrapper } from "@/components/layout/PageWrapper";
-import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Star, StarHalf, Edit, Trash2, Loader2 } from "lucide-react";
-import { MotionWrapper } from "@/components/ui/MotionWrapper";
-import { Button } from "@/components/ui/button";
-import { ToolDetailHeader } from "@/components/tools/ToolDetailHeader";
-import { ToolDetailSection } from "@/components/tools/ToolDetailSection";
-import { ToolDetailReviews } from "@/components/tools/ToolDetailReviews";
-import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Skeleton } from "@/components/ui/skeleton";
-
-const reviewSchema = z.object({
-  rating: z.number().min(1).max(5),
-  comment: z.string().optional(),
-})
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
+import { MotionWrapper } from '@/components/ui/MotionWrapper';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { ExternalLink, Star, User, Calendar, Tag, Clock, ChevronLeft, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function ToolDetail() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [tool, setTool] = useState<any>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isReviewing, setIsReviewing] = useState(false);
-  const [initialRating, setInitialRating] = useState(0);
-  const [initialComment, setInitialComment] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuth();
   const { toast } = useToast();
-  const editReviewId = location.state?.editReviewId;
-
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [averageRating, setAverageRating] = useState(0);
-  const [reviewCount, setReviewCount] = useState(0);
-
+  const [tool, setTool] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  
   useEffect(() => {
-    // Simulate loading time or use for actual data fetching
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (slug) {
-      fetchToolDetails(slug);
-    }
-  }, [slug]);
-
-  useEffect(() => {
-    if (user && tool) {
-      checkIfFavorite(tool.id);
-    }
-  }, [user, tool]);
-
-  useEffect(() => {
-    if (tool) {
-      fetchReviews(tool.id);
-    }
-  }, [tool]);
-
-  const fetchToolDetails = async (slug: string) => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('tools')
-        .select('*')
-        .eq('slug', slug)
-        .single();
-
-      if (error) throw error;
-
-      setTool(data);
-    } catch (error) {
-      console.error('Error fetching tool details:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load tool details',
-        variant: 'destructive'
-      });
-      navigate('/tools');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const checkIfFavorite = async (toolId: number) => {
-    try {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('id')
-        .eq('user_id', user?.id)
-        .eq('tool_id', toolId)
-        .single();
-
-      if (error) throw error;
-
-      setIsFavorite(!!data);
-    } catch (error) {
-      console.error('Error checking if favorite:', error);
-    }
-  };
-
-  const toggleFavorite = async () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    try {
-      if (isFavorite) {
-        // Remove from favorites
-        const { data, error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('tool_id', tool.id);
-
-        if (error) throw error;
-
-        setIsFavorite(false);
-        toast({
-          title: 'Success',
-          description: 'Removed from favorites',
-        });
-      } else {
-        // Add to favorites
-        const { data, error } = await supabase
-          .from('favorites')
-          .insert([{ user_id: user.id, tool_id: tool.id }]);
-
-        if (error) throw error;
-
-        setIsFavorite(true);
-        toast({
-          title: 'Success',
-          description: 'Added to favorites',
-        });
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update favorites',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const fetchReviews = async (toolId: number) => {
-    try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .eq('tool_id', toolId);
-
-      if (error) throw error;
-
-      setReviews(data);
-
-      // Calculate average rating and review count
-      if (data && data.length > 0) {
-        const totalRating = data.reduce((sum, review) => sum + review.rating, 0);
-        const avgRating = totalRating / data.length;
-        setAverageRating(avgRating);
-        setReviewCount(data.length);
-      } else {
-        setAverageRating(0);
-        setReviewCount(0);
-      }
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load reviews',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const form = useForm<z.infer<typeof reviewSchema>>({
-    resolver: zodResolver(reviewSchema),
-    defaultValues: {
-      rating: initialRating,
-      comment: initialComment,
-    },
-    mode: "onChange"
-  })
-
-  useEffect(() => {
-    if (editReviewId) {
-      // Find the review with the matching ID
-      const reviewToEdit = reviews.find(review => review.id === editReviewId);
+    const fetchTool = async () => {
+      setLoading(true);
+      setNotFound(false);
       
-      if (reviewToEdit) {
-        // Set the initial values for the form
-        form.setValue("rating", reviewToEdit.rating);
-        form.setValue("comment", reviewToEdit.comment || "");
-        setInitialRating(reviewToEdit.rating);
-        setInitialComment(reviewToEdit.comment || "");
-        setIsReviewing(true);
-      }
-    }
-  }, [editReviewId, reviews, form]);
-
-  const onSubmit = async (values: z.infer<typeof reviewSchema>) => {
-    try {
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
-
-      if (editReviewId) {
-        // Update existing review
-        const { error } = await supabase
-          .from('reviews')
-          .update({ 
-            rating: values.rating, 
-            comment: values.comment, 
-            user_id: user.id 
-          })
-          .eq('id', editReviewId);
-
-        if (error) throw error;
-
+      try {
+        let query = supabase.from('tools').select('*');
+        
+        // Only query by slug
+        if (slug) {
+          query = query.eq('slug', slug);
+        }
+        
+        const { data, error } = await query.maybeSingle();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (!data) {
+          console.error('Tool not found with slug:', slug);
+          setNotFound(true);
+          return;
+        }
+        
+        console.log('Tool data:', data);
+        setTool(data);
+      } catch (error) {
+        console.error('Error fetching tool:', error);
         toast({
-          title: 'Success',
-          description: 'Review updated successfully',
+          title: 'Error fetching tool',
+          description: 'Failed to load tool details',
+          variant: 'destructive',
         });
-      } else {
-        // Create new review
-        const { error } = await supabase
-          .from('reviews')
-          .insert({
-            tool_id: tool.id,
-            user_id: user.id,
-            rating: values.rating,
-            comment: values.comment
-          });
-
-        if (error) throw error;
-
-        toast({
-          title: 'Success',
-          description: 'Review submitted successfully',
-        });
+        setNotFound(true);
+      } finally {
+        setLoading(false);
       }
-
-      // Refetch reviews
-      fetchReviews(tool.id);
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to submit review',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsReviewing(false);
-      form.reset();
-    }
-  }
-
-  const handleDeleteReview = async () => {
+    };
+    
+    fetchTool();
+  }, [slug, toast]);
+  
+  const handleVisitWebsite = async () => {
+    if (!tool) return;
+    
     try {
-      setIsDeleting(true);
-
-      const { error } = await supabase
-        .from('reviews')
-        .delete()
-        .eq('id', editReviewId);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Review deleted successfully',
-      });
-
-      // Refetch reviews
-      fetchReviews(tool.id);
+      // Increment click count
+      await supabase.rpc('increment_tool_click_count', { tool_id: tool.id });
+      
+      // Open website in new tab
+      const url = tool.visit_website_url || tool.detail_url || '#';
+      window.open(url, '_blank', 'noopener,noreferrer');
     } catch (error) {
-      console.error('Error deleting review:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete review',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsDeleting(false);
-      setIsReviewing(false);
-      form.reset();
+      console.error('Error tracking click:', error);
     }
   };
-
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      if (i <= rating) {
-        // Full star
-        stars.push(<Star key={i} className="h-5 w-5 text-yellow-500" />);
-      } else if (i - 0.5 === rating) {
-        // Half star
-        stars.push(<StarHalf key={i} className="h-5 w-5 text-yellow-500" />);
-      } else {
-        // Empty star
-        stars.push(<Star key={i} className="h-5 w-5 text-gray-300" />);
-      }
-    }
-    return stars;
-  };
-
-  if (isLoading) {
+  
+  if (loading) {
     return (
-      <PageWrapper isLoading={true}>
-        <div className="container max-w-screen-lg mx-auto px-4">
-          <MotionWrapper animation="fadeIn">
-            <div className="mb-8">
-              <Skeleton className="h-10 w-64" />
-              <Skeleton className="h-4 w-48 mt-2" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-40 w-full mt-4" />
-                <Skeleton className="h-8 w-32 mt-4" />
-                <Skeleton className="h-24 w-full mt-2" />
-                <Skeleton className="h-8 w-32 mt-4" />
-                <Skeleton className="h-24 w-full mt-2" />
-              </div>
-              <div>
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-48 w-full mt-4" />
-              </div>
-            </div>
-            <Skeleton className="h-12 w-full mt-8" />
-            <div className="mt-4 space-y-4">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-            </div>
-          </MotionWrapper>
-        </div>
-      </PageWrapper>
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
     );
   }
-
-  if (!tool) {
+  
+  if (notFound) {
     return (
-      <PageWrapper>
-        <div className="container max-w-screen-lg mx-auto px-4">
-          <MotionWrapper animation="fadeIn">
-            <div className="text-center py-24">
-              <h2 className="text-2xl font-bold">Tool Not Found</h2>
-              <p className="mt-2 text-muted-foreground">
-                Sorry, we couldn't find the tool you were looking for.
-              </p>
-              <Button onClick={() => navigate('/tools')}>
-                Back to Tools
-              </Button>
-            </div>
-          </MotionWrapper>
-        </div>
-      </PageWrapper>
-    );
-  }
-
-  return (
-    <PageWrapper>
-      <div className="container max-w-screen-lg mx-auto px-4">
-        <MotionWrapper animation="fadeIn">
-          <div className="mb-8">
-            <Link to="/tools" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Tools
-            </Link>
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-1 py-24">
+          <div className="container-wide">
+            <MotionWrapper animation="fadeIn">
+              <div className="text-center py-12">
+                <h1 className="text-4xl font-bold mb-4">Tool Not Found</h1>
+                <p className="text-muted-foreground mb-8">
+                  The tool you're looking for doesn't exist or has been removed.
+                </p>
+                <Button onClick={() => navigate('/tools')}>
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Back to Tools
+                </Button>
+              </div>
+            </MotionWrapper>
           </div>
-
-          <ToolDetailHeader
-            logo={tool.logo_url}
-            name={tool.company_name}
-            description={tool.short_description}
-            url={tool.visit_website_url}
-            isFavorite={isFavorite}
-            toggleFavorite={toggleFavorite}
-            averageRating={averageRating}
-            reviewCount={reviewCount}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <ToolDetailSection title="Overview" content={tool.long_description} />
-              <ToolDetailSection title="Pricing" content={tool.pricing} />
-            </div>
-
-            <div>
-              <div className="rounded-xl bg-secondary/50 dark:bg-secondary/30 border border-border/40 p-6">
-                <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
-                <ul className="space-y-3">
-                  <li>
-                    <a href={tool.visit_website_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
-                      <ExternalLink className="h-4 w-4" />
-                      Visit Website
-                    </a>
-                  </li>
-                  <li>
-                    <a href={tool.detail_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:underline">
-                      <ExternalLink className="h-4 w-4" />
-                      More Details
-                    </a>
-                  </li>
-                </ul>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+      
+      <main className="flex-1 py-24">
+        <div className="container-wide">
+          <MotionWrapper animation="fadeIn">
+            <Button 
+              variant="ghost" 
+              className="mb-6"
+              onClick={() => navigate('/tools')}
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Back to Tools
+            </Button>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main content */}
+              <div className="lg:col-span-2 space-y-8">
+                {/* Header */}
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 overflow-hidden rounded-lg border bg-background flex-shrink-0">
+                    <img 
+                      src={tool.logo_url || "https://via.placeholder.com/120?text=AI+Tool"} 
+                      alt={`${tool.company_name} logo`}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://via.placeholder.com/120?text=AI+Tool";
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold">{tool.company_name}</h1>
+                    <p className="text-muted-foreground">{tool.short_description}</p>
+                  </div>
+                </div>
+                
+                {/* Featured image */}
+                {tool.featured_image_url && (
+                  <div className="rounded-xl overflow-hidden aspect-video bg-secondary/30">
+                    <img 
+                      src={tool.featured_image_url} 
+                      alt={`${tool.company_name} featured image`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+                
+                {/* Tabs */}
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="details">Details</TabsTrigger>
+                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="overview" className="mt-6">
+                    <div className="space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold mb-3">About</h2>
+                        <p className="text-muted-foreground whitespace-pre-line">
+                          {tool.full_description || tool.short_description || "No description available."}
+                        </p>
+                      </div>
+                      
+                      {(tool.pros && tool.pros.length > 0) || (tool.cons && tool.cons.length > 0) ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {tool.pros && tool.pros.length > 0 && (
+                            <div className="space-y-2">
+                              <h3 className="font-medium">Pros</h3>
+                              <ul className="space-y-1">
+                                {tool.pros.map((pro: string, i: number) => (
+                                  <li key={i} className="flex items-start">
+                                    <span className="text-green-500 mr-2">✓</span>
+                                    <span>{pro}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {tool.cons && tool.cons.length > 0 && (
+                            <div className="space-y-2">
+                              <h3 className="font-medium">Cons</h3>
+                              <ul className="space-y-1">
+                                {tool.cons.map((con: string, i: number) => (
+                                  <li key={i} className="flex items-start">
+                                    <span className="text-red-500 mr-2">✗</span>
+                                    <span>{con}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+                      
+                      {tool.faqs && Object.keys(tool.faqs).length > 0 && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-3">Frequently Asked Questions</h2>
+                          <div className="space-y-4">
+                            {Array.isArray(tool.faqs) ? 
+                              tool.faqs.map((faq: any, i: number) => (
+                                <div key={i} className="border rounded-lg p-4">
+                                  <h3 className="font-medium mb-2">{faq.question}</h3>
+                                  <p className="text-muted-foreground">{faq.answer}</p>
+                                </div>
+                              )) : 
+                              Object.entries(tool.faqs).map(([key, value]: [string, any], i: number) => (
+                                <div key={i} className="border rounded-lg p-4">
+                                  <h3 className="font-medium mb-2">{key}</h3>
+                                  <p className="text-muted-foreground">{value}</p>
+                                </div>
+                              ))
+                            }
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="details" className="mt-6">
+                    <div className="space-y-6">
+                      <div>
+                        <h2 className="text-xl font-semibold mb-3">Technical Details</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                          {tool.primary_task && (
+                            <div className="flex items-center gap-2">
+                              <Tag className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-sm font-medium">Primary Task</p>
+                                <p className="text-sm text-muted-foreground">{tool.primary_task}</p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {tool.pricing && (
+                            <div className="flex items-center gap-2">
+                              <Tag className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-sm font-medium">Pricing Model</p>
+                                <p className="text-sm text-muted-foreground">{tool.pricing}</p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {tool.created_at && (
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-sm font-medium">Added on</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {new Date(tool.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {tool.updated_at && tool.updated_at !== tool.created_at && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-sm font-medium">Last Updated</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {new Date(tool.updated_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {tool.applicable_tasks && tool.applicable_tasks.length > 0 && (
+                        <div>
+                          <h3 className="font-medium mb-2">Applicable Tasks</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {tool.applicable_tasks.map((task: string, i: number) => (
+                              <span 
+                                key={i}
+                                className="bg-secondary text-foreground text-sm rounded-full px-3 py-1"
+                              >
+                                {task}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="reviews" className="mt-6">
+                    <div className="text-center py-8">
+                      <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                      <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Be the first to review this tool and help others make better decisions.
+                      </p>
+                      <Button>Write a Review</Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
-
-              <div className="rounded-xl bg-secondary/50 dark:bg-secondary/30 border border-border/40 p-6 mt-6">
-                <h3 className="text-xl font-semibold mb-4">Categories</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Badge>{tool.primary_task}</Badge>
-                  {/* Add more categories as needed */}
+              
+              {/* Sidebar */}
+              <div className="space-y-6">
+                <div className="border rounded-xl p-6 sticky top-24">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          size={18}
+                          className="text-muted-foreground/30"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-muted-foreground">No reviews yet</span>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Button 
+                      className="w-full" 
+                      size="lg"
+                      onClick={handleVisitWebsite}
+                    >
+                      Visit Website
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="font-medium mb-2">Quick Info</h3>
+                      <ul className="space-y-2 text-sm">
+                        {tool.primary_task && (
+                          <li className="flex justify-between">
+                            <span className="text-muted-foreground">Category</span>
+                            <span>{tool.primary_task}</span>
+                          </li>
+                        )}
+                        
+                        {tool.pricing && (
+                          <li className="flex justify-between">
+                            <span className="text-muted-foreground">Pricing</span>
+                            <span>{tool.pricing}</span>
+                          </li>
+                        )}
+                        
+                        <li className="flex justify-between">
+                          <span className="text-muted-foreground">Reviews</span>
+                          <span>0</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <Separator className="my-8" />
-
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Reviews</h2>
-            {user ? (
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button onClick={() => setIsReviewing(true)}>
-                    {editReviewId ? 'Edit Review' : 'Add Review'}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="sm:max-w-lg">
-                  <SheetHeader>
-                    <SheetTitle>{editReviewId ? 'Edit Review' : 'Add Review'}</SheetTitle>
-                    <SheetDescription>
-                      Share your experience with this tool to help others make informed decisions.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                      <FormField
-                        control={form.control}
-                        name="rating"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Rating</FormLabel>
-                            <FormControl>
-                              <div className="flex gap-2">
-                                {[1, 2, 3, 4, 5].map((index) => (
-                                  <Button
-                                    key={index}
-                                    type="button"
-                                    variant="outline"
-                                    className={form.watch("rating") === index ? "bg-primary text-primary-foreground hover:bg-primary/80" : ""}
-                                    onClick={() => field.onChange(index)}
-                                  >
-                                    {index} <Star className="ml-2 h-4 w-4" />
-                                  </Button>
-                                ))}
-                              </div>
-                            </FormControl>
-                            <FormDescription>
-                              How would you rate your experience with this tool?
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="comment"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Comment</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Share your thoughts about this tool"
-                                className="resize-none"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Feel free to share more details about your experience.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="flex justify-end gap-2">
-                        {editReviewId && (
-                          <Button 
-                            type="button"
-                            variant="destructive"
-                            onClick={handleDeleteReview}
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Deleting...
-                              </>
-                            ) : (
-                              <>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Review
-                              </>
-                            )}
-                          </Button>
-                        )}
-                        <Button type="submit">
-                          {editReviewId ? 'Update Review' : 'Submit Review'}
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <Button onClick={() => navigate('/auth')}>
-                Login to Add Review
-              </Button>
-            )}
-          </div>
-
-          <ToolDetailReviews reviews={reviews} renderStars={renderStars} />
-        </MotionWrapper>
-      </div>
-    </PageWrapper>
+          </MotionWrapper>
+        </div>
+      </main>
+      
+      <Footer />
+    </div>
   );
 }
