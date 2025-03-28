@@ -1,17 +1,28 @@
 
+import { supabase } from '@/integrations/supabase/client';
+
 export async function POST(req: Request) {
   try {
     const { userId } = await req.json();
     
-    // Get the environment variables
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    // Get the user's session to pass along the JWT
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return new Response(
+        JSON.stringify({ message: 'Unauthorized - no session' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
     
-    // Get the session from the cookie
-    const response = await fetch(`${supabaseUrl}/functions/v1/promote-admin`, {
+    // Call the Supabase Edge Function with the authorization token
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const functionUrl = `${supabaseUrl}/functions/v1/promote-admin`;
+    
+    const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': req.headers.get('Authorization') || ''
+        'Authorization': `Bearer ${session.access_token}`
       },
       body: JSON.stringify({ userId }),
     });
@@ -23,6 +34,8 @@ export async function POST(req: Request) {
         { status: response.status, headers: { 'Content-Type': 'application/json' } }
       );
     }
+    
+    const data = await response.json();
     
     return new Response(
       JSON.stringify({ message: 'Successfully promoted to admin' }),

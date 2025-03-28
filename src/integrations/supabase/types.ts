@@ -193,12 +193,6 @@ export type Database = {
           updated_at: string
         }
       }
-      get_user_role: {
-        Args: {
-          user_id: string
-        }
-        Returns: string
-      }
       increment_tool_click_count: {
         Args: {
           tool_id: number
