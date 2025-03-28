@@ -136,14 +136,14 @@ export function ToolGrid({
   // Map database tools to the format expected by ToolCard
   const tools = dbTools.map(dbTool => ({
     id: dbTool.id,
-    name: dbTool.name || "",
+    name: dbTool.company_name || "",
     description: dbTool.short_description || "",
     logo: dbTool.logo_url || "",
     category: dbTool.primary_task || "",
     rating: 4, // Default or placeholder value
     reviewCount: 0, // Default or placeholder value
     pricing: dbTool.pricing || "",
-    url: dbTool.visit_website_url || "",
+    url: dbTool.visit_website_url || dbTool.detail_url || "#",
     slug: dbTool.slug || "",
     // Optionally add featured or new flags based on some criteria
     isFeatured: false,

@@ -1,4 +1,3 @@
-
 import { Star, ExternalLink, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -33,19 +32,15 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  // Convert id to number for database operations if it's a string
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
-  // Use the slug from the tool object if available, otherwise generate one
-  const toolSlug = slug || name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+  const toolSlug = slug || tool.company_name?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '') || `id-${id}`;
 
   useEffect(() => {
-    // Check if user is authenticated
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
       
-      // If authenticated, check if tool is in favorites
       if (session) {
         const { data } = await supabase
           .from('favorites')
@@ -82,7 +77,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       }
       
       if (isFavorite) {
-        // Remove from favorites
         const { error } = await supabase
           .from('favorites')
           .delete()
@@ -97,7 +91,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
           description: `${name} has been removed from your favorites`,
         });
       } else {
-        // Add to favorites
         const { error } = await supabase
           .from('favorites')
           .insert({
@@ -125,17 +118,14 @@ export function ToolCard({ tool, className }: ToolCardProps) {
 
   const handleVisitClick = async (e: React.MouseEvent) => {
     try {
-      // Track click count
       await supabase.rpc('increment_tool_click_count', { tool_id: numericId });
       
-      // Log to console for debugging
       console.log(`Visit clicked for tool: ${name} (ID: ${numericId}), redirecting to: ${tool.url}`);
     } catch (error) {
       console.error('Error incrementing click count:', error);
     }
   };
 
-  // Default placeholder image
   const placeholderImage = 'https://via.placeholder.com/80?text=AI+Tool';
 
   return (
@@ -145,7 +135,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         className
       )}
     >
-      {/* Badges */}
       <div className="absolute top-4 right-4 flex flex-col gap-2">
         {isFeatured && (
           <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
@@ -159,7 +148,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         )}
       </div>
 
-      {/* Logo and content */}
       <div className="flex items-start gap-4">
         <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/50">
           {!imgError ? (
@@ -200,12 +188,10 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         </div>
       </div>
 
-      {/* Description */}
       <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
         {description}
       </p>
 
-      {/* Rating */}
       <div className="mt-4 flex items-center gap-1">
         <div className="flex">
           {[...Array(5)].map((_, i) => (
@@ -221,7 +207,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         </span>
       </div>
 
-      {/* Actions */}
       <div className="mt-auto pt-4 flex items-center gap-2 text-sm">
         <Link
           to={`/tool/${toolSlug}`}
@@ -230,7 +215,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
           View Details
         </Link>
         
-        {/* Favorite button - now positioned between the action buttons */}
         <button 
           className={cn(
             "rounded-lg border border-input bg-background p-2 transition-colors hover:bg-secondary/50",

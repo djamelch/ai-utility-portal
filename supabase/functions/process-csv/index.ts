@@ -62,8 +62,14 @@ serve(async (req) => {
           throw queryError;
         }
 
-        // Generate a slug from company name if not provided
-        const slug = row.slug || row.company_name.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
+        // Generate a proper slug from company name
+        // Remove special characters, replace spaces with hyphens, and convert to lowercase
+        const slug = row.company_name
+          .toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '');
 
         // Prepare tool data
         const toolData = {
