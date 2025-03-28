@@ -1,23 +1,35 @@
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ExternalLink, Star, User, Calendar, Tag, Clock, ChevronLeft, Loader2 } from 'lucide-react';
+import { ExternalLink, Star, User, Calendar, Tag, Clock, ChevronLeft, Loader2, Trash2, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/context/AuthContext';
+
+interface Review {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  user_id: string;
+  user_email?: string;
+}
 
 export default function ToolDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [tool, setTool] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -25,6 +37,11 @@ export default function ToolDetail() {
   const [userReview, setUserReview] = useState('');
   const [userRating, setUserRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [userHasReviewed, setUserHasReviewed] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchTool = async () => {
@@ -53,6 +70,9 @@ export default function ToolDetail() {
         
         console.log('Tool data:', data);
         setTool(data);
+        
+        // After fetching tool, fetch reviews
+        fetchReviews(data.id);
       } catch (error) {
         console.error('Error fetching tool:', error);
         toast({
@@ -67,7 +87,79 @@ export default function ToolDetail() {
     };
     
     fetchTool();
-  }, [slug, toast]);
+    
+    // Check if redirected with state to edit review
+    if (location.state?.editReviewId) {
+      setEditingReviewId(location.state.editReviewId);
+      setReviewDialogOpen(true);
+    }
+  }, [slug, toast, location.state]);
+  
+  const fetchReviews = async (toolId: number) => {
+    if (!toolId) return;
+    
+    setReviewsLoading(true);
+    try {
+      // Fetch reviews for this tool
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          id,
+          rating,
+          comment,
+          created_at,
+          user_id,
+          user_id(email)
+        `)
+        .eq('tool_id', toolId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Format reviews data
+      const formattedReviews = data.map(review => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        created_at: new Date(review.created_at).toLocaleDateString(),
+        user_id: review.user_id,
+        user_email: review.user_id?.email || 'Anonymous'
+      }));
+      
+      setReviews(formattedReviews);
+      
+      // Calculate average rating
+      if (formattedReviews.length > 0) {
+        const total = formattedReviews.reduce((sum, review) => sum + review.rating, 0);
+        setAverageRating(Number((total / formattedReviews.length).toFixed(1)));
+      }
+      
+      // Check if current user has already reviewed
+      if (user) {
+        const userReview = formattedReviews.find(review => review.user_id === user.id);
+        if (userReview) {
+          setUserHasReviewed(true);
+          // If editing this review, set the form values
+          if (location.state?.editReviewId === userReview.id) {
+            setUserRating(userReview.rating);
+            setUserReview(userReview.comment || '');
+            setEditingReviewId(userReview.id);
+          }
+        } else {
+          setUserHasReviewed(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load reviews',
+        variant: 'destructive'
+      });
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
   
   const handleVisitWebsite = async () => {
     if (!tool) return;
@@ -101,27 +193,47 @@ export default function ToolDetail() {
         return;
       }
       
-      // Submit the review
-      const { error } = await supabase.from('reviews').insert({
-        tool_id: tool.id,
-        user_id: session.user.id,
-        rating: userRating,
-        comment: userReview
-      });
-      
-      if (error) {
-        throw error;
+      if (editingReviewId) {
+        // Update existing review
+        const { error } = await supabase.from('reviews')
+          .update({
+            rating: userRating,
+            comment: userReview,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingReviewId);
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Review updated",
+          description: "Your review has been updated successfully",
+        });
+      } else {
+        // Submit a new review
+        const { error } = await supabase.from('reviews').insert({
+          tool_id: tool.id,
+          user_id: session.user.id,
+          rating: userRating,
+          comment: userReview
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Review submitted",
+          description: "Thank you for your feedback!",
+        });
       }
-      
-      toast({
-        title: "Review submitted",
-        description: "Thank you for your feedback!",
-      });
       
       // Reset form and close dialog
       setUserReview('');
       setUserRating(5);
       setReviewDialogOpen(false);
+      setEditingReviewId(null);
+      
+      // Refetch reviews to show the new one
+      fetchReviews(tool.id);
       
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -132,6 +244,34 @@ export default function ToolDetail() {
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+  
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!confirm("Are you sure you want to delete this review?")) return;
+    
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .delete()
+        .eq('id', reviewId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Review deleted",
+        description: "Your review has been removed",
+      });
+      
+      // Update reviews list
+      fetchReviews(tool.id);
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete review",
+        variant: "destructive",
+      });
     }
   };
   
@@ -157,6 +297,194 @@ export default function ToolDetail() {
           </button>
         ))}
       </div>
+    );
+  };
+  
+  // Display read-only stars for a given rating
+  const RatingStars = ({ rating }: { rating: number }) => {
+    return (
+      <div className="flex">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            size={16}
+            className={`${
+              star <= rating
+                ? "fill-yellow-400 text-yellow-400"
+                : "text-muted-foreground/30"
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
+  
+  // Reviews list component
+  const ReviewsList = () => {
+    if (reviewsLoading) {
+      return (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      );
+    }
+    
+    if (reviews.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+          <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
+          <p className="text-muted-foreground mb-6">
+            Be the first to review this tool and help others make better decisions.
+          </p>
+          {renderReviewButton()}
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-medium">
+            {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+          </h3>
+          {!userHasReviewed && renderReviewButton()}
+        </div>
+        
+        <div className="divide-y">
+          {reviews.map(review => (
+            <div key={review.id} className="py-4">
+              <div className="flex justify-between">
+                <div className="flex items-center gap-2">
+                  <RatingStars rating={review.rating} />
+                  <span className="text-sm font-medium">{review.user_email}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {review.created_at}
+                  </span>
+                </div>
+                
+                {user && user.id === review.user_id && (
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setEditingReviewId(review.id);
+                        setUserRating(review.rating);
+                        setUserReview(review.comment || '');
+                        setReviewDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteReview(review.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {review.comment && (
+                <p className="mt-2 text-muted-foreground">
+                  {review.comment}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  
+  const renderReviewButton = () => {
+    if (!user) {
+      return (
+        <Button onClick={() => navigate('/auth')}>
+          Sign in to Write a Review
+        </Button>
+      );
+    }
+    
+    if (userHasReviewed) {
+      return (
+        <Button 
+          variant="outline"
+          onClick={() => {
+            const userReview = reviews.find(r => r.user_id === user.id);
+            if (userReview) {
+              setEditingReviewId(userReview.id);
+              setUserRating(userReview.rating);
+              setUserReview(userReview.comment || '');
+              setReviewDialogOpen(true);
+            }
+          }}
+        >
+          Edit Your Review
+        </Button>
+      );
+    }
+    
+    return (
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogTrigger asChild>
+          <Button>Write a Review</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              {editingReviewId ? 'Edit Your Review' : 'Write a Review'}
+            </DialogTitle>
+            <DialogDescription>
+              Share your experience with {tool?.company_name} to help others.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="rating">Rating</Label>
+              <StarRating />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="review">Your Review</Label>
+              <Textarea
+                id="review"
+                placeholder="What did you like or dislike about this tool?"
+                rows={5}
+                value={userReview}
+                onChange={(e) => setUserReview(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setReviewDialogOpen(false);
+                setEditingReviewId(null);
+                setUserRating(5);
+                setUserReview('');
+              }}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleReviewSubmit}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {editingReviewId ? 'Updating...' : 'Submitting...'}
+                </>
+              ) : editingReviewId ? 'Update Review' : 'Submit Review'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
   };
   
@@ -392,62 +720,7 @@ export default function ToolDetail() {
                   </TabsContent>
                   
                   <TabsContent value="reviews" className="mt-6">
-                    <div className="text-center py-8">
-                      <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                      <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
-                      <p className="text-muted-foreground mb-6">
-                        Be the first to review this tool and help others make better decisions.
-                      </p>
-                      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button>Write a Review</Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                          <DialogHeader>
-                            <DialogTitle>Write a Review</DialogTitle>
-                            <DialogDescription>
-                              Share your experience with {tool.company_name} to help others.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="py-4 space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="rating">Rating</Label>
-                              <StarRating />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="review">Your Review</Label>
-                              <Textarea
-                                id="review"
-                                placeholder="What did you like or dislike about this tool?"
-                                rows={5}
-                                value={userReview}
-                                onChange={(e) => setUserReview(e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button 
-                              variant="outline" 
-                              onClick={() => setReviewDialogOpen(false)}
-                              disabled={submitting}
-                            >
-                              Cancel
-                            </Button>
-                            <Button 
-                              onClick={handleReviewSubmit}
-                              disabled={submitting}
-                            >
-                              {submitting ? (
-                                <>
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  Submitting...
-                                </>
-                              ) : 'Submit Review'}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                    <ReviewsList />
                   </TabsContent>
                 </Tabs>
               </div>
@@ -456,16 +729,30 @@ export default function ToolDetail() {
               <div className="space-y-6">
                 <div className="border rounded-xl p-6 sticky top-24">
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={18}
-                          className="text-muted-foreground/30"
-                        />
-                      ))}
-                    </div>
-                    <span className="text-muted-foreground">No reviews yet</span>
+                    {averageRating ? (
+                      <>
+                        <div className="flex">
+                          <RatingStars rating={Math.round(averageRating)} />
+                        </div>
+                        <span className="font-medium">{averageRating}</span>
+                        <span className="text-muted-foreground">
+                          ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={18}
+                              className="text-muted-foreground/30"
+                            />
+                          ))}
+                        </div>
+                        <span className="text-muted-foreground">No reviews yet</span>
+                      </>
+                    )}
                   </div>
                   
                   <div className="space-y-4">
@@ -499,7 +786,7 @@ export default function ToolDetail() {
                         
                         <li className="flex justify-between">
                           <span className="text-muted-foreground">Reviews</span>
-                          <span>0</span>
+                          <span>{reviews.length}</span>
                         </li>
                       </ul>
                     </div>
