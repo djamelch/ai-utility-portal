@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { ToolCard } from "./ToolCard";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
+import { supabase } from "@/lib/supabase-client";
 
 // Define Tool interface to match the properties expected by ToolCard
 export interface Tool {
@@ -46,9 +46,9 @@ interface ToolGridProps {
   searchTerm?: string;
   categoryFilter?: string;
   searchQuery?: string;
-  taskFilter?: string; // Add support for old property name
+  taskFilter?: string; // Support for old property name
   category?: string;
-  priceFilter?: string; // Add support for old property name
+  priceFilter?: string; // Support for old property name
   pricing?: string;
   sortBy?: string;
 }
@@ -65,7 +65,6 @@ export function ToolGrid({
   pricing = "",
   sortBy = "featured"
 }: ToolGridProps) {
-  const supabase = createClientComponentClient();
   // Use both searchTerm and searchQuery (preference to searchQuery if both exist)
   const effectiveSearchTerm = searchQuery || searchTerm || "";
   // Support both property naming conventions
