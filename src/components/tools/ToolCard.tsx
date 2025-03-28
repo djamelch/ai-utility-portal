@@ -161,13 +161,13 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   return (
     <div 
       className={cn(
-        "group relative flex flex-col rounded-xl border border-border/40 bg-background p-5 transition-all duration-300 hover:shadow-card hover:-translate-y-1",
+        "group relative flex flex-col rounded-xl border border-border/60 bg-background/80 p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm dark:bg-card/40 dark:border-border/30 dark:hover:border-border/50",
         className
       )}
     >
       <div className="absolute top-4 right-4 flex flex-col gap-2">
         {isFeatured && (
-          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+          <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary dark:bg-primary/20">
             Featured
           </span>
         )}
@@ -179,7 +179,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       </div>
 
       <div className="flex items-start gap-4">
-        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/50">
+        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/80 dark:bg-secondary/30 shadow-sm">
           {!imgError ? (
             <img 
               src={logo || placeholderImage} 
@@ -207,13 +207,17 @@ export function ToolCard({ tool, className }: ToolCardProps) {
             </h3>
           </div>
           
-          <div className="mt-1 flex items-center gap-2">
-            <span className="rounded-full bg-secondary/80 px-2.5 py-0.5 text-xs text-foreground/70">
-              {category}
-            </span>
-            <span className="rounded-full bg-secondary/80 px-2.5 py-0.5 text-xs text-foreground/70">
-              {pricing}
-            </span>
+          <div className="mt-1 flex items-center gap-2 flex-wrap">
+            {category && (
+              <span className="rounded-full bg-secondary/80 px-2.5 py-0.5 text-xs text-foreground/70 dark:bg-secondary/30 dark:text-foreground/80">
+                {category}
+              </span>
+            )}
+            {pricing && (
+              <span className="rounded-full bg-secondary/80 px-2.5 py-0.5 text-xs text-foreground/70 dark:bg-secondary/30 dark:text-foreground/80">
+                {pricing}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -240,14 +244,14 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       <div className="mt-auto pt-4 flex items-center gap-2 text-sm">
         <Link
           to={`/tool/${toolSlug}`}
-          className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-center font-medium hover:bg-secondary/50 transition-colors"
+          className="flex-1 rounded-lg border border-input bg-background/60 dark:bg-background/20 px-3 py-2 text-center font-medium hover:bg-secondary/70 transition-colors"
         >
           View Details
         </Link>
         
         <button 
           className={cn(
-            "rounded-lg border border-input bg-background p-2 transition-colors hover:bg-secondary/50",
+            "rounded-lg border border-input bg-background/60 dark:bg-background/20 p-2 transition-colors hover:bg-secondary/70",
             isFavorite ? "text-red-500" : "text-muted-foreground"
           )}
           aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
