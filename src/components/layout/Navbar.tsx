@@ -1,315 +1,346 @@
-
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { 
+  Menu, X, Search, Moon, Sun, User, LogOut, Shield, LayoutDashboard
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
+  SheetClose
 } from "@/components/ui/sheet";
-import { Menu, Search, X } from "lucide-react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 
-export function Navbar() {
-  const [open, setOpen] = useState(false);
-  const location = useLocation();
-  const isMobile = useIsMobile();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+interface NavbarProps {
+  className?: string;
+}
+
+export function Navbar({ className }: NavbarProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user, isAdmin, signOut } = useAuth();
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("theme") === "dark" || 
+    (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)
+  );
+  const { user, profile, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
 
-  // Close the mobile menu when route changes
   useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
 
-  // Check if scrolled to add shadow
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Handle command K for search
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setIsSearchOpen((isSearchOpen) => !isSearchOpen);
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+    if (!isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const navLinks = [
+    { title: "Home", path: "/" },
+    { title: "Tools", path: "/tools" },
+    { title: "Blog", path: "/blog" },
+    { title: "About", path: "/about" }
+  ];
 
   return (
     <header
       className={cn(
-        "fixed top-0 z-40 w-full border-b bg-background/95 backdrop-blur transition-all",
-        isScrolled ? "shadow-sm" : ""
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        isScrolled ? "py-3 glass" : "py-5 bg-transparent",
+        className
       )}
     >
-      <div className="container flex h-16 items-center justify-between py-4">
-        <div className="flex gap-6 md:gap-10">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl md:text-2xl">
-              <span className="text-primary">AI</span> Tools
-            </span>
-          </Link>
+      <nav className="container-wide flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 text-xl font-bold">
+          <span className="text-gradient">AI Any Tool</span>
+        </Link>
 
-          {!isMobile && (
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <Link to="/tools">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Browse Tools
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                      {[
-                        "Text Generation",
-                        "Image Generation",
-                        "Audio Processing",
-                        "Video Creation",
-                        "Data Analysis",
-                        "Code Assistant",
-                        "Content Writing",
-                        "Design Tools",
-                      ].map((category) => (
-                        <li key={category}>
-                          <NavigationMenuLink asChild>
-                            <Link
-                              to={`/tools?category=${category.toLowerCase().replace(/\s+/g, "-")}`}
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                            >
-                              <div className="text-sm font-medium leading-none">
-                                {category}
-                              </div>
-                            </Link>
-                          </NavigationMenuLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/blog">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Blog
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/about">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      About
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                {user && isAdmin && (
-                  <NavigationMenuItem>
-                    <Link to="/admin">
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Admin Dashboard
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                )}
-              </NavigationMenuList>
-            </NavigationMenu>
-          )}
+        <div className="hidden md:flex items-center gap-8">
+          <ul className="flex items-center gap-6">
+            {navLinks.map((link) => (
+              <li key={link.title}>
+                <Link 
+                  to={link.path} 
+                  className="font-medium text-foreground/80 hover:text-foreground transition-colors link-underline"
+                >
+                  {link.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          
+          <div className="flex items-center gap-4">
+            <button 
+              aria-label="Search" 
+              className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Search size={20} />
+            </button>
+            
+            <button
+              aria-label="Toggle dark mode"
+              onClick={toggleDarkMode}
+              className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="rounded-full">
+                    {isAdmin ? (
+                      <Shield size={20} className="text-primary" />
+                    ) : (
+                      <User size={20} />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="bg-popover z-50 shadow-md dark:bg-gray-800"
+                >
+                  <DropdownMenuLabel>
+                    {isAdmin ? 'Admin Account' : 'User Account'}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>User Dashboard</span>
+                  </DropdownMenuItem>
+                  
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Admin Dashboard</span>
+                    </DropdownMenuItem>
+                  )}
+                  
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link 
+                to="/auth" 
+                className="px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsSearchOpen(true)}
-            className="mr-2"
+        <div className="flex items-center gap-4 md:hidden">
+          <button
+            aria-label="Toggle dark mode"
+            onClick={toggleDarkMode}
+            className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Search className="h-4 w-4 mr-2" />
-            <span className="hidden md:inline-flex">
-              Search...
-            </span>
-            <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 md:flex">
-              <span className="text-xs">⌘</span>K
-            </kbd>
-          </Button>
-
-          <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-            <CommandInput placeholder="Search for tools, categories..." />
-            <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup heading="Tools">
-                <CommandItem onSelect={() => {
-                  setIsSearchOpen(false);
-                }}>
-                  <Link to="/tool/chat-gpt" className="flex items-center w-full">ChatGPT</Link>
-                </CommandItem>
-                <CommandItem onSelect={() => {
-                  setIsSearchOpen(false);
-                }}>
-                  <Link to="/tool/midjourney" className="flex items-center w-full">Midjourney</Link>
-                </CommandItem>
-              </CommandGroup>
-              <CommandGroup heading="Categories">
-                <CommandItem onSelect={() => {
-                  setIsSearchOpen(false);
-                }}>
-                  <Link to="/tools?category=text-generation" className="flex items-center w-full">Text Generation</Link>
-                </CommandItem>
-                <CommandItem onSelect={() => {
-                  setIsSearchOpen(false);
-                }}>
-                  <Link to="/tools?category=image-generation" className="flex items-center w-full">Image Generation</Link>
-                </CommandItem>
-              </CommandGroup>
-              <CommandGroup heading="Pages">
-                <CommandItem onSelect={() => {
-                  setIsSearchOpen(false);
-                }}>
-                  <Link to="/tools" className="flex items-center w-full">All Tools</Link>
-                </CommandItem>
-                <CommandItem onSelect={() => {
-                  setIsSearchOpen(false);
-                }}>
-                  <Link to="/blog" className="flex items-center w-full">Blog</Link>
-                </CommandItem>
-              </CommandGroup>
-            </CommandList>
-          </CommandDialog>
-
-          {!isMobile ? (
-            <>
-              {user ? (
-                <div className="flex items-center gap-2">
-                  <Button asChild variant="outline" size="sm">
-                    <Link to="/dashboard">Dashboard</Link>
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="ghost"
-                    onClick={() => signOut()}
-                  >
-                    Sign Out
-                  </Button>
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <button
+                aria-label="Toggle menu"
+                className="p-2 text-foreground"
+              >
+                <Menu size={24} />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[85%] pt-12 pb-0 px-0 border-r">
+              <div className="flex flex-col h-full">
+                <div className="px-6">
+                  <Link to="/" className="flex items-center gap-2 text-xl font-bold mb-8">
+                    <span className="text-gradient">AI Any Tool</span>
+                  </Link>
                 </div>
-              ) : (
-                <Button asChild size="sm">
-                  <Link to="/auth">Sign In</Link>
-                </Button>
-              )}
-            </>
-          ) : (
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button size="sm" variant="outline">
-                  {open ? (
-                    <X className="h-5 w-5" />
+                
+                <nav className="flex-1">
+                  <ul className="flex flex-col gap-2 px-2">
+                    {navLinks.map((link) => (
+                      <li key={link.title}>
+                        <SheetClose asChild>
+                          <Link
+                            to={link.path}
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                          >
+                            {link.title}
+                          </Link>
+                        </SheetClose>
+                      </li>
+                    ))}
+                    
+                    {user && (
+                      <>
+                        <li>
+                          <SheetClose asChild>
+                            <Link
+                              to="/dashboard"
+                              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                            >
+                              <LayoutDashboard className="h-5 w-5" />
+                              User Dashboard
+                            </Link>
+                          </SheetClose>
+                        </li>
+                        {isAdmin && (
+                          <li>
+                            <SheetClose asChild>
+                              <Link
+                                to="/admin"
+                                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                              >
+                                <Shield className="h-5 w-5" />
+                                Admin Dashboard
+                              </Link>
+                            </SheetClose>
+                          </li>
+                        )}
+                      </>
+                    )}
+                  </ul>
+                </nav>
+                
+                <div className="mt-auto p-6 border-t">
+                  {user ? (
+                    <SheetClose asChild>
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        onClick={handleSignOut}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign Out
+                      </Button>
+                    </SheetClose>
                   ) : (
-                    <Menu className="h-5 w-5" />
+                    <SheetClose asChild>
+                      <Link
+                        to="/auth"
+                        className="flex justify-center items-center w-full py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        Sign In
+                      </Link>
+                    </SheetClose>
                   )}
-                  <span className="sr-only">Toggle Menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="pr-0">
-                <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
-                  <SheetDescription>
-                    Navigate to different sections of the app.
-                  </SheetDescription>
-                </SheetHeader>
-                <nav className="flex flex-col gap-4 py-6">
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {isMenuOpen && (
+          <div className="fixed inset-0 top-[60px] z-50 flex flex-col bg-background p-6 md:hidden animate-fadeIn">
+            <ul className="flex flex-col gap-6 pt-8">
+              {navLinks.map((link) => (
+                <li key={link.title}>
                   <Link
-                    to="/"
-                    className="block px-4 py-2 text-lg font-medium hover:bg-accent rounded-l-md"
+                    to={link.path}
+                    className="text-xl font-medium"
+                    onClick={toggleMenu}
                   >
-                    Home
+                    {link.title}
                   </Link>
-                  <Link
-                    to="/tools"
-                    className="block px-4 py-2 text-lg font-medium hover:bg-accent rounded-l-md"
-                  >
-                    Browse Tools
-                  </Link>
-                  <Link
-                    to="/blog"
-                    className="block px-4 py-2 text-lg font-medium hover:bg-accent rounded-l-md"
-                  >
-                    Blog
-                  </Link>
-                  <Link
-                    to="/about"
-                    className="block px-4 py-2 text-lg font-medium hover:bg-accent rounded-l-md"
-                  >
-                    About
-                  </Link>
-                  {user && isAdmin && (
+                </li>
+              ))}
+              {user && (
+                <>
+                  <li>
+                    <Link
+                      to="/dashboard"
+                      className="text-xl font-medium flex items-center gap-2"
+                      onClick={toggleMenu}
+                    >
+                      <LayoutDashboard className="h-5 w-5" />
+                      Your Dashboard
+                    </Link>
+                  </li>
+                  <li>
                     <Link
                       to="/admin"
-                      className="block px-4 py-2 text-lg font-medium hover:bg-accent rounded-l-md"
+                      className="text-xl font-medium flex items-center gap-2"
+                      onClick={toggleMenu}
                     >
+                      <Shield className="h-5 w-5" />
                       Admin Dashboard
                     </Link>
-                  )}
-                  {user ? (
-                    <>
-                      <Link
-                        to="/dashboard"
-                        className="block px-4 py-2 text-lg font-medium hover:bg-accent rounded-l-md"
-                      >
-                        Dashboard
-                      </Link>
-                      <button
-                        onClick={() => signOut()}
-                        className="text-left px-4 py-2 text-lg font-medium hover:bg-accent rounded-l-md"
-                      >
-                        Sign Out
-                      </button>
-                    </>
-                  ) : (
-                    <Link
-                      to="/auth"
-                      className="block px-4 py-2 text-lg font-medium hover:bg-accent rounded-l-md"
-                    >
-                      Sign In
-                    </Link>
-                  )}
-                </nav>
-              </SheetContent>
-            </Sheet>
-          )}
-        </div>
-      </div>
+                  </li>
+                </>
+              )}
+            </ul>
+            <div className="mt-auto pt-8 flex flex-col gap-4">
+              {user ? (
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => {
+                    handleSignOut();
+                    toggleMenu();
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              ) : (
+                <>
+                  <Link
+                    to="/auth"
+                    className="w-full py-3 text-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                    onClick={toggleMenu}
+                  >
+                    Sign In
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
     </header>
   );
 }
