@@ -27,6 +27,7 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
 
   if (requireAdmin && !isAdmin) {
     // User is logged in but not an admin, and we require admin access
+    console.log('User is not an admin, redirecting from admin page');
     return <Navigate to="/" replace />;
   }
 
