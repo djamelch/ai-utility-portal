@@ -10,9 +10,10 @@ import { Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { UserRoleBadge } from '@/components/admin/users/UserRoleBadge';
 
 export default function UserDashboard() {
-  const { isAdmin, isLoading } = useAuth();
+  const { isAdmin, isLoading, user } = useAuth();
   const navigate = useNavigate();
   
   // Navigation handler for admin dashboard
@@ -38,15 +39,18 @@ export default function UserDashboard() {
                 </div>
                 
                 {isAdmin && (
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="gap-2"
-                    onClick={navigateToAdminDashboard}
-                  >
-                    <Shield className="h-4 w-4" />
-                    Go to Admin Dashboard
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <UserRoleBadge isAdmin={true} className="self-start" />
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="gap-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                      onClick={navigateToAdminDashboard}
+                    >
+                      <Shield className="h-4 w-4" />
+                      Go to Admin Dashboard
+                    </Button>
+                  </div>
                 )}
               </div>
             </MotionWrapper>
