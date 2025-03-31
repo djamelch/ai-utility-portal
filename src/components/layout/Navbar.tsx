@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -135,7 +136,10 @@ export function Navbar({ className }: NavbarProps) {
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-popover z-50">
+                <DropdownMenuContent 
+                  align="end" 
+                  className="bg-popover z-50 shadow-md dark:bg-gray-800"
+                >
                   <DropdownMenuLabel>
                     {isAdmin ? 'Admin Account' : 'User Account'}
                   </DropdownMenuLabel>
