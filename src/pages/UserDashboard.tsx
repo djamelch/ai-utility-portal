@@ -8,7 +8,7 @@ import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { AdminDashboardPreview } from '@/components/dashboard/AdminDashboardPreview';
 import { Button } from '@/components/ui/button';
 import { Shield, LayoutDashboard, Users, Database, BarChart, Settings } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminTools } from '@/pages/admin/AdminTools';
 import { AdminUsers } from '@/pages/admin/AdminUsers';
@@ -19,6 +19,18 @@ export default function UserDashboard() {
   const { isAdmin, isLoading } = useAuth();
   const [selectedTab, setSelectedTab] = useState<'user' | 'admin'>(isAdmin ? 'admin' : 'user');
   const [adminTab, setAdminTab] = useState('analytics');
+  const navigate = useNavigate();
+  
+  const handleAdminTabChange = (value: string) => {
+    setAdminTab(value);
+    
+    // If we're in the full admin dashboard view, navigate to the appropriate route
+    if (value === 'tools') {
+      navigate('/admin/tools');
+    } else {
+      navigate('/admin');
+    }
+  };
   
   return (
     <RequireAuth>
@@ -69,7 +81,7 @@ export default function UserDashboard() {
                   <TabsContent value="admin">
                     <Tabs 
                       value={adminTab} 
-                      onValueChange={setAdminTab}
+                      onValueChange={handleAdminTabChange}
                       className="w-full"
                     >
                       <TabsList className="mb-6">
