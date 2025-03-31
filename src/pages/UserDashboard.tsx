@@ -5,26 +5,15 @@ import { RequireAuth } from '@/components/auth/RequireAuth';
 import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
 import { useAuth } from '@/context/AuthContext';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
-import { AdminDashboardPreview } from '@/components/dashboard/AdminDashboardPreview';
 import { Button } from '@/components/ui/button';
-import { Shield, LayoutDashboard } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
 export default function UserDashboard() {
   const { isAdmin, isLoading } = useAuth();
-  const [selectedTab, setSelectedTab] = useState<'user' | 'admin'>(isAdmin ? 'user' : 'user');
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Set default tab based on admin status
-  useEffect(() => {
-    if (isAdmin) {
-      setSelectedTab('user');
-    }
-  }, [isAdmin]);
   
   // Navigation handler for admin dashboard
   const navigateToAdminDashboard = () => {
@@ -63,27 +52,7 @@ export default function UserDashboard() {
             </MotionWrapper>
             
             <MotionWrapper animation="fadeIn" delay="delay-200">
-              {isAdmin ? (
-                // Show tabs for admin users
-                <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as 'user' | 'admin')} className="w-full">
-                  <TabsList className="mb-6">
-                    <TabsTrigger value="user">
-                      <LayoutDashboard className="h-4 w-4 mr-2" />
-                      Your Dashboard
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="user">
-                    <DashboardTabs />
-                  </TabsContent>
-                </Tabs>
-              ) : (
-                // Show user dashboard and admin preview for regular users
-                <>
-                  <AdminDashboardPreview />
-                  <DashboardTabs />
-                </>
-              )}
+              <DashboardTabs />
             </MotionWrapper>
           </div>
         </main>
