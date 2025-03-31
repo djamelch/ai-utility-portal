@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -15,6 +14,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose
+} from "@/components/ui/sheet";
 
 interface NavbarProps {
   className?: string;
@@ -180,13 +185,95 @@ export function Navbar({ className }: NavbarProps) {
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           
-          <button
-            aria-label="Toggle menu"
-            onClick={toggleMenu}
-            className="p-2 text-foreground"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <button
+                aria-label="Toggle menu"
+                className="p-2 text-foreground"
+              >
+                <Menu size={24} />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[85%] pt-12 pb-0 px-0 border-r">
+              <div className="flex flex-col h-full">
+                <div className="px-6">
+                  <Link to="/" className="flex items-center gap-2 text-xl font-bold mb-8">
+                    <span className="text-gradient">AI Any Tool</span>
+                  </Link>
+                </div>
+                
+                <nav className="flex-1">
+                  <ul className="flex flex-col gap-2 px-2">
+                    {navLinks.map((link) => (
+                      <li key={link.title}>
+                        <SheetClose asChild>
+                          <Link
+                            to={link.path}
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                          >
+                            {link.title}
+                          </Link>
+                        </SheetClose>
+                      </li>
+                    ))}
+                    
+                    {user && (
+                      <>
+                        <li>
+                          <SheetClose asChild>
+                            <Link
+                              to="/dashboard"
+                              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                            >
+                              <LayoutDashboard className="h-5 w-5" />
+                              Your Dashboard
+                            </Link>
+                          </SheetClose>
+                        </li>
+                        {isAdmin && (
+                          <li>
+                            <SheetClose asChild>
+                              <Link
+                                to="/admin"
+                                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                              >
+                                <Shield className="h-5 w-5" />
+                                Admin Dashboard
+                              </Link>
+                            </SheetClose>
+                          </li>
+                        )}
+                      </>
+                    )}
+                  </ul>
+                </nav>
+                
+                <div className="mt-auto p-6 border-t">
+                  {user ? (
+                    <SheetClose asChild>
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        onClick={handleSignOut}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign Out
+                      </Button>
+                    </SheetClose>
+                  ) : (
+                    <SheetClose asChild>
+                      <Link
+                        to="/auth"
+                        className="flex justify-center items-center w-full py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        Sign In
+                      </Link>
+                    </SheetClose>
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {isMenuOpen && (
