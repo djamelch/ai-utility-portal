@@ -8,9 +8,13 @@ import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { UserRoleBadge } from '@/components/admin/users/UserRoleBadge';
+import { Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export default function UserDashboard() {
   const { isAdmin, isLoading, user } = useAuth();
+  const navigate = useNavigate();
   
   return (
     <RequireAuth>

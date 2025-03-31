@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -84,9 +83,6 @@ export function Navbar({ className }: NavbarProps) {
     { title: "About", path: "/about" }
   ];
 
-  // Remove the admin link from the main navigation
-  // We'll add it only in the dropdown menu
-
   return (
     <header
       className={cn(
@@ -154,13 +150,10 @@ export function Navbar({ className }: NavbarProps) {
                     <span>User Dashboard</span>
                   </DropdownMenuItem>
                   
-                  {/* Add Admin Dashboard option only for admins */}
-                  {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin')}>
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>Admin Dashboard</span>
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin Dashboard</span>
+                  </DropdownMenuItem>
                   
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -233,19 +226,17 @@ export function Navbar({ className }: NavbarProps) {
                             </Link>
                           </SheetClose>
                         </li>
-                        {isAdmin && (
-                          <li>
-                            <SheetClose asChild>
-                              <Link
-                                to="/admin"
-                                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-                              >
-                                <Shield className="h-5 w-5" />
-                                Admin Dashboard
-                              </Link>
-                            </SheetClose>
-                          </li>
-                        )}
+                        <li>
+                          <SheetClose asChild>
+                            <Link
+                              to="/admin"
+                              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                            >
+                              <Shield className="h-5 w-5" />
+                              Admin Dashboard
+                            </Link>
+                          </SheetClose>
+                        </li>
                       </>
                     )}
                   </ul>
@@ -305,18 +296,16 @@ export function Navbar({ className }: NavbarProps) {
                       Your Dashboard
                     </Link>
                   </li>
-                  {isAdmin && (
-                    <li>
-                      <Link
-                        to="/admin"
-                        className="text-xl font-medium flex items-center gap-2"
-                        onClick={toggleMenu}
-                      >
-                        <Shield className="h-5 w-5" />
-                        Admin Dashboard
-                      </Link>
-                    </li>
-                  )}
+                  <li>
+                    <Link
+                      to="/admin"
+                      className="text-xl font-medium flex items-center gap-2"
+                      onClick={toggleMenu}
+                    >
+                      <Shield className="h-5 w-5" />
+                      Admin Dashboard
+                    </Link>
+                  </li>
                 </>
               )}
             </ul>
