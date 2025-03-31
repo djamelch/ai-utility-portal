@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -83,9 +84,8 @@ export function Navbar({ className }: NavbarProps) {
     { title: "About", path: "/about" }
   ];
 
-  if (isAdmin) {
-    navLinks.push({ title: "Admin", path: "/admin" });
-  }
+  // Remove the admin link from the main navigation
+  // We'll add it only in the dropdown menu
 
   return (
     <header
@@ -151,14 +151,17 @@ export function Navbar({ className }: NavbarProps) {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/dashboard')}>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>Your Dashboard</span>
+                    <span>User Dashboard</span>
                   </DropdownMenuItem>
+                  
+                  {/* Add Admin Dashboard option only for admins */}
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       <Shield className="mr-2 h-4 w-4" />
                       <span>Admin Dashboard</span>
                     </DropdownMenuItem>
                   )}
+                  
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Sign out</span>
@@ -226,7 +229,7 @@ export function Navbar({ className }: NavbarProps) {
                               className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
                             >
                               <LayoutDashboard className="h-5 w-5" />
-                              Your Dashboard
+                              User Dashboard
                             </Link>
                           </SheetClose>
                         </li>
