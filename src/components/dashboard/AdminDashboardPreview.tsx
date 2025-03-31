@@ -9,8 +9,8 @@ import { PromoteToAdmin } from '../admin/PromoteToAdmin';
 export function AdminDashboardPreview() {
   const navigate = useNavigate();
   
-  const handleAdminNavigation = () => {
-    navigate('/admin');
+  const handleNavigateToAdmin = (path: string) => {
+    navigate(path);
   };
   
   return (
@@ -39,7 +39,10 @@ export function AdminDashboardPreview() {
           
           <TabsContent value="preview" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate('/admin')}>
+              <Card 
+                className="cursor-pointer hover:border-primary transition-colors" 
+                onClick={() => handleNavigateToAdmin('/admin')}
+              >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <BarChart className="h-4 w-4 text-primary" />
@@ -47,7 +50,10 @@ export function AdminDashboardPreview() {
                   </CardTitle>
                 </CardHeader>
               </Card>
-              <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate('/admin/tools')}>
+              <Card 
+                className="cursor-pointer hover:border-primary transition-colors" 
+                onClick={() => handleNavigateToAdmin('/admin/tools')}
+              >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Database className="h-4 w-4 text-green-600" />
@@ -55,7 +61,10 @@ export function AdminDashboardPreview() {
                   </CardTitle>
                 </CardHeader>
               </Card>
-              <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate('/admin')}>
+              <Card 
+                className="cursor-pointer hover:border-primary transition-colors" 
+                onClick={() => handleNavigateToAdmin('/admin')}
+              >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Users className="h-4 w-4 text-blue-600" />
@@ -63,7 +72,10 @@ export function AdminDashboardPreview() {
                   </CardTitle>
                 </CardHeader>
               </Card>
-              <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate('/admin')}>
+              <Card 
+                className="cursor-pointer hover:border-primary transition-colors" 
+                onClick={() => handleNavigateToAdmin('/admin')}
+              >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Shield className="h-4 w-4 text-purple-600" />
@@ -74,8 +86,12 @@ export function AdminDashboardPreview() {
             </div>
             
             <div className="flex justify-center mt-4">
-              <Button onClick={handleAdminNavigation} variant="outline">
-                <Shield className="h-4 w-4 mr-2" />
+              <Button 
+                onClick={() => handleNavigateToAdmin('/admin')} 
+                variant="outline"
+                className="gap-2"
+              >
+                <Shield className="h-4 w-4" />
                 Go to Admin Dashboard
               </Button>
             </div>

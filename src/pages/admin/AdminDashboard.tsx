@@ -36,6 +36,16 @@ export default function AdminDashboard() {
       navigate('/dashboard');
     }
   }, [isAdmin, isLoading, navigate]);
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    
+    if (value === 'tools') {
+      navigate('/admin/tools');
+    } else {
+      navigate('/admin');
+    }
+  };
 
   return (
     <RequireAuth requireAdmin={true}>
@@ -70,7 +80,7 @@ export default function AdminDashboard() {
               <Tabs 
                 defaultValue="analytics" 
                 value={activeTab} 
-                onValueChange={setActiveTab}
+                onValueChange={handleTabChange}
                 className="w-full"
               >
                 <TabsList className="mb-6">
@@ -82,11 +92,11 @@ export default function AdminDashboard() {
                     <Database className="h-4 w-4 mr-2" />
                     Tools
                   </TabsTrigger>
-                  <TabsTrigger value="users">
+                  <TabsTrigger value="users" onClick={() => navigate('/admin')}>
                     <Users className="h-4 w-4 mr-2" />
                     Users
                   </TabsTrigger>
-                  <TabsTrigger value="settings">
+                  <TabsTrigger value="settings" onClick={() => navigate('/admin')}>
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
                   </TabsTrigger>

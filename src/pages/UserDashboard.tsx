@@ -24,12 +24,19 @@ export default function UserDashboard() {
   const handleAdminTabChange = (value: string) => {
     setAdminTab(value);
     
-    // If we're in the full admin dashboard view, navigate to the appropriate route
     if (value === 'tools') {
       navigate('/admin/tools');
+    } else if (value === 'users') {
+      navigate('/admin');
+    } else if (value === 'settings') {
+      navigate('/admin');
     } else {
       navigate('/admin');
     }
+  };
+  
+  const handleNavigation = (path: string) => {
+    navigate(path);
   };
   
   return (
@@ -49,11 +56,14 @@ export default function UserDashboard() {
                 </div>
                 
                 {isAdmin && (
-                  <Button asChild variant="outline" size="lg" className="gap-2">
-                    <Link to="/admin">
-                      <Shield className="h-4 w-4" />
-                      Go to Full Admin Dashboard
-                    </Link>
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="gap-2"
+                    onClick={() => handleNavigation('/admin')}
+                  >
+                    <Shield className="h-4 w-4" />
+                    Go to Full Admin Dashboard
                   </Button>
                 )}
               </div>
@@ -85,19 +95,19 @@ export default function UserDashboard() {
                       className="w-full"
                     >
                       <TabsList className="mb-6">
-                        <TabsTrigger value="analytics">
+                        <TabsTrigger value="analytics" onClick={() => handleNavigation('/admin')}>
                           <BarChart className="h-4 w-4 mr-2" />
                           Analytics
                         </TabsTrigger>
-                        <TabsTrigger value="tools">
+                        <TabsTrigger value="tools" onClick={() => handleNavigation('/admin/tools')}>
                           <Database className="h-4 w-4 mr-2" />
                           Tools
                         </TabsTrigger>
-                        <TabsTrigger value="users">
+                        <TabsTrigger value="users" onClick={() => handleNavigation('/admin')}>
                           <Users className="h-4 w-4 mr-2" />
                           Users
                         </TabsTrigger>
-                        <TabsTrigger value="settings">
+                        <TabsTrigger value="settings" onClick={() => handleNavigation('/admin')}>
                           <Settings className="h-4 w-4 mr-2" />
                           Settings
                         </TabsTrigger>
