@@ -12,18 +12,18 @@ export function ProfileTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>إعدادات الملف الشخصي</CardTitle>
+        <CardTitle>Profile Settings</CardTitle>
         <CardDescription>
-          إدارة إعدادات حسابك وتفضيلاتك
+          Manage your account settings and preferences
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-medium mb-4">معلومات الحساب</h3>
+            <h3 className="text-lg font-medium mb-4">Account Information</h3>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">البريد الإلكتروني</label>
+                <label className="text-sm font-medium">Email</label>
                 <div className="mt-1 p-2 border rounded bg-muted/30">
                   {user?.email}
                 </div>
@@ -32,7 +32,7 @@ export function ProfileTab() {
           </div>
           
           <div>
-            <h3 className="text-lg font-medium mb-4">إجراءات الحساب</h3>
+            <h3 className="text-lg font-medium mb-4">Account Actions</h3>
             <div className="space-y-4">
               <div>
                 <Button 
@@ -40,14 +40,14 @@ export function ProfileTab() {
                   onClick={() => navigate('/auth')}
                   className="w-full sm:w-auto"
                 >
-                  تحديث كلمة المرور
+                  Update Password
                 </Button>
               </div>
               
               <div className="mt-6 pt-6 border-t">
-                <h3 className="text-lg font-medium mb-4">خيارات المطور</h3>
+                <h3 className="text-lg font-medium mb-4">Developer Options</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  انقر على الزر أدناه لترقية حسابك إلى حساب مشرف. سيمنحك هذا وصولاً إلى لوحة تحكم المشرف.
+                  Click the button below to upgrade your account to an admin account. This will give you access to the admin dashboard.
                 </p>
                 <PromoteToAdmin />
               </div>

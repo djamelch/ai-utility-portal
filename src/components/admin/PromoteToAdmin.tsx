@@ -53,8 +53,8 @@ export function PromoteToAdmin() {
       }
       
       toast({
-        title: 'نجاح!',
-        description: 'تمت ترقيتك إلى مشرف. سيتم تحديث الصفحة قريبًا.',
+        title: 'Success!',
+        description: 'You have been promoted to admin. The page will refresh shortly.',
         variant: 'default',
       });
       
@@ -66,8 +66,8 @@ export function PromoteToAdmin() {
     } catch (error: any) {
       console.error('Error promoting to admin:', error);
       toast({
-        title: 'خطأ',
-        description: error.message || 'فشل في الترقية إلى مشرف',
+        title: 'Error',
+        description: error.message || 'Failed to promote to admin',
         variant: 'destructive',
       });
     } finally {
@@ -85,12 +85,12 @@ export function PromoteToAdmin() {
       {isLoading ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          جاري الترقية...
+          Promoting...
         </>
       ) : (
         <>
           <ShieldCheck className="h-4 w-4 text-purple-500" />
-          ترقية إلى مشرف
+          Promote to Admin
         </>
       )}
     </Button>
