@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -106,6 +107,44 @@ export default function AdminDashboard() {
             </MotionWrapper>
             
             <MotionWrapper animation="fadeIn" delay="delay-200">
+              <Card className="mb-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border-none shadow-md">
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-sm text-muted-foreground">Total Tools</h3>
+                        <Database className="h-4 w-4 text-primary" />
+                      </div>
+                      <p className="text-2xl font-bold mt-2">42</p>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-sm text-muted-foreground">Users</h3>
+                        <Users className="h-4 w-4 text-indigo-500" />
+                      </div>
+                      <p className="text-2xl font-bold mt-2">187</p>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-sm text-muted-foreground">Reviews</h3>
+                        <BarChart className="h-4 w-4 text-green-500" />
+                      </div>
+                      <p className="text-2xl font-bold mt-2">356</p>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-sm text-muted-foreground">Admins</h3>
+                        <Shield className="h-4 w-4 text-purple-500" />
+                      </div>
+                      <p className="text-2xl font-bold mt-2">3</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
               <Tabs 
                 defaultValue="analytics" 
                 value={activeTab} 

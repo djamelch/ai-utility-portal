@@ -10,8 +10,8 @@ export function UserRoleBadge({ isAdmin }: UserRoleBadgeProps) {
   if (isAdmin) {
     return (
       <div className="flex items-center">
-        <ShieldAlert className="h-4 w-4 text-purple-500 mr-1" />
-        <span>Admin</span>
+        <ShieldAlert className="h-4 w-4 text-purple-600 mr-1" />
+        <span className="font-medium text-purple-600">Admin</span>
       </div>
     );
   }
@@ -19,7 +19,7 @@ export function UserRoleBadge({ isAdmin }: UserRoleBadgeProps) {
   return (
     <div className="flex items-center">
       <MailCheck className="h-4 w-4 text-gray-500 mr-1" />
-      <span>User</span>
+      <span className="text-gray-500">User</span>
     </div>
   );
 }
