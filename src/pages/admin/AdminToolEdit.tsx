@@ -37,12 +37,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { RequireAuth } from '@/components/auth/RequireAuth';
+import { Json } from '@/integrations/supabase/types';
 
 // Define the form schema with Zod
 const toolFormSchema = z.object({
   company_name: z.string().min(1, 'Name is required'),
   short_description: z.string().min(1, 'Description is required'),
-  website: z.string().url('Must be a valid URL').min(1, 'Website URL is required'),
+  visit_website_url: z.string().url('Must be a valid URL').min(1, 'Website URL is required'),
   primary_task: z.string().min(1, 'Primary task is required'),
   pricing: z.string().min(1, 'Pricing information is required'),
   is_featured: z.boolean().default(false),
@@ -54,12 +55,25 @@ const toolFormSchema = z.object({
 
 type ToolFormValues = z.infer<typeof toolFormSchema>;
 
+// Interface to store additional fields for the database
+interface ToolDatabaseFields {
+  id?: number;
+  is_featured?: boolean;
+  is_verified?: boolean;
+  features?: string;
+  testimonials?: string;
+}
+
 export default function AdminToolEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [additionalFields, setAdditionalFields] = useState<ToolDatabaseFields>({
+    is_featured: false,
+    is_verified: false
+  });
 
   // Initialize form with react-hook-form
   const form = useForm<ToolFormValues>({
@@ -67,7 +81,7 @@ export default function AdminToolEdit() {
     defaultValues: {
       company_name: '',
       short_description: '',
-      website: '',
+      visit_website_url: '',
       primary_task: '',
       pricing: '',
       is_featured: false,
@@ -83,26 +97,42 @@ export default function AdminToolEdit() {
     const fetchTool = async () => {
       try {
         setIsLoading(true);
+        // Convert string id to number for the database query
+        const toolId = parseInt(id || '0', 10);
+        
+        if (isNaN(toolId)) {
+          throw new Error('Invalid tool ID');
+        }
+        
         const { data, error } = await supabase
           .from('tools')
           .select('*')
-          .eq('id', id)
+          .eq('id', toolId)
           .single();
 
         if (error) throw error;
 
         if (data) {
+          // Store additional fields that are not in the database schema but needed for form
+          setAdditionalFields({
+            id: data.id,
+            is_featured: data.applicable_tasks?.some(task => task === 'featured') || false,
+            is_verified: data.applicable_tasks?.some(task => task === 'verified') || false,
+            features: Array.isArray(data.pros) ? data.pros.join('\n') : '',
+            testimonials: data.faqs ? JSON.stringify(data.faqs) : '',
+          });
+
           // Set form values from fetched data
           form.reset({
             company_name: data.company_name || '',
             short_description: data.short_description || '',
-            website: data.website || '',
+            visit_website_url: data.visit_website_url || '',
             primary_task: data.primary_task || '',
             pricing: data.pricing || '',
-            is_featured: data.is_featured || false,
-            is_verified: data.is_verified || false,
-            features: data.features || '',
-            testimonials: data.testimonials || '',
+            is_featured: additionalFields.is_featured,
+            is_verified: additionalFields.is_verified,
+            features: additionalFields.features,
+            testimonials: additionalFields.testimonials,
             logo_url: data.logo_url || '',
           });
         }
@@ -119,16 +149,52 @@ export default function AdminToolEdit() {
     };
 
     fetchTool();
-  }, [id, form, toast]);
+  }, [id, form, toast, additionalFields.is_featured, additionalFields.is_verified, additionalFields.features, additionalFields.testimonials]);
 
   // Handle form submission
   const onSubmit = async (values: ToolFormValues) => {
     setIsSaving(true);
     try {
+      // Convert form values to database format
+      const toolId = parseInt(id || '0', 10);
+      
+      if (isNaN(toolId)) {
+        throw new Error('Invalid tool ID');
+      }
+
+      // Prepare applicable_tasks array based on is_featured and is_verified
+      const applicable_tasks: Json[] = [];
+      if (values.is_featured) applicable_tasks.push('featured' as Json);
+      if (values.is_verified) applicable_tasks.push('verified' as Json);
+      
+      // Convert features string to array for pros
+      const pros: Json[] = values.features ? values.features.split('\n').filter(Boolean).map(f => f as Json) : [];
+      
+      // Convert testimonials to JSON for faqs
+      let faqs: Json | null = null;
+      try {
+        if (values.testimonials) {
+          faqs = JSON.parse(values.testimonials) as Json;
+        }
+      } catch (e) {
+        console.warn('Could not parse testimonials as JSON, storing as string');
+        faqs = values.testimonials as Json;
+      }
+
       const { error } = await supabase
         .from('tools')
-        .update(values)
-        .eq('id', id);
+        .update({
+          company_name: values.company_name,
+          short_description: values.short_description,
+          visit_website_url: values.visit_website_url,
+          primary_task: values.primary_task,
+          pricing: values.pricing,
+          applicable_tasks,
+          pros,
+          faqs,
+          logo_url: values.logo_url
+        })
+        .eq('id', toolId);
 
       if (error) throw error;
 
@@ -200,7 +266,7 @@ export default function AdminToolEdit() {
 
                       <FormField
                         control={form.control}
-                        name="website"
+                        name="visit_website_url"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Website URL</FormLabel>
