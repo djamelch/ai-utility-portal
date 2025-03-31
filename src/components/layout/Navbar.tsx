@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -55,7 +54,6 @@ export function Navbar({ className }: NavbarProps) {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-    // Prevent scrolling when menu is open
     if (!isMenuOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -79,7 +77,6 @@ export function Navbar({ className }: NavbarProps) {
     { title: "About", path: "/about" }
   ];
 
-  // Add admin dashboard link if user is admin
   if (isAdmin) {
     navLinks.push({ title: "Admin", path: "/admin" });
   }
@@ -93,12 +90,10 @@ export function Navbar({ className }: NavbarProps) {
       )}
     >
       <nav className="container-wide flex items-center justify-between">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2 text-xl font-bold">
           <span className="text-gradient">AI Any Tool</span>
         </Link>
 
-        {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-8">
           <ul className="flex items-center gap-6">
             {navLinks.map((link) => (
@@ -145,15 +140,14 @@ export function Navbar({ className }: NavbarProps) {
                     {isAdmin ? 'Admin Account' : 'User Account'}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {isAdmin ? (
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Your Dashboard</span>
+                  </DropdownMenuItem>
+                  {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       <Shield className="mr-2 h-4 w-4" />
                       <span>Admin Dashboard</span>
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span>Your Dashboard</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={handleSignOut}>
@@ -173,7 +167,6 @@ export function Navbar({ className }: NavbarProps) {
           </div>
         </div>
 
-        {/* Mobile Menu Button */}
         <div className="flex items-center gap-4 md:hidden">
           <button
             aria-label="Toggle dark mode"
@@ -192,7 +185,6 @@ export function Navbar({ className }: NavbarProps) {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="fixed inset-0 top-[60px] z-50 flex flex-col bg-background p-6 md:hidden animate-fadeIn">
             <ul className="flex flex-col gap-6 pt-8">
@@ -207,17 +199,31 @@ export function Navbar({ className }: NavbarProps) {
                   </Link>
                 </li>
               ))}
-              {user && !isAdmin && (
-                <li>
-                  <Link
-                    to="/dashboard"
-                    className="text-xl font-medium flex items-center gap-2"
-                    onClick={toggleMenu}
-                  >
-                    <LayoutDashboard className="h-5 w-5" />
-                    Your Dashboard
-                  </Link>
-                </li>
+              {user && (
+                <>
+                  <li>
+                    <Link
+                      to="/dashboard"
+                      className="text-xl font-medium flex items-center gap-2"
+                      onClick={toggleMenu}
+                    >
+                      <LayoutDashboard className="h-5 w-5" />
+                      Your Dashboard
+                    </Link>
+                  </li>
+                  {isAdmin && (
+                    <li>
+                      <Link
+                        to="/admin"
+                        className="text-xl font-medium flex items-center gap-2"
+                        onClick={toggleMenu}
+                      >
+                        <Shield className="h-5 w-5" />
+                        Admin Dashboard
+                      </Link>
+                    </li>
+                  )}
+                </>
               )}
             </ul>
             <div className="mt-auto pt-8 flex flex-col gap-4">
