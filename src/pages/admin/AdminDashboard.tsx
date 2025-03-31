@@ -23,6 +23,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Set the active tab based on the current URL
   useEffect(() => {
     if (location.pathname.includes('/admin/tools')) {
       setActiveTab('tools');
@@ -31,19 +32,27 @@ export default function AdminDashboard() {
     }
   }, [location.pathname]);
 
+  // Redirect non-admin users
   useEffect(() => {
     if (!isLoading && !isAdmin) {
       navigate('/dashboard');
     }
   }, [isAdmin, isLoading, navigate]);
   
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
+  // Direct navigation handlers for each tab
+  const navigateToTab = (tab: string) => {
+    setActiveTab(tab);
     
-    if (value === 'tools') {
-      navigate('/admin/tools');
-    } else {
-      navigate('/admin');
+    switch(tab) {
+      case 'tools':
+        navigate('/admin/tools');
+        break;
+      case 'users':
+      case 'settings':
+      case 'analytics':
+      default:
+        navigate('/admin');
+        break;
     }
   };
 
@@ -80,23 +89,23 @@ export default function AdminDashboard() {
               <Tabs 
                 defaultValue="analytics" 
                 value={activeTab} 
-                onValueChange={handleTabChange}
+                onValueChange={navigateToTab}
                 className="w-full"
               >
                 <TabsList className="mb-6">
-                  <TabsTrigger value="analytics" onClick={() => navigate('/admin')}>
+                  <TabsTrigger value="analytics">
                     <BarChart className="h-4 w-4 mr-2" />
                     Analytics
                   </TabsTrigger>
-                  <TabsTrigger value="tools" onClick={() => navigate('/admin/tools')}>
+                  <TabsTrigger value="tools">
                     <Database className="h-4 w-4 mr-2" />
                     Tools
                   </TabsTrigger>
-                  <TabsTrigger value="users" onClick={() => navigate('/admin')}>
+                  <TabsTrigger value="users">
                     <Users className="h-4 w-4 mr-2" />
                     Users
                   </TabsTrigger>
-                  <TabsTrigger value="settings" onClick={() => navigate('/admin')}>
+                  <TabsTrigger value="settings">
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
                   </TabsTrigger>

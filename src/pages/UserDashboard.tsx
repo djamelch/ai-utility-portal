@@ -8,7 +8,7 @@ import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { AdminDashboardPreview } from '@/components/dashboard/AdminDashboardPreview';
 import { Button } from '@/components/ui/button';
 import { Shield, LayoutDashboard, Users, Database, BarChart, Settings } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminTools } from '@/pages/admin/AdminTools';
 import { AdminUsers } from '@/pages/admin/AdminUsers';
@@ -21,22 +21,25 @@ export default function UserDashboard() {
   const [adminTab, setAdminTab] = useState('analytics');
   const navigate = useNavigate();
   
-  const handleAdminTabChange = (value: string) => {
-    setAdminTab(value);
-    
-    if (value === 'tools') {
-      navigate('/admin/tools');
-    } else if (value === 'users') {
-      navigate('/admin');
-    } else if (value === 'settings') {
-      navigate('/admin');
-    } else {
-      navigate('/admin');
-    }
+  // Direct navigation handlers for admin sections
+  const navigateToAdminAnalytics = () => {
+    setAdminTab('analytics');
+    navigate('/admin');
   };
   
-  const handleNavigation = (path: string) => {
-    navigate(path);
+  const navigateToAdminTools = () => {
+    setAdminTab('tools');
+    navigate('/admin/tools');
+  };
+  
+  const navigateToAdminUsers = () => {
+    setAdminTab('users');
+    navigate('/admin');
+  };
+  
+  const navigateToAdminSettings = () => {
+    setAdminTab('settings');
+    navigate('/admin');
   };
   
   return (
@@ -60,7 +63,7 @@ export default function UserDashboard() {
                     variant="outline" 
                     size="lg" 
                     className="gap-2"
-                    onClick={() => handleNavigation('/admin')}
+                    onClick={() => navigate('/admin')}
                   >
                     <Shield className="h-4 w-4" />
                     Go to Full Admin Dashboard
@@ -91,23 +94,23 @@ export default function UserDashboard() {
                   <TabsContent value="admin">
                     <Tabs 
                       value={adminTab} 
-                      onValueChange={handleAdminTabChange}
+                      onValueChange={setAdminTab}
                       className="w-full"
                     >
                       <TabsList className="mb-6">
-                        <TabsTrigger value="analytics" onClick={() => handleNavigation('/admin')}>
+                        <TabsTrigger value="analytics" onClick={navigateToAdminAnalytics}>
                           <BarChart className="h-4 w-4 mr-2" />
                           Analytics
                         </TabsTrigger>
-                        <TabsTrigger value="tools" onClick={() => handleNavigation('/admin/tools')}>
+                        <TabsTrigger value="tools" onClick={navigateToAdminTools}>
                           <Database className="h-4 w-4 mr-2" />
                           Tools
                         </TabsTrigger>
-                        <TabsTrigger value="users" onClick={() => handleNavigation('/admin')}>
+                        <TabsTrigger value="users" onClick={navigateToAdminUsers}>
                           <Users className="h-4 w-4 mr-2" />
                           Users
                         </TabsTrigger>
-                        <TabsTrigger value="settings" onClick={() => handleNavigation('/admin')}>
+                        <TabsTrigger value="settings" onClick={navigateToAdminSettings}>
                           <Settings className="h-4 w-4 mr-2" />
                           Settings
                         </TabsTrigger>
