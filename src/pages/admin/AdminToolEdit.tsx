@@ -114,13 +114,15 @@ export default function AdminToolEdit() {
 
         if (data) {
           // Store additional fields that are not in the database schema but needed for form
-          setAdditionalFields({
+          const newAdditionalFields = {
             id: data.id,
-            is_featured: data.applicable_tasks?.some(task => task === 'featured') || false,
-            is_verified: data.applicable_tasks?.some(task => task === 'verified') || false,
+            is_featured: data.applicable_tasks?.some((task: Json) => task === 'featured') || false,
+            is_verified: data.applicable_tasks?.some((task: Json) => task === 'verified') || false,
             features: Array.isArray(data.pros) ? data.pros.join('\n') : '',
             testimonials: data.faqs ? JSON.stringify(data.faqs) : '',
-          });
+          };
+          
+          setAdditionalFields(newAdditionalFields);
 
           // Set form values from fetched data
           form.reset({
@@ -129,10 +131,10 @@ export default function AdminToolEdit() {
             visit_website_url: data.visit_website_url || '',
             primary_task: data.primary_task || '',
             pricing: data.pricing || '',
-            is_featured: additionalFields.is_featured,
-            is_verified: additionalFields.is_verified,
-            features: additionalFields.features,
-            testimonials: additionalFields.testimonials,
+            is_featured: newAdditionalFields.is_featured,
+            is_verified: newAdditionalFields.is_verified,
+            features: newAdditionalFields.features,
+            testimonials: newAdditionalFields.testimonials,
             logo_url: data.logo_url || '',
           });
         }
@@ -149,7 +151,7 @@ export default function AdminToolEdit() {
     };
 
     fetchTool();
-  }, [id, form, toast, additionalFields.is_featured, additionalFields.is_verified, additionalFields.features, additionalFields.testimonials]);
+  }, [id, form, toast]);
 
   // Handle form submission
   const onSubmit = async (values: ToolFormValues) => {
