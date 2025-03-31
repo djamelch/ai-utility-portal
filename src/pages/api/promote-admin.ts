@@ -46,7 +46,14 @@ export async function POST(req: Request) {
         responseData = text ? JSON.parse(text) : {};
       } catch (e) {
         console.error('Failed to parse response as JSON:', text);
-        responseData = { message: 'Invalid response format' };
+        // Instead of throwing, return the raw text in the response
+        return new Response(
+          JSON.stringify({ 
+            message: 'Invalid response format', 
+            rawResponse: text 
+          }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
       }
       
       console.log('Function response:', responseData);

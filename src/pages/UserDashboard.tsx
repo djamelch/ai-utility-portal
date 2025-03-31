@@ -22,16 +22,16 @@ export default function UserDashboard() {
 
   return (
     <RequireAuth>
-      <PageLoadingWrapper isLoading={isLoading} loadingText="Loading your dashboard...">
+      <PageLoadingWrapper isLoading={isLoading} loadingText="جاري تحميل لوحة التحكم...">
         <main className="flex-1 pt-24 pb-16">
           <div className="container max-w-screen-xl mx-auto px-4">
             <MotionWrapper animation="fadeIn">
               <div className="mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold">
-                  Your Dashboard
+                  لوحة التحكم الخاصة بك
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                  Manage your saved tools, reviews, and personal settings
+                  إدارة أدواتك المحفوظة، والتقييمات، وإعدادات الحساب
                 </p>
               </div>
             </MotionWrapper>

@@ -23,7 +23,7 @@ export function PromoteToAdmin() {
       
       console.log('Requesting admin promotion for user:', user.id);
       
-      // Call the API route
+      // Call the API route - change to the App Router format API endpoint
       const response = await fetch('/api/promote-admin', {
         method: 'POST',
         headers: {
@@ -34,6 +34,8 @@ export function PromoteToAdmin() {
       
       // First get response as text
       const responseText = await response.text();
+      console.log('Raw API response:', responseText);
+      
       let data;
       
       try {
@@ -41,7 +43,7 @@ export function PromoteToAdmin() {
         data = responseText ? JSON.parse(responseText) : {};
       } catch (e) {
         console.error('Error parsing response:', responseText);
-        throw new Error('Failed to parse server response');
+        throw new Error('Server returned an invalid response. Please try again later.');
       }
       
       console.log('Admin promotion response:', data);
@@ -51,8 +53,8 @@ export function PromoteToAdmin() {
       }
       
       toast({
-        title: 'Success!',
-        description: 'You have been promoted to admin. The page will refresh shortly.',
+        title: 'نجاح!',
+        description: 'تمت ترقيتك إلى مشرف. سيتم تحديث الصفحة قريبًا.',
         variant: 'default',
       });
       
@@ -64,8 +66,8 @@ export function PromoteToAdmin() {
     } catch (error: any) {
       console.error('Error promoting to admin:', error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to promote to admin',
+        title: 'خطأ',
+        description: error.message || 'فشل في الترقية إلى مشرف',
         variant: 'destructive',
       });
     } finally {
@@ -83,12 +85,12 @@ export function PromoteToAdmin() {
       {isLoading ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          Promoting...
+          جاري الترقية...
         </>
       ) : (
         <>
           <ShieldCheck className="h-4 w-4 text-purple-500" />
-          Promote to Admin
+          ترقية إلى مشرف
         </>
       )}
     </Button>
