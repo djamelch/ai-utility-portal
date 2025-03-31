@@ -61,6 +61,16 @@ function App() {
                   <AdminDashboard />
                 </RequireAuth>
               } />
+              <Route path="/admin/users" element={
+                <RequireAuth requireAdmin={true}>
+                  <AdminDashboard />
+                </RequireAuth>
+              } />
+              <Route path="/admin/settings" element={
+                <RequireAuth requireAdmin={true}>
+                  <AdminDashboard />
+                </RequireAuth>
+              } />
               <Route path="/admin/tools/edit/:id" element={
                 <RequireAuth requireAdmin={true}>
                   <AdminDashboard />

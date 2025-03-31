@@ -12,8 +12,8 @@ export function AdminDashboardPreview() {
   // Direct navigation handlers for each admin section
   const navigateToAdminAnalytics = () => navigate('/admin');
   const navigateToAdminTools = () => navigate('/admin/tools');
-  const navigateToAdminUsers = () => navigate('/admin');
-  const navigateToAdminSettings = () => navigate('/admin');
+  const navigateToAdminUsers = () => navigate('/admin/users');
+  const navigateToAdminSettings = () => navigate('/admin/settings');
   const navigateToFullAdmin = () => navigate('/admin');
   
   return (

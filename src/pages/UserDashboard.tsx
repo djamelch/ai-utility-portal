@@ -23,23 +23,19 @@ export default function UserDashboard() {
   
   // Direct navigation handlers for admin sections
   const navigateToAdminAnalytics = () => {
-    setAdminTab('analytics');
     navigate('/admin');
   };
   
   const navigateToAdminTools = () => {
-    setAdminTab('tools');
     navigate('/admin/tools');
   };
   
   const navigateToAdminUsers = () => {
-    setAdminTab('users');
-    navigate('/admin');
+    navigate('/admin/users');
   };
   
   const navigateToAdminSettings = () => {
-    setAdminTab('settings');
-    navigate('/admin');
+    navigate('/admin/settings');
   };
   
   return (
@@ -116,20 +112,41 @@ export default function UserDashboard() {
                         </TabsTrigger>
                       </TabsList>
                       
+                      {/* We've replaced the inline content with redirects to the full Admin Dashboard */}
                       <TabsContent value="analytics">
-                        <AdminAnalytics />
+                        <div className="text-center py-8">
+                          <p className="mb-4">Redirecting to the full Admin Dashboard for complete analytics view...</p>
+                          <Button onClick={navigateToAdminAnalytics}>
+                            Go to Analytics Dashboard
+                          </Button>
+                        </div>
                       </TabsContent>
                       
                       <TabsContent value="tools">
-                        <AdminTools />
+                        <div className="text-center py-8">
+                          <p className="mb-4">Redirecting to the full Admin Dashboard for complete tools management...</p>
+                          <Button onClick={navigateToAdminTools}>
+                            Go to Tools Management
+                          </Button>
+                        </div>
                       </TabsContent>
                       
                       <TabsContent value="users">
-                        <AdminUsers />
+                        <div className="text-center py-8">
+                          <p className="mb-4">Redirecting to the full Admin Dashboard for complete user management...</p>
+                          <Button onClick={navigateToAdminUsers}>
+                            Go to User Management
+                          </Button>
+                        </div>
                       </TabsContent>
                       
                       <TabsContent value="settings">
-                        <AdminSettings />
+                        <div className="text-center py-8">
+                          <p className="mb-4">Redirecting to the full Admin Dashboard for complete site settings...</p>
+                          <Button onClick={navigateToAdminSettings}>
+                            Go to Site Settings
+                          </Button>
+                        </div>
                       </TabsContent>
                     </Tabs>
                   </TabsContent>

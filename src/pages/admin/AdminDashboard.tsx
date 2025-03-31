@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, Outlet } from 'react-router-dom';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { AdminTools } from './AdminTools';
 import { AdminUsers } from './AdminUsers';
@@ -12,7 +12,7 @@ import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  BarChart, Users, Settings, Database, LayoutDashboard
+  BarChart, Users, Settings, Database, LayoutDashboard, Shield
 } from 'lucide-react';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (location.pathname.includes('/admin/tools')) {
       setActiveTab('tools');
-    } else if (location.pathname === '/admin') {
+    } else if (location.pathname.includes('/admin/users')) {
+      setActiveTab('users');
+    } else if (location.pathname.includes('/admin/settings')) {
+      setActiveTab('settings');
+    } else {
       setActiveTab('analytics');
     }
   }, [location.pathname]);
@@ -48,7 +52,11 @@ export default function AdminDashboard() {
         navigate('/admin/tools');
         break;
       case 'users':
+        navigate('/admin/users');
+        break;
       case 'settings':
+        navigate('/admin/settings');
+        break;
       case 'analytics':
       default:
         navigate('/admin');
