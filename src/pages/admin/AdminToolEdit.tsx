@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +38,6 @@ import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { Json } from '@/integrations/supabase/types';
 
-// Define the form schema with Zod to match database structure
 const toolFormSchema = z.object({
   company_name: z.string().min(1, 'Name is required'),
   short_description: z.string().min(1, 'Short description is required'),
@@ -53,25 +51,21 @@ const toolFormSchema = z.object({
   featured_image_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   is_featured: z.boolean().default(false),
   is_verified: z.boolean().default(false),
+  applicable_tasks: z.array(z.string()).optional(),
   pros: z.string().optional(),
   cons: z.string().optional(),
-  features: z.string().optional(), // For display purposes, will be converted to JSON
-  testimonials: z.string().optional(), // For display purposes, will be converted to JSON
+  faqs: z.string().optional(),
 });
 
 type ToolFormValues = z.infer<typeof toolFormSchema>;
 
-// Interface to store additional fields for the database
 interface ToolDatabaseFields {
   id?: number;
   click_count?: number;
-  is_featured?: boolean;
-  is_verified?: boolean;
+  applicable_tasks?: Json[];
   pros?: Json[];
   cons?: Json[];
-  applicable_tasks?: Json[];
-  features?: string; // Temporary field for UI display
-  testimonials?: string; // Temporary field for UI display
+  faqs?: Json | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -83,14 +77,12 @@ export default function AdminToolEdit() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [additionalFields, setAdditionalFields] = useState<ToolDatabaseFields>({
-    is_featured: false,
-    is_verified: false,
+    applicable_tasks: [],
     pros: [],
     cons: [],
-    applicable_tasks: []
+    faqs: null
   });
 
-  // Initialize form with react-hook-form
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolFormSchema),
     defaultValues: {
@@ -108,17 +100,15 @@ export default function AdminToolEdit() {
       featured_image_url: '',
       pros: '',
       cons: '',
-      features: '',
-      testimonials: '',
+      applicable_tasks: [],
+      faqs: '',
     },
   });
 
-  // Fetch tool data
   useEffect(() => {
     const fetchTool = async () => {
       try {
         setIsLoading(true);
-        // Convert string id to number for the database query
         const toolId = parseInt(id || '0', 10);
         
         if (isNaN(toolId)) {
@@ -136,7 +126,6 @@ export default function AdminToolEdit() {
         if (data) {
           console.log("Fetched tool data:", data);
           
-          // Store additional fields that may need special handling
           const newAdditionalFields = {
             id: data.id,
             click_count: data.click_count || 0,
@@ -145,15 +134,33 @@ export default function AdminToolEdit() {
             pros: data.pros || [],
             cons: data.cons || [],
             applicable_tasks: data.applicable_tasks || [],
-            is_featured: data.applicable_tasks?.some((task: Json) => task === 'featured') || false,
-            is_verified: data.applicable_tasks?.some((task: Json) => task === 'verified') || false,
-            features: Array.isArray(data.pros) ? data.pros.join('\n') : '',
-            testimonials: data.faqs ? JSON.stringify(data.faqs) : '',
+            faqs: data.faqs || null,
           };
           
           setAdditionalFields(newAdditionalFields);
 
-          // Set form values from fetched data
+          const is_featured = Array.isArray(data.applicable_tasks) && 
+                             data.applicable_tasks.includes('featured');
+          
+          const is_verified = Array.isArray(data.applicable_tasks) && 
+                             data.applicable_tasks.includes('verified');
+
+          const prosText = Array.isArray(data.pros) ? data.pros.join('\n') : '';
+          const consText = Array.isArray(data.cons) ? data.cons.join('\n') : '';
+          
+          const faqsText = '';
+          if (data.faqs) {
+            try {
+              if (typeof data.faqs === 'string') {
+                faqsText = data.faqs;
+              } else {
+                faqsText = JSON.stringify(data.faqs, null, 2);
+              }
+            } catch (e) {
+              console.error('Error formatting FAQs:', e);
+            }
+          }
+
           form.reset({
             company_name: data.company_name || '',
             short_description: data.short_description || '',
@@ -165,12 +172,12 @@ export default function AdminToolEdit() {
             slug: data.slug || '',
             logo_url: data.logo_url || '',
             featured_image_url: data.featured_image_url || '',
-            is_featured: newAdditionalFields.is_featured,
-            is_verified: newAdditionalFields.is_verified,
-            pros: Array.isArray(data.pros) ? data.pros.join('\n') : '',
-            cons: Array.isArray(data.cons) ? data.cons.join('\n') : '',
-            features: newAdditionalFields.features,
-            testimonials: newAdditionalFields.testimonials,
+            is_featured: is_featured,
+            is_verified: is_verified,
+            pros: prosText,
+            cons: consText,
+            applicable_tasks: data.applicable_tasks as string[] || [],
+            faqs: faqsText,
           });
         }
       } catch (error: any) {
@@ -188,46 +195,46 @@ export default function AdminToolEdit() {
     fetchTool();
   }, [id, form, toast]);
 
-  // Handle form submission
   const onSubmit = async (values: ToolFormValues) => {
     setIsSaving(true);
     try {
-      // Convert form values to database format
       const toolId = parseInt(id || '0', 10);
       
       if (isNaN(toolId)) {
         throw new Error('Invalid tool ID');
       }
 
-      // Prepare applicable_tasks array based on is_featured and is_verified
       const applicable_tasks: Json[] = [];
+      
       if (values.is_featured) applicable_tasks.push('featured' as Json);
       if (values.is_verified) applicable_tasks.push('verified' as Json);
       
-      // Add any existing applicable_tasks that aren't featured/verified
       if (additionalFields.applicable_tasks) {
         additionalFields.applicable_tasks.forEach(task => {
-          if (task !== 'featured' && task !== 'verified') {
+          if (task !== 'featured' && task !== 'verified' && !applicable_tasks.includes(task)) {
             applicable_tasks.push(task);
           }
         });
       }
       
-      // Convert pros string to array
       const pros: Json[] = values.pros ? values.pros.split('\n').filter(Boolean).map(f => f as Json) : [];
       
-      // Convert cons string to array
       const cons: Json[] = values.cons ? values.cons.split('\n').filter(Boolean).map(f => f as Json) : [];
       
-      // Convert testimonials to JSON for faqs
       let faqs: Json | null = null;
       try {
-        if (values.testimonials) {
-          faqs = JSON.parse(values.testimonials) as Json;
+        if (values.faqs) {
+          faqs = JSON.parse(values.faqs) as Json;
         }
       } catch (e) {
-        console.warn('Could not parse testimonials as JSON, storing as string');
-        faqs = values.testimonials as Json;
+        console.warn('Could not parse FAQs as JSON', e);
+        toast({
+          title: 'Warning',
+          description: 'FAQs could not be parsed as valid JSON. Please check the format.',
+          variant: 'destructive',
+        });
+        setIsSaving(false);
+        return;
       }
 
       const { error } = await supabase
@@ -235,7 +242,7 @@ export default function AdminToolEdit() {
         .update({
           company_name: values.company_name,
           short_description: values.short_description,
-          full_description: values.full_description,
+          full_description: values.full_description || null,
           visit_website_url: values.visit_website_url,
           detail_url: values.detail_url || null,
           primary_task: values.primary_task,
@@ -329,7 +336,7 @@ export default function AdminToolEdit() {
                               <Input placeholder="e.g. chatgpt" {...field} />
                             </FormControl>
                             <FormDescription>
-                              URL-friendly version of the name (optional)
+                              URL-friendly version of the name for detail pages
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -350,6 +357,9 @@ export default function AdminToolEdit() {
                               rows={3} 
                             />
                           </FormControl>
+                          <FormDescription>
+                            Short summary displayed in tool cards
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -386,6 +396,9 @@ export default function AdminToolEdit() {
                             <FormControl>
                               <Input placeholder="https://example.com" {...field} />
                             </FormControl>
+                            <FormDescription>
+                              Main website link for the tool
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -401,7 +414,7 @@ export default function AdminToolEdit() {
                               <Input placeholder="https://example.com/details" {...field} />
                             </FormControl>
                             <FormDescription>
-                              Optional URL for more details
+                              Optional URL for additional details
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -437,6 +450,9 @@ export default function AdminToolEdit() {
                                 <SelectItem value="other">Other</SelectItem>
                               </SelectContent>
                             </Select>
+                            <FormDescription>
+                              Main category/function of the tool
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -466,6 +482,9 @@ export default function AdminToolEdit() {
                                 <SelectItem value="contact">Contact for Pricing</SelectItem>
                               </SelectContent>
                             </Select>
+                            <FormDescription>
+                              Pricing model of the tool
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -516,13 +535,13 @@ export default function AdminToolEdit() {
                           <FormLabel>Pros / Features</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="List key features of the tool"
+                              placeholder="List key features or pros of the tool (one per line)"
                               {...field}
                               rows={4}
                             />
                           </FormControl>
                           <FormDescription>
-                            Enter features/pros separated by new lines
+                            Enter each pro/feature on a new line
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -537,13 +556,13 @@ export default function AdminToolEdit() {
                           <FormLabel>Cons / Limitations</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="List limitations of the tool"
+                              placeholder="List limitations or cons of the tool (one per line)"
                               {...field}
                               rows={4}
                             />
                           </FormControl>
                           <FormDescription>
-                            Enter limitations/cons separated by new lines
+                            Enter each con/limitation on a new line
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -552,19 +571,19 @@ export default function AdminToolEdit() {
 
                     <FormField
                       control={form.control}
-                      name="testimonials"
+                      name="faqs"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>FAQs / Testimonials</FormLabel>
+                          <FormLabel>FAQs (JSON Format)</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="JSON format for FAQs or testimonials"
+                              placeholder='[{"question": "What is this tool?", "answer": "This tool helps with..."}]'
                               {...field}
-                              rows={4}
+                              rows={6}
                             />
                           </FormControl>
                           <FormDescription>
-                            JSON format for FAQs or testimonials
+                            Enter FAQs in valid JSON format as an array of question/answer objects
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
