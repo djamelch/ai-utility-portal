@@ -32,23 +32,19 @@ export function PromoteToAdmin() {
         body: JSON.stringify({ userId: user.id }),
       });
       
-      // First get response as text to handle potential empty or invalid responses
-      const responseText = await response.text();
-      console.log('Raw API response:', responseText);
-      
       let data;
       
       try {
-        // Try to parse the response as JSON if it's not empty
+        // Try to parse the response as JSON
+        const responseText = await response.text();
+        console.log('Raw API response:', responseText);
+        
         data = responseText ? JSON.parse(responseText) : {};
+        console.log('Parsed response data:', data);
       } catch (e) {
         console.error('Error parsing response:', e);
-        console.error('Response text:', responseText);
-        // If we can't parse as JSON, create an error object to handle below
-        throw new Error('Invalid server response format. Please try again later.');
+        throw new Error('Invalid server response. Please try again later.');
       }
-      
-      console.log('Admin promotion response:', data);
       
       if (!response.ok) {
         throw new Error(data.message || 'Failed to promote to admin');
