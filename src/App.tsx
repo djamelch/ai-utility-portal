@@ -49,7 +49,11 @@ function App() {
               <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* User Dashboard */}
-              <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/dashboard" element={
+                <RequireAuth>
+                  <UserDashboard />
+                </RequireAuth>
+              } />
               
               {/* Admin Routes - with requireAdmin flag */}
               <Route path="/admin" element={

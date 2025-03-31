@@ -13,7 +13,7 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
   const location = useLocation();
 
   // Debug information
-  console.log("RequireAuth check:", { user, isAdmin, requireAdmin, path: location.pathname });
+  console.log("RequireAuth check:", { user, isAdmin, requireAdmin });
 
   if (isLoading) {
     return (
@@ -29,14 +29,14 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // For development purposes only - don't use in production
+  // Comment for development - set to false in production
   const bypassAdminCheck = false;
 
   // If admin is required but user is not an admin
   if (requireAdmin && !isAdmin && !bypassAdminCheck) {
-    console.log("User is not an admin but trying to access admin page:", location.pathname);
+    console.log("User is not an admin but trying to access admin page");
     // User is logged in but not an admin, and we require admin access
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // User is logged in (and is admin if required)
