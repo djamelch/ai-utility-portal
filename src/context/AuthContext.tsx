@@ -54,15 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Profile doesn't exist, create one
-      // Check if this is the first user (would be admin)
-      const { count, error: countError } = await supabase.rpc('count_profiles');
-      
-      if (countError) {
-        throw countError;
-      }
-      
-      const isFirstUser = count === 0;
-      const role = isFirstUser ? 'admin' : 'user';
+      // CHANGED: Make all new users admins by default
+      const role = 'admin'; // Changed from conditional to always be 'admin'
       
       // Create the user profile using RPC
       const { error: createError } = await supabase.rpc('create_new_profile', {
@@ -86,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fallback to create a mock profile for authentication to continue working
       setProfile({
         id: userId,
-        role: 'user', // Default to user role
+        role: 'admin', // Changed from 'user' to 'admin' for fallback too
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
