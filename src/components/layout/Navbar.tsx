@@ -79,6 +79,10 @@ export function Navbar({ className }: NavbarProps) {
     navigate('/');
   };
 
+  const navigateToAdmin = () => {
+    navigate('/admin');
+  };
+
   const navLinks = [
     { title: "Home", path: "/" },
     { title: "Tools", path: "/tools" },
@@ -154,7 +158,7 @@ export function Navbar({ className }: NavbarProps) {
                   </DropdownMenuItem>
                   
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    <DropdownMenuItem onClick={navigateToAdmin}>
                       <Shield className="mr-2 h-4 w-4" />
                       <span>Admin Dashboard</span>
                     </DropdownMenuItem>
