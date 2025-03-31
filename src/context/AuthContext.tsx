@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,20 +8,28 @@ type User = {
   role?: string;
 };
 
+type Profile = {
+  id: string;
+  role: string;
+};
+
 interface AuthContextType {
   user: User | null;
+  profile: Profile | null;
   isAdmin: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
@@ -66,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             
             setUser(userWithRole);
             setIsAdmin(userWithRole.role === 'admin');
+            setProfile(profileData);
             console.log("User authenticated:", userWithRole);
             console.log("Is admin:", userWithRole.role === 'admin');
           }
@@ -74,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Error checking authentication:", error);
         setUser(null);
         setIsAdmin(false);
+        setProfile(null);
       } finally {
         setIsLoading(false);
       }
@@ -104,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           setUser(userWithRole);
           setIsAdmin(userWithRole.role === 'admin');
+          setProfile(profileData);
           console.log("User signed in:", userWithRole);
           console.log("Is admin:", userWithRole.role === 'admin');
         } catch (error) {
@@ -112,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (event === "SIGNED_OUT") {
         setUser(null);
         setIsAdmin(false);
+        setProfile(null);
         console.log("User signed out");
       }
     });
@@ -208,6 +219,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await supabase.auth.signOut();
       setUser(null);
       setIsAdmin(false);
+      setProfile(null);
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
@@ -255,14 +267,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Sign in with Google function
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) {
+        toast({
+          title: "Error signing in with Google",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+      
+      return { error: null };
+    } catch (error: any) {
+      console.error("Error signing in with Google:", error);
+      toast({
+        title: "Error signing in with Google",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   const value = {
     user,
+    profile,
     isAdmin,
     isLoading,
     signIn,
     signUp,
     signOut,
     resetPassword,
+    signInWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
