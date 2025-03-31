@@ -71,6 +71,11 @@ function App() {
                   <AdminUsers />
                 </RequireAuth>
               } />
+              <Route path="/admin/analytics" element={
+                <RequireAuth requireAdmin={true}>
+                  <AdminAnalytics />
+                </RequireAuth>
+              } />
               <Route path="/admin/settings" element={
                 <RequireAuth requireAdmin={true}>
                   <AdminSettings />

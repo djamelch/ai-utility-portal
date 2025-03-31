@@ -150,10 +150,12 @@ export function Navbar({ className }: NavbarProps) {
                     <span>User Dashboard</span>
                   </DropdownMenuItem>
                   
-                  <DropdownMenuItem onClick={() => navigate('/admin')}>
-                    <Shield className="mr-2 h-4 w-4" />
-                    <span>Admin Dashboard</span>
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Admin Dashboard</span>
+                    </DropdownMenuItem>
+                  )}
                   
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -226,17 +228,19 @@ export function Navbar({ className }: NavbarProps) {
                             </Link>
                           </SheetClose>
                         </li>
-                        <li>
-                          <SheetClose asChild>
-                            <Link
-                              to="/admin"
-                              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-                            >
-                              <Shield className="h-5 w-5" />
-                              Admin Dashboard
-                            </Link>
-                          </SheetClose>
-                        </li>
+                        {isAdmin && (
+                          <li>
+                            <SheetClose asChild>
+                              <Link
+                                to="/admin"
+                                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                              >
+                                <Shield className="h-5 w-5" />
+                                Admin Dashboard
+                              </Link>
+                            </SheetClose>
+                          </li>
+                        )}
                       </>
                     )}
                   </ul>

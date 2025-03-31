@@ -20,12 +20,15 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
     );
   }
 
+  // If not logged in, redirect to auth page
   if (!user) {
     // Redirect to the auth page, but save the current location
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  // If admin is required but user is not an admin
   if (requireAdmin && !isAdmin) {
+    console.log("User is not an admin but trying to access admin page");
     // User is logged in but not an admin, and we require admin access
     return <Navigate to="/" replace />;
   }
