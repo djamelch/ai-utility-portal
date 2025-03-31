@@ -37,23 +37,26 @@ export async function POST(req: Request) {
         body: JSON.stringify({ userId }),
       });
       
-      // Make sure we read the response regardless of status
+      // First get the raw text response
       const text = await response.text();
       let responseData;
       
-      try {
-        // Try to parse as JSON if possible
-        responseData = text ? JSON.parse(text) : {};
-      } catch (e) {
-        console.error('Failed to parse response as JSON:', text);
-        // Instead of throwing, return the raw text in the response
-        return new Response(
-          JSON.stringify({ 
-            message: 'Invalid response format', 
-            rawResponse: text 
-          }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
-        );
+      // Only try to parse as JSON if there's content
+      if (text.trim()) {
+        try {
+          responseData = JSON.parse(text);
+        } catch (e) {
+          console.error('Failed to parse response as JSON:', text);
+          return new Response(
+            JSON.stringify({ 
+              message: 'Invalid response format from server',
+              rawResponse: text 
+            }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        responseData = {};
       }
       
       console.log('Function response:', responseData);

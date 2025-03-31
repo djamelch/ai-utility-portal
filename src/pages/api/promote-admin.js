@@ -35,16 +35,22 @@ export default async function handler(req, res) {
         body: JSON.stringify({ userId }),
       });
       
-      // Make sure we read the response regardless of status
-      const text = await response.text();
+      // Make sure we handle the response properly
       let responseData;
       
       try {
-        // Try to parse as JSON if possible
-        responseData = text ? JSON.parse(text) : {};
+        // First attempt to get response as JSON
+        responseData = await response.json();
       } catch (e) {
+        // If JSON parsing fails, get as text
+        const text = await response.text();
         console.error('Failed to parse response as JSON:', text);
-        responseData = { message: 'Invalid response format' };
+        
+        // Return a proper error response
+        return res.status(500).json({ 
+          message: 'Invalid response format from function',
+          details: text || 'Empty response' 
+        });
       }
       
       console.log('Function response:', responseData);
