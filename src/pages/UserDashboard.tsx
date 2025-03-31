@@ -8,13 +8,17 @@ import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { UserRoleBadge } from '@/components/admin/users/UserRoleBadge';
-import { Shield } from 'lucide-react';
+import { Shield, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { AdminDashboardPreview } from '@/components/dashboard/AdminDashboardPreview';
 
 export default function UserDashboard() {
   const { isAdmin, isLoading, user } = useAuth();
   const navigate = useNavigate();
+  
+  // Debug information
+  console.log("UserDashboard render:", { isAdmin, user });
   
   return (
     <RequireAuth>
@@ -34,12 +38,27 @@ export default function UserDashboard() {
                 </div>
                 
                 {isAdmin && (
-                  <div className="self-start">
+                  <div className="self-start flex flex-col sm:flex-row gap-3">
                     <UserRoleBadge isAdmin={true} />
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="gap-2"
+                      onClick={() => navigate('/admin')}
+                    >
+                      Admin Dashboard
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
                   </div>
                 )}
               </div>
             </MotionWrapper>
+            
+            {!isAdmin && (
+              <MotionWrapper animation="fadeIn" delay="delay-100">
+                <AdminDashboardPreview />
+              </MotionWrapper>
+            )}
             
             <MotionWrapper animation="fadeIn" delay="delay-200">
               <DashboardTabs />
