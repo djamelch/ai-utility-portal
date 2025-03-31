@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { AdminTools } from './AdminTools';
 import { AdminUsers } from './AdminUsers';
@@ -12,9 +12,10 @@ import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  BarChart, Users, Settings, Database
+  BarChart, Users, Settings, Database, LayoutDashboard
 } from 'lucide-react';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
+import { Button } from '@/components/ui/button';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -55,6 +56,13 @@ export default function AdminDashboard() {
                     Manage your AI tools database, users, and site settings
                   </p>
                 </div>
+                
+                <Button asChild variant="outline" size="lg" className="gap-2">
+                  <Link to="/dashboard">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Go to User Dashboard
+                  </Link>
+                </Button>
               </div>
             </MotionWrapper>
             

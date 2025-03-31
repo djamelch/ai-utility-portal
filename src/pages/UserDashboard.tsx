@@ -7,17 +7,16 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { AdminDashboardPreview } from '@/components/dashboard/AdminDashboardPreview';
+import { Button } from '@/components/ui/button';
+import { Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function UserDashboard() {
   const { isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   
-  // Redirect admin users to the admin dashboard
-  useEffect(() => {
-    if (!isLoading && isAdmin) {
-      navigate('/admin');
-    }
-  }, [isAdmin, isLoading, navigate]);
+  // Remove the automatic redirect for admin users
+  // This allows admins to view the user dashboard if they choose to
 
   return (
     <RequireAuth>
@@ -25,19 +24,30 @@ export default function UserDashboard() {
         <main className="flex-1 pt-24 pb-16">
           <div className="container max-w-screen-xl mx-auto px-4">
             <MotionWrapper animation="fadeIn">
-              <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold">
-                  Your Dashboard
-                </h1>
-                <p className="mt-2 text-muted-foreground">
-                  Manage your saved tools, reviews, and account settings
-                </p>
+              <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold">
+                    Your Dashboard
+                  </h1>
+                  <p className="mt-2 text-muted-foreground">
+                    Manage your saved tools, reviews, and account settings
+                  </p>
+                </div>
+                
+                {isAdmin && (
+                  <Button asChild variant="outline" size="lg" className="gap-2">
+                    <Link to="/admin">
+                      <Shield className="h-4 w-4" />
+                      Go to Admin Dashboard
+                    </Link>
+                  </Button>
+                )}
               </div>
             </MotionWrapper>
             
             <MotionWrapper animation="fadeIn" delay="delay-200">
-              {/* Admin Dashboard Preview */}
-              <AdminDashboardPreview />
+              {/* Display Admin Dashboard Preview for non-admin users */}
+              {!isAdmin && <AdminDashboardPreview />}
               
               {/* User Dashboard Content */}
               <DashboardTabs />
