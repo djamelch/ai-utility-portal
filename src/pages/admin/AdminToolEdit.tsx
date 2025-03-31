@@ -148,7 +148,7 @@ export default function AdminToolEdit() {
           const prosText = Array.isArray(data.pros) ? data.pros.join('\n') : '';
           const consText = Array.isArray(data.cons) ? data.cons.join('\n') : '';
           
-          const faqsText = '';
+          let faqsText = '';
           if (data.faqs) {
             try {
               if (typeof data.faqs === 'string') {
