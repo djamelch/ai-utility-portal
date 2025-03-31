@@ -136,7 +136,7 @@ export function Navbar({ className }: NavbarProps) {
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-popover">
                   <DropdownMenuLabel>
                     {isAdmin ? 'Admin Account' : 'User Account'}
                   </DropdownMenuLabel>
