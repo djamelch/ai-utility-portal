@@ -2,30 +2,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Loader2, Search, Shield, ShieldAlert, MailCheck } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import { UserSearchBar } from '@/components/admin/users/UserSearchBar';
+import { UserTable } from '@/components/admin/users/UserTable';
+import { UserListSkeleton } from '@/components/admin/users/UserListSkeleton';
 
 interface User {
   id: string;
@@ -39,8 +18,6 @@ export function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [userToToggleAdmin, setUserToToggleAdmin] = useState<User | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -89,9 +66,7 @@ export function AdminUsers() {
     }
   };
   
-  const handleDeleteUser = async () => {
-    if (!userToDelete) return;
-    
+  const handleDeleteUser = async (userToDelete: User) => {
     try {
       // Delete the user from auth
       const { error: authError } = await supabase.auth.admin.deleteUser(userToDelete.id);
@@ -114,14 +89,10 @@ export function AdminUsers() {
         description: `Failed to delete user: ${error.message || 'Unknown error'}`,
         variant: 'destructive',
       });
-    } finally {
-      setUserToDelete(null);
     }
   };
   
-  const handleToggleAdmin = async () => {
-    if (!userToToggleAdmin) return;
-    
+  const handleToggleAdmin = async (userToToggleAdmin: User) => {
     try {
       const newAdminStatus = !userToToggleAdmin.is_admin;
       const newRole = newAdminStatus ? 'admin' : 'user';
@@ -152,26 +123,15 @@ export function AdminUsers() {
         description: `Failed to update user: ${error.message || 'Unknown error'}`,
         variant: 'destructive',
       });
-    } finally {
-      setUserToToggleAdmin(null);
     }
   };
   
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Never';
-    return new Date(dateString).toLocaleDateString();
-  };
 
   if (isLoading) {
-    return (
-      <div className="h-96 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <UserListSkeleton />;
   }
 
   return (
@@ -180,123 +140,17 @@ export function AdminUsers() {
         <h2 className="text-lg font-semibold">
           User Management ({users.length})
         </h2>
-        <div className="relative w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        <UserSearchBar 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
       </div>
 
-      <Table>
-        <TableCaption>A list of all registered users.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Registered</TableHead>
-            <TableHead>Last Login</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{formatDate(user.created_at)}</TableCell>
-                <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
-                <TableCell>
-                  {user.is_admin ? (
-                    <div className="flex items-center">
-                      <ShieldAlert className="h-4 w-4 text-purple-500 mr-1" />
-                      <span>Admin</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <MailCheck className="h-4 w-4 text-gray-500 mr-1" />
-                      <span>User</span>
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell className="text-right space-x-2">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setUserToToggleAdmin(user)}
-                      >
-                        {user.is_admin ? 'Remove Admin' : 'Make Admin'}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          {user.is_admin 
-                            ? 'Remove admin privileges?' 
-                            : 'Grant admin privileges?'}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {user.is_admin
-                            ? `This will remove admin access from ${user.email}.`
-                            : `This will give ${user.email} full admin access to the dashboard.`}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setUserToToggleAdmin(null)}>
-                          Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction onClick={handleToggleAdmin}>
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setUserToDelete(user)}
-                      >
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete user account?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete {user.email}'s account and all associated data.
-                          This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setUserToDelete(null)}>
-                          Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteUser}>
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-6">
-                No users found matching your search criteria.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <UserTable 
+        users={filteredUsers}
+        onToggleAdmin={handleToggleAdmin}
+        onDeleteUser={handleDeleteUser}
+      />
     </div>
   );
 }
