@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate, useLocation, Link, Outlet } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { AdminTools } from './AdminTools';
 import { AdminUsers } from './AdminUsers';
@@ -12,7 +12,8 @@ import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  BarChart, Users, Settings, Database, LayoutDashboard, Shield
+  BarChart, Users, Settings, Database, LayoutDashboard, Shield,
+  FileInput, ArrowLeft
 } from 'lucide-react';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,8 @@ export default function AdminDashboard() {
         loadingText="Loading admin dashboard..."
         variant="progress"
       >
+        <Navbar />
+        
         <main className="flex-1 pt-24 pb-16">
           <div className="container max-w-screen-xl mx-auto px-4">
             <MotionWrapper animation="fadeIn">
@@ -84,12 +87,21 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 
-                <Button asChild variant="outline" size="lg" className="gap-2">
-                  <Link to="/dashboard">
-                    <LayoutDashboard className="h-4 w-4" />
-                    Go to User Dashboard
-                  </Link>
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button asChild variant="outline" size="lg" className="gap-2">
+                    <Link to="/dashboard">
+                      <LayoutDashboard className="h-4 w-4" />
+                      User Dashboard
+                    </Link>
+                  </Button>
+                  
+                  <Button asChild variant="outline" size="lg" className="gap-2">
+                    <Link to="/admin/csv-import">
+                      <FileInput className="h-4 w-4" />
+                      CSV Import
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </MotionWrapper>
             
@@ -138,6 +150,8 @@ export default function AdminDashboard() {
             </MotionWrapper>
           </div>
         </main>
+        
+        <Footer />
       </PageLoadingWrapper>
     </RequireAuth>
   );

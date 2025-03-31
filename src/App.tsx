@@ -17,6 +17,11 @@ import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { AdminTools } from "./pages/admin/AdminTools";
+import { AdminUsers } from "./pages/admin/AdminUsers";
+import { AdminAnalytics } from "./pages/admin/AdminAnalytics";
+import { AdminSettings } from "./pages/admin/AdminSettings";
+import AdminToolEdit from "./pages/admin/AdminToolEdit";
+import AdminToolCreate from "./pages/admin/AdminToolCreate";
 import CsvImport from "./pages/admin/CsvImport";
 import UserDashboard from "./pages/UserDashboard";
 import { useState } from "react";
@@ -58,27 +63,27 @@ function App() {
               } />
               <Route path="/admin/tools" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminTools />
                 </RequireAuth>
               } />
               <Route path="/admin/users" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminUsers />
                 </RequireAuth>
               } />
               <Route path="/admin/settings" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminSettings />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/edit/:id" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminToolEdit />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/new" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminToolCreate />
                 </RequireAuth>
               } />
               <Route path="/admin/csv-import" element={
