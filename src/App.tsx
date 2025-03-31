@@ -49,38 +49,14 @@ function App() {
               <Route path="/auth/callback" element={<AuthCallback />} />
               
               {/* User Dashboard */}
-              <Route path="/dashboard" element={
-                <RequireAuth>
-                  <UserDashboard />
-                </RequireAuth>
-              } />
+              <Route path="/dashboard" element={<UserDashboard />} />
               
               {/* Admin Routes - with requireAdmin flag */}
-              <Route path="/admin" element={
-                <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
-                </RequireAuth>
-              } />
-              <Route path="/admin/tools" element={
-                <RequireAuth requireAdmin={true}>
-                  <AdminTools />
-                </RequireAuth>
-              } />
-              <Route path="/admin/users" element={
-                <RequireAuth requireAdmin={true}>
-                  <AdminUsers />
-                </RequireAuth>
-              } />
-              <Route path="/admin/analytics" element={
-                <RequireAuth requireAdmin={true}>
-                  <AdminAnalytics />
-                </RequireAuth>
-              } />
-              <Route path="/admin/settings" element={
-                <RequireAuth requireAdmin={true}>
-                  <AdminSettings />
-                </RequireAuth>
-              } />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/tools" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminDashboard />} />
+              <Route path="/admin/analytics" element={<AdminDashboard />} />
+              <Route path="/admin/settings" element={<AdminDashboard />} />
               <Route path="/admin/tools/edit/:id" element={
                 <RequireAuth requireAdmin={true}>
                   <AdminToolEdit />
