@@ -19,26 +19,46 @@ export default async function handler(req, res) {
       return res.status(401).json({ message: 'Unauthorized - no session' });
     }
     
-    console.log('Updating user profile directly in the database');
+    console.log('Promoting user to admin:', userId);
     
-    // Instead of calling the edge function, update the profile directly
-    const { data: updatedProfile, error: updateError } = await supabase
+    // First check if profile exists
+    const { data: existingProfile, error: checkError } = await supabase
       .from('profiles')
-      .update({ role: 'admin' })
+      .select('*')
       .eq('id', userId)
-      .select()
       .single();
-    
-    if (updateError) {
-      console.error('Error updating profile:', updateError);
+      
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "No rows returned" which is fine
+      console.error('Error checking profile:', checkError);
       return res.status(500).json({ 
-        message: 'Failed to promote to admin',
-        error: updateError.message
+        message: 'Failed to check profile existence',
+        error: checkError.message
       });
     }
     
-    if (!updatedProfile) {
-      // Profile doesn't exist yet, create it
+    if (existingProfile) {
+      // Profile exists, update it
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from('profiles')
+        .update({ role: 'admin' })
+        .eq('id', userId)
+        .select()
+        .single();
+      
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        return res.status(500).json({ 
+          message: 'Failed to promote to admin',
+          error: updateError.message
+        });
+      }
+      
+      return res.status(200).json({
+        message: 'Successfully promoted to admin',
+        profile: updatedProfile
+      });
+    } else {
+      // Profile doesn't exist, create it
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
         .insert([{ id: userId, role: 'admin' }])
@@ -58,11 +78,6 @@ export default async function handler(req, res) {
         profile: newProfile
       });
     }
-    
-    return res.status(200).json({
-      message: 'Successfully promoted to admin',
-      profile: updatedProfile
-    });
   } catch (error) {
     console.error('API error:', error);
     return res.status(500).json({ 

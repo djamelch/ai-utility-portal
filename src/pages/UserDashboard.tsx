@@ -1,13 +1,12 @@
 
 import { useEffect } from 'react';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
+import { AdminDashboardPreview } from '@/components/dashboard/AdminDashboardPreview';
 
 export default function UserDashboard() {
   const { isAdmin, isLoading } = useAuth();
@@ -37,6 +36,10 @@ export default function UserDashboard() {
             </MotionWrapper>
             
             <MotionWrapper animation="fadeIn" delay="delay-200">
+              {/* Admin Dashboard Preview */}
+              <AdminDashboardPreview />
+              
+              {/* User Dashboard Content */}
               <DashboardTabs />
             </MotionWrapper>
           </div>

@@ -32,18 +32,23 @@ export function PromoteToAdmin() {
         body: JSON.stringify({ userId: user.id }),
       });
       
-      let data;
-      
+      let responseText;
       try {
-        // Try to parse the response as JSON
-        const responseText = await response.text();
+        responseText = await response.text();
         console.log('Raw API response:', responseText);
-        
+      } catch (e) {
+        console.error('Error reading response text:', e);
+        throw new Error('Failed to read server response');
+      }
+      
+      let data;
+      try {
         data = responseText ? JSON.parse(responseText) : {};
         console.log('Parsed response data:', data);
       } catch (e) {
-        console.error('Error parsing response:', e);
-        throw new Error('Invalid server response. Please try again later.');
+        console.error('Error parsing JSON response:', e);
+        console.error('Response text was:', responseText);
+        throw new Error('Invalid server response format');
       }
       
       if (!response.ok) {
