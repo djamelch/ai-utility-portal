@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -17,9 +18,16 @@ import {
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
+  const [stats, setStats] = useState({
+    toolsCount: 0,
+    usersCount: 0,
+    reviewsCount: 0,
+    adminsCount: 0
+  });
   const { isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,6 +44,37 @@ export default function AdminDashboard() {
       setActiveTab('analytics');
     }
   }, [location.pathname]);
+
+  // Fetch dashboard stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [
+          { count: toolsCount },
+          { count: usersCount },
+          { count: reviewsCount },
+          { count: adminsCount }
+        ] = await Promise.all([
+          supabase.from('tools').select('*', { count: 'exact', head: true }),
+          supabase.from('profiles').select('*', { count: 'exact', head: true }),
+          supabase.from('reviews').select('*', { count: 'exact', head: true }),
+          supabase.from('profiles').select('*', { count: 'exact', head: true })
+            .eq('role', 'admin')
+        ]);
+        
+        setStats({
+          toolsCount: toolsCount || 0,
+          usersCount: usersCount || 0,
+          reviewsCount: reviewsCount || 0,
+          adminsCount: adminsCount || 0
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      }
+    };
+    
+    fetchStats();
+  }, []);
 
   // Direct navigation handlers for each tab
   const navigateToTab = (tab: string) => {
@@ -59,7 +98,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <RequireAuth>
+    <RequireAuth requireAdmin={true}>
       <PageLoadingWrapper 
         isLoading={isLoading} 
         loadingText="Loading admin dashboard..."
@@ -107,7 +146,7 @@ export default function AdminDashboard() {
                         <h3 className="font-medium text-sm text-muted-foreground">Total Tools</h3>
                         <Database className="h-4 w-4 text-primary" />
                       </div>
-                      <p className="text-2xl font-bold mt-2">42</p>
+                      <p className="text-2xl font-bold mt-2">{stats.toolsCount}</p>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
@@ -115,7 +154,7 @@ export default function AdminDashboard() {
                         <h3 className="font-medium text-sm text-muted-foreground">Users</h3>
                         <Users className="h-4 w-4 text-indigo-500" />
                       </div>
-                      <p className="text-2xl font-bold mt-2">187</p>
+                      <p className="text-2xl font-bold mt-2">{stats.usersCount}</p>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
@@ -123,7 +162,7 @@ export default function AdminDashboard() {
                         <h3 className="font-medium text-sm text-muted-foreground">Reviews</h3>
                         <BarChart className="h-4 w-4 text-green-500" />
                       </div>
-                      <p className="text-2xl font-bold mt-2">356</p>
+                      <p className="text-2xl font-bold mt-2">{stats.reviewsCount}</p>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
@@ -131,7 +170,7 @@ export default function AdminDashboard() {
                         <h3 className="font-medium text-sm text-muted-foreground">Admins</h3>
                         <Shield className="h-4 w-4 text-purple-500" />
                       </div>
-                      <p className="text-2xl font-bold mt-2">3</p>
+                      <p className="text-2xl font-bold mt-2">{stats.adminsCount}</p>
                     </div>
                   </div>
                 </CardContent>

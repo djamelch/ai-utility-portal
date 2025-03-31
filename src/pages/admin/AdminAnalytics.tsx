@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { 
   BarChart as BarChartIcon, 
   Users, 
-  Wrench, // Changed from Tool to Wrench
+  Wrench,
   MousePointerClick,
   Star,
   TrendingUp,
@@ -14,6 +14,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { toast } from 'sonner';
 
 interface AnalyticsData {
   totalUsers: number;
@@ -52,8 +53,6 @@ export function AdminAnalytics() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState<ChartData[]>([]);
-  
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -73,11 +72,11 @@ export function AdminAnalytics() {
         // Count users
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         
-        // Count and sum tools
+        // Count tools
         supabase.from('tools').select('*', { count: 'exact', head: true }),
         
         // Count reviews
-        supabase.from('reviews').select('*', { count: 'exact' }),
+        supabase.from('reviews').select('*', { count: 'exact', head: true }),
         
         // Top 5 tools by click count
         supabase.from('tools')
@@ -89,12 +88,11 @@ export function AdminAnalytics() {
       // Calculate total clicks
       const { data: totalClicksData, error: totalClicksError } = await supabase
         .from('tools')
-        .select('click_count')
-        .not('click_count', 'is', null);
+        .select('click_count');
         
       if (totalClicksError) throw totalClicksError;
       
-      const totalClicks = totalClicksData.reduce((sum, tool) => sum + (tool.click_count || 0), 0);
+      const totalClicks = totalClicksData?.reduce((sum, tool) => sum + (tool.click_count || 0), 0) || 0;
       
       // Calculate average rating
       const { data: ratingData, error: ratingError } = await supabase
@@ -103,37 +101,50 @@ export function AdminAnalytics() {
         
       if (ratingError) throw ratingError;
       
-      const totalRating = ratingData.reduce((sum, review) => sum + review.rating, 0);
-      const averageRating = ratingData.length > 0 ? totalRating / ratingData.length : 0;
+      const totalRating = ratingData?.reduce((sum, review) => sum + (review.rating || 0), 0) || 0;
+      const averageRating = ratingData && ratingData.length > 0 ? totalRating / ratingData.length : 0;
       
-      // Mock recent activity (in a real app, you would have an activity log table)
-      const recentActivity = [
-        {
-          id: '1',
-          action: 'added',
-          entity: 'tool',
-          entityName: 'ChatGPT 4o',
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '2',
-          action: 'updated',
-          entity: 'tool',
-          entityName: 'Claude 3',
-          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '3',
-          action: 'left',
-          entity: 'review',
-          entityName: 'Midjourney',
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ];
+      // Fetch recent activity from reviews and tools
+      const [recentReviews, recentToolUpdates] = await Promise.all([
+        supabase
+          .from('reviews')
+          .select('id, tool_id, created_at')
+          .order('created_at', { ascending: false })
+          .limit(3),
+          
+        supabase
+          .from('tools')
+          .select('id, company_name, updated_at')
+          .order('updated_at', { ascending: false })
+          .limit(3)
+      ]);
+      
+      // Map recent reviews to activity items
+      const reviewActivities = (recentReviews.data || []).map(review => ({
+        id: review.id,
+        action: 'left',
+        entity: 'review',
+        entityName: `Tool ID: ${review.tool_id}`,
+        timestamp: review.created_at || new Date().toISOString()
+      }));
+      
+      // Map recent tool updates to activity items
+      const toolActivities = (recentToolUpdates.data || []).map(tool => ({
+        id: `tool-${tool.id}`,
+        action: 'updated',
+        entity: 'tool',
+        entityName: tool.company_name || `Tool ID: ${tool.id}`,
+        timestamp: tool.updated_at || new Date().toISOString()
+      }));
+      
+      // Combine and sort activities
+      const allActivities = [...reviewActivities, ...toolActivities]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 3);
 
       // Prepare chart data from popular tools
       const chartData = popularToolsResult.data?.map(tool => ({
-        name: tool.company_name,
+        name: tool.company_name || `Tool ${tool.id}`,
         clicks: tool.click_count || 0
       })) || [];
       
@@ -148,18 +159,14 @@ export function AdminAnalytics() {
         averageRating,
         popularTools: popularToolsResult.data?.map(tool => ({
           id: tool.id,
-          name: tool.company_name,
+          name: tool.company_name || `Tool ${tool.id}`,
           clicks: tool.click_count || 0
         })) || [],
-        recentActivity
+        recentActivity: allActivities
       });
     } catch (error) {
       console.error('Error fetching analytics data:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load analytics data',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load analytics data');
     } finally {
       setIsLoading(false);
     }
@@ -265,29 +272,33 @@ export function AdminAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {analyticsData.recentActivity.map(activity => (
-                <div key={activity.id} className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    {activity.action === 'added' && <TrendingUp className="h-4 w-4 text-green-500" />}
-                    {activity.action === 'updated' && <BarChartIcon className="h-4 w-4 text-blue-500" />}
-                    {activity.action === 'left' && <Star className="h-4 w-4 text-yellow-500" />}
+              {analyticsData.recentActivity.length > 0 ? (
+                analyticsData.recentActivity.map(activity => (
+                  <div key={activity.id} className="flex items-start gap-3">
+                    <div className="bg-primary/10 p-2 rounded-full">
+                      {activity.action === 'added' && <TrendingUp className="h-4 w-4 text-green-500" />}
+                      {activity.action === 'updated' && <BarChartIcon className="h-4 w-4 text-blue-500" />}
+                      {activity.action === 'left' && <Star className="h-4 w-4 text-yellow-500" />}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm">
+                        <span className="font-medium">
+                          {activity.action === 'added' && 'New tool added:'}
+                          {activity.action === 'updated' && 'Tool updated:'}
+                          {activity.action === 'left' && 'New review for:'}
+                        </span>{' '}
+                        {activity.entityName}
+                      </p>
+                      <p className="text-xs flex items-center text-muted-foreground">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {formatDate(activity.timestamp)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm">
-                      <span className="font-medium">
-                        {activity.action === 'added' && 'New tool added:'}
-                        {activity.action === 'updated' && 'Tool updated:'}
-                        {activity.action === 'left' && 'New review for:'}
-                      </span>{' '}
-                      {activity.entityName}
-                    </p>
-                    <p className="text-xs flex items-center text-muted-foreground">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {formatDate(activity.timestamp)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No recent activity found</p>
+              )}
             </div>
           </CardContent>
         </Card>

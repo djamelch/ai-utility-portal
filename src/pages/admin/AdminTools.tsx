@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import {
   Table,
   TableBody,
@@ -13,15 +12,9 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { 
-  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2 
+  Edit, Trash2, Plus, Search, Eye, ArrowUpDown, Loader2 
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { 
   Dialog,
   DialogContent,
@@ -29,8 +22,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 interface Tool {
   id: number;
@@ -52,7 +45,6 @@ export function AdminTools() {
   const [sortField, setSortField] = useState<keyof Tool>('company_name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,11 +69,7 @@ export function AdminTools() {
       setFilteredTools(data || []);
     } catch (error) {
       console.error('Error fetching tools:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load tools',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load tools');
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +82,7 @@ export function AdminTools() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(tool => 
-        tool.company_name.toLowerCase().includes(query) || 
+        (tool.company_name && tool.company_name.toLowerCase().includes(query)) || 
         (tool.short_description && tool.short_description.toLowerCase().includes(query)) ||
         (tool.primary_task && tool.primary_task.toLowerCase().includes(query))
       );
@@ -145,17 +133,10 @@ export function AdminTools() {
       if (error) throw error;
 
       setTools(prevTools => prevTools.filter(tool => tool.id !== deleteToolId));
-      toast({
-        title: 'Success',
-        description: 'Tool deleted successfully',
-      });
+      toast.success('Tool deleted successfully');
     } catch (error) {
       console.error('Error deleting tool:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete tool',
-        variant: 'destructive',
-      });
+      toast.error('Failed to delete tool');
     } finally {
       setDeleteToolId(null);
       setIsDeleteDialogOpen(false);
@@ -165,6 +146,10 @@ export function AdminTools() {
   const openDeleteDialog = (id: number) => {
     setDeleteToolId(id);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleViewTool = (id: number) => {
+    navigate(`/tool/${id}`);
   };
 
   return (
@@ -238,7 +223,7 @@ export function AdminTools() {
                 {filteredTools.length > 0 ? (
                   filteredTools.map((tool) => (
                     <TableRow key={tool.id}>
-                      <TableCell className="font-medium">{tool.company_name}</TableCell>
+                      <TableCell className="font-medium">{tool.company_name || 'Unnamed Tool'}</TableCell>
                       <TableCell className="hidden md:table-cell">
                         <div className="line-clamp-1">{tool.short_description || 'N/A'}</div>
                       </TableCell>
@@ -250,7 +235,7 @@ export function AdminTools() {
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            onClick={() => navigate(`/tool/${tool.id}`)}
+                            onClick={() => handleViewTool(tool.id)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>

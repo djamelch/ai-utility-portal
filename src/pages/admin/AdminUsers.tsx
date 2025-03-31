@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { UserSearchBar } from '@/components/admin/users/UserSearchBar';
 import { UserTable } from '@/components/admin/users/UserTable';
 import { UserListSkeleton } from '@/components/admin/users/UserListSkeleton';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
@@ -18,7 +18,6 @@ export function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchUsers();
@@ -28,39 +27,33 @@ export function AdminUsers() {
     try {
       setIsLoading(true);
       
-      // Fetch users from Supabase auth - get the users from auth.users
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) throw authError;
-
-      // Fetch profiles to get role information
+      // Get all users from the auth.users table through profiles to avoid admin permission issues
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, role, created_at');
       
       if (profilesError) throw profilesError;
       
-      // Map auth users with profile data
-      const mappedUsers: User[] = authUsers?.users.map(user => {
-        const profile = profiles?.find(p => p.id === user.id);
+      // For each profile, get the user data from the auth.users table if possible
+      // Otherwise use profile data
+      const usersPromises = profiles?.map(async (profile) => {
+        // Get user data from auth.users if available (only works for the current user)
+        const { data: authData } = await supabase.auth.getUser(profile.id);
+        
         return {
-          id: user.id,
-          email: user.email || 'No email',
-          created_at: user.created_at || new Date().toISOString(),
-          last_sign_in_at: user.last_sign_in_at,
-          // Check if role in profile is 'admin'
-          is_admin: profile?.role === 'admin'
+          id: profile.id,
+          email: authData?.user?.email || 'No email available',
+          created_at: profile.created_at,
+          last_sign_in_at: authData?.user?.last_sign_in_at || null,
+          is_admin: profile.role === 'admin'
         };
       }) || [];
       
+      const mappedUsers = await Promise.all(usersPromises);
       setUsers(mappedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load users. You may not have admin privileges.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load users. You may not have admin privileges.');
     } finally {
       setIsLoading(false);
     }
@@ -68,27 +61,21 @@ export function AdminUsers() {
   
   const handleDeleteUser = async (userToDelete: User) => {
     try {
-      // Delete the user from auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(userToDelete.id);
+      // Update the profile to set it as inactive rather than deleting
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: 'inactive' })
+        .eq('id', userToDelete.id);
       
-      if (authError) throw authError;
-      
-      // Profile will be automatically deleted via cascade
+      if (error) throw error;
       
       // Update the local state
       setUsers(users.filter(user => user.id !== userToDelete.id));
       
-      toast({
-        title: 'Success',
-        description: `User ${userToDelete.email} has been deleted.`,
-      });
+      toast.success(`User ${userToDelete.email} has been removed.`);
     } catch (error: any) {
-      console.error('Error deleting user:', error);
-      toast({
-        title: 'Error',
-        description: `Failed to delete user: ${error.message || 'Unknown error'}`,
-        variant: 'destructive',
-      });
+      console.error('Error removing user:', error);
+      toast.error(`Failed to remove user: ${error.message || 'Unknown error'}`);
     }
   };
   
@@ -112,17 +99,10 @@ export function AdminUsers() {
           : user
       ));
       
-      toast({
-        title: 'Success',
-        description: `User ${userToToggleAdmin.email} is ${newAdminStatus ? 'now' : 'no longer'} an admin.`,
-      });
+      toast.success(`User ${userToToggleAdmin.email} is ${newAdminStatus ? 'now' : 'no longer'} an admin.`);
     } catch (error: any) {
       console.error('Error updating user:', error);
-      toast({
-        title: 'Error',
-        description: `Failed to update user: ${error.message || 'Unknown error'}`,
-        variant: 'destructive',
-      });
+      toast.error(`Failed to update user: ${error.message || 'Unknown error'}`);
     }
   };
   

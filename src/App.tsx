@@ -48,46 +48,46 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               
-              {/* User Dashboard - redirects to admin dashboard if user is admin */}
+              {/* User Dashboard */}
               <Route path="/dashboard" element={
                 <RequireAuth>
                   <UserDashboard />
                 </RequireAuth>
               } />
               
-              {/* Admin Routes - removing requireAdmin flag temporarily */}
+              {/* Admin Routes - with requireAdmin flag */}
               <Route path="/admin" element={
-                <RequireAuth>
+                <RequireAuth requireAdmin={true}>
                   <AdminDashboard />
                 </RequireAuth>
               } />
               <Route path="/admin/tools" element={
-                <RequireAuth>
+                <RequireAuth requireAdmin={true}>
                   <AdminTools />
                 </RequireAuth>
               } />
               <Route path="/admin/users" element={
-                <RequireAuth>
+                <RequireAuth requireAdmin={true}>
                   <AdminUsers />
                 </RequireAuth>
               } />
               <Route path="/admin/settings" element={
-                <RequireAuth>
+                <RequireAuth requireAdmin={true}>
                   <AdminSettings />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/edit/:id" element={
-                <RequireAuth>
+                <RequireAuth requireAdmin={true}>
                   <AdminToolEdit />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/new" element={
-                <RequireAuth>
+                <RequireAuth requireAdmin={true}>
                   <AdminToolCreate />
                 </RequireAuth>
               } />
               <Route path="/admin/csv-import" element={
-                <RequireAuth>
+                <RequireAuth requireAdmin={true}>
                   <CsvImport />
                 </RequireAuth>
               } />
