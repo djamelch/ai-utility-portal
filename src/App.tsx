@@ -55,39 +55,39 @@ function App() {
                 </RequireAuth>
               } />
               
-              {/* Admin Routes - only for admin users */}
+              {/* Admin Routes - removing requireAdmin flag temporarily */}
               <Route path="/admin" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminDashboard />
                 </RequireAuth>
               } />
               <Route path="/admin/tools" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminTools />
                 </RequireAuth>
               } />
               <Route path="/admin/users" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminUsers />
                 </RequireAuth>
               } />
               <Route path="/admin/settings" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminSettings />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/edit/:id" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminToolEdit />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/new" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminToolCreate />
                 </RequireAuth>
               } />
               <Route path="/admin/csv-import" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <CsvImport />
                 </RequireAuth>
               } />

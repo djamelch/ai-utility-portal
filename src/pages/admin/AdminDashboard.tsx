@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -38,13 +37,6 @@ export default function AdminDashboard() {
     }
   }, [location.pathname]);
 
-  // Redirect non-admin users
-  useEffect(() => {
-    if (!isLoading && !isAdmin) {
-      navigate('/dashboard');
-    }
-  }, [isAdmin, isLoading, navigate]);
-  
   // Direct navigation handlers for each tab
   const navigateToTab = (tab: string) => {
     setActiveTab(tab);
@@ -67,7 +59,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <RequireAuth requireAdmin={true}>
+    <RequireAuth>
       <PageLoadingWrapper 
         isLoading={isLoading} 
         loadingText="Loading admin dashboard..."

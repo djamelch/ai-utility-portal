@@ -9,7 +9,7 @@ type RequireAuthProps = {
 };
 
 export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps) {
-  const { user, isLoading, isAdmin } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -25,10 +25,14 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  // Temporarily allow all authenticated users to access admin routes
+  // by commenting out the admin check
+  /*
   if (requireAdmin && !isAdmin) {
     // User is logged in but not an admin, and we require admin access
     return <Navigate to="/" replace />;
   }
+  */
 
   // User is logged in (and is admin if required)
   return <>{children}</>;
