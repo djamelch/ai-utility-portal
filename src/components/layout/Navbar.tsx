@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -20,6 +21,7 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface NavbarProps {
   className?: string;
@@ -34,6 +36,7 @@ export function Navbar({ className }: NavbarProps) {
   );
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isDarkMode) {
@@ -273,73 +276,6 @@ export function Navbar({ className }: NavbarProps) {
             </SheetContent>
           </Sheet>
         </div>
-
-        {isMenuOpen && (
-          <div className="fixed inset-0 top-[60px] z-50 flex flex-col bg-background p-6 md:hidden animate-fadeIn">
-            <ul className="flex flex-col gap-6 pt-8">
-              {navLinks.map((link) => (
-                <li key={link.title}>
-                  <Link
-                    to={link.path}
-                    className="text-xl font-medium"
-                    onClick={toggleMenu}
-                  >
-                    {link.title}
-                  </Link>
-                </li>
-              ))}
-              {user && (
-                <>
-                  <li>
-                    <Link
-                      to="/dashboard"
-                      className="text-xl font-medium flex items-center gap-2"
-                      onClick={toggleMenu}
-                    >
-                      <LayoutDashboard className="h-5 w-5" />
-                      Your Dashboard
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/admin"
-                      className="text-xl font-medium flex items-center gap-2"
-                      onClick={toggleMenu}
-                    >
-                      <Shield className="h-5 w-5" />
-                      Admin Dashboard
-                    </Link>
-                  </li>
-                </>
-              )}
-            </ul>
-            <div className="mt-auto pt-8 flex flex-col gap-4">
-              {user ? (
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={() => {
-                    handleSignOut();
-                    toggleMenu();
-                  }}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </Button>
-              ) : (
-                <>
-                  <Link
-                    to="/auth"
-                    className="w-full py-3 text-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                    onClick={toggleMenu}
-                  >
-                    Sign In
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        )}
       </nav>
     </header>
   );
