@@ -79,7 +79,9 @@ export function Navbar({ className }: NavbarProps) {
     navigate('/');
   };
 
-  const navigateToAdmin = () => {
+  // Admin navigation handler
+  const handleAdminNavigation = () => {
+    console.log("Navigating to admin dashboard");
     navigate('/admin');
   };
 
@@ -89,6 +91,10 @@ export function Navbar({ className }: NavbarProps) {
     { title: "Blog", path: "/blog" },
     { title: "About", path: "/about" }
   ];
+
+  // Add console logging to debug isAdmin state
+  console.log("Is user admin?", isAdmin);
+  console.log("Current user profile:", profile);
 
   return (
     <header
@@ -158,7 +164,7 @@ export function Navbar({ className }: NavbarProps) {
                   </DropdownMenuItem>
                   
                   {isAdmin && (
-                    <DropdownMenuItem onClick={navigateToAdmin}>
+                    <DropdownMenuItem onClick={handleAdminNavigation}>
                       <Shield className="mr-2 h-4 w-4" />
                       <span>Admin Dashboard</span>
                     </DropdownMenuItem>
