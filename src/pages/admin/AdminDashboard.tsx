@@ -58,15 +58,39 @@ export default function AdminDashboard() {
       try {
         setIsLoadingStats(true);
         
-        // Use Promise.all to fetch all stats in parallel
-        const usersResult = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-        const toolsResult = await supabase.from('tools').select('*', { count: 'exact', head: true });
-        const reviewsResult = await supabase.from('reviews').select('*', { count: 'exact', head: true });
-        
-        // Fix for the blog_posts query - adding explicit typing and count parameter
-        const blogsResult = await supabase
-          .from('blog_posts')
+        // Fetch all stats separately to avoid type issues
+        const { count: usersCount, error: usersError } = await supabase
+          .from('profiles')
           .select('*', { count: 'exact', head: true });
+          
+        if (usersError) throw usersError;
+        
+        const { count: toolsCount, error: toolsError } = await supabase
+          .from('tools')
+          .select('*', { count: 'exact', head: true });
+          
+        if (toolsError) throw toolsError;
+        
+        const { count: reviewsCount, error: reviewsError } = await supabase
+          .from('reviews')
+          .select('*', { count: 'exact', head: true });
+          
+        if (reviewsError) throw reviewsError;
+        
+        // For blog posts, use a try-catch to handle potential errors gracefully
+        let blogsCount = 0;
+        try {
+          const { count, error } = await supabase
+            .from('blog_posts')
+            .select('*', { count: 'exact', head: true });
+            
+          if (!error && count !== null) {
+            blogsCount = count;
+          }
+        } catch (error) {
+          console.error('Error fetching blog posts count:', error);
+          // Silently continue with blogsCount as 0
+        }
         
         const { data: adminData, error: adminError } = await supabase
           .from('profiles')
@@ -84,18 +108,18 @@ export default function AdminDashboard() {
         const totalClicks = totalClicksData.reduce((sum, tool) => sum + (tool.click_count || 0), 0);
         
         setDashboardStats({
-          totalUsers: usersResult.count || 0,
-          totalTools: toolsResult.count || 0,
-          totalReviews: reviewsResult.count || 0,
-          totalBlogs: blogsResult.count || 0,
+          totalUsers: usersCount || 0,
+          totalTools: toolsCount || 0,
+          totalReviews: reviewsCount || 0,
+          totalBlogs: blogsCount,
           totalClicks: totalClicks,
           admins: adminData?.length || 0,
         });
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
         toast({
-          title: 'خطأ في تحميل البيانات',
-          description: 'لم نتمكن من جلب إحصائيات لوحة التحكم',
+          title: 'Error loading data',
+          description: 'Unable to fetch dashboard statistics',
           variant: 'destructive',
         });
       } finally {
