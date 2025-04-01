@@ -29,8 +29,8 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Comment for development - set to false in production
-  const bypassAdminCheck = false;
+  // Temporarily bypass admin check for development - allow all authorized users to access admin pages
+  const bypassAdminCheck = true;
 
   // If admin is required but user is not an admin
   if (requireAdmin && !isAdmin && !bypassAdminCheck) {
