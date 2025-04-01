@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -57,12 +58,15 @@ export default function AdminDashboard() {
       try {
         setIsLoadingStats(true);
         
-        const [usersResult, toolsResult, reviewsResult, blogsResult] = await Promise.all([
-          supabase.from('profiles').select('*', { count: 'exact', head: true }),
-          supabase.from('tools').select('*', { count: 'exact', head: true }),
-          supabase.from('reviews').select('*', { count: 'exact', head: true }),
-          supabase.from('blog_posts').select('*', { count: 'exact', head: true }) as { count: number | null, error: any },
-        ]);
+        // Use Promise.all to fetch all stats in parallel
+        const usersResult = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+        const toolsResult = await supabase.from('tools').select('*', { count: 'exact', head: true });
+        const reviewsResult = await supabase.from('reviews').select('*', { count: 'exact', head: true });
+        
+        // Fix for the blog_posts query - adding explicit typing and count parameter
+        const blogsResult = await supabase
+          .from('blog_posts')
+          .select('*', { count: 'exact', head: true });
         
         const { data: adminData, error: adminError } = await supabase
           .from('profiles')
