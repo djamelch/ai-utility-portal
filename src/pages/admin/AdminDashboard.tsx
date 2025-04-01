@@ -80,12 +80,13 @@ export default function AdminDashboard() {
         // For blog posts, use a try-catch to handle potential errors gracefully
         let blogsCount = 0;
         try {
-          const { count, error } = await supabase
+          // Since blog_posts table exists but may not be in types yet, we need to cast it
+          const { data, error } = await supabase
             .from('blog_posts')
-            .select('*', { count: 'exact', head: true });
+            .select('count', { count: 'exact', head: true }) as any;
             
-          if (!error && count !== null) {
-            blogsCount = count;
+          if (!error) {
+            blogsCount = data?.length || 0;
           }
         } catch (error) {
           console.error('Error fetching blog posts count:', error);
