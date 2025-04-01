@@ -10,11 +10,12 @@ import { AdminTools } from './AdminTools';
 import { AdminUsers } from './AdminUsers';
 import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
+import { AdminBlogs } from './AdminBlogs';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   BarChart, Users, Settings, Database, LayoutDashboard, Shield,
-  FileInput, ArrowLeft, Loader2
+  FileInput, ArrowLeft, Loader2, FileText
 } from 'lucide-react';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ export default function AdminDashboard() {
     totalTools: 0,
     totalClicks: 0,
     totalReviews: 0,
+    totalBlogs: 0,
     admins: 0,
   });
   const [isLoadingStats, setIsLoadingStats] = useState(true);
@@ -45,6 +47,8 @@ export default function AdminDashboard() {
       setActiveTab('users');
     } else if (location.pathname.includes('/admin/settings')) {
       setActiveTab('settings');
+    } else if (location.pathname.includes('/admin/blogs')) {
+      setActiveTab('blogs');
     } else {
       setActiveTab('analytics');
     }
@@ -57,7 +61,7 @@ export default function AdminDashboard() {
         setIsLoadingStats(true);
         
         // Get counts from different tables using Promise.all for parallel requests
-        const [usersResult, toolsResult, reviewsResult] = await Promise.all([
+        const [usersResult, toolsResult, reviewsResult, blogsResult] = await Promise.all([
           // Count users
           supabase.from('profiles').select('*', { count: 'exact', head: true }),
           
@@ -66,6 +70,9 @@ export default function AdminDashboard() {
           
           // Count reviews
           supabase.from('reviews').select('*', { count: 'exact', head: true }),
+          
+          // Count blog posts
+          supabase.from('blog_posts').select('*', { count: 'exact', head: true }),
         ]);
         
         // Count admins
@@ -89,6 +96,7 @@ export default function AdminDashboard() {
           totalUsers: usersResult.count || 0,
           totalTools: toolsResult.count || 0,
           totalReviews: reviewsResult.count || 0,
+          totalBlogs: blogsResult.count || 0,
           totalClicks: totalClicks,
           admins: adminData?.length || 0,
         });
@@ -120,6 +128,9 @@ export default function AdminDashboard() {
         break;
       case 'settings':
         navigate('/admin/settings');
+        break;
+      case 'blogs':
+        navigate('/admin/blogs');
         break;
       case 'analytics':
       default:
@@ -176,7 +187,7 @@ export default function AdminDashboard() {
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                       <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
                         <div className="flex items-center justify-between">
                           <h3 className="font-medium text-sm text-muted-foreground">Total Tools</h3>
@@ -199,6 +210,22 @@ export default function AdminDashboard() {
                           <BarChart className="h-4 w-4 text-green-500" />
                         </div>
                         <p className="text-2xl font-bold mt-2">{dashboardStats.totalReviews}</p>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-sm text-muted-foreground">Blog Posts</h3>
+                          <FileText className="h-4 w-4 text-orange-500" />
+                        </div>
+                        <p className="text-2xl font-bold mt-2">{dashboardStats.totalBlogs}</p>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-sm text-muted-foreground">Total Clicks</h3>
+                          <BarChart className="h-4 w-4 text-blue-500" />
+                        </div>
+                        <p className="text-2xl font-bold mt-2">{dashboardStats.totalClicks}</p>
                       </div>
                       
                       <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
@@ -232,6 +259,10 @@ export default function AdminDashboard() {
                     <Users className="h-4 w-4 mr-2" />
                     Users
                   </TabsTrigger>
+                  <TabsTrigger value="blogs">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Blogs
+                  </TabsTrigger>
                   <TabsTrigger value="settings">
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
@@ -248,6 +279,10 @@ export default function AdminDashboard() {
                 
                 <TabsContent value="users">
                   <AdminUsers />
+                </TabsContent>
+                
+                <TabsContent value="blogs">
+                  <AdminBlogs />
                 </TabsContent>
                 
                 <TabsContent value="settings">

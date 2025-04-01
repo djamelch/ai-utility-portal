@@ -20,8 +20,11 @@ import { AdminTools } from "./pages/admin/AdminTools";
 import { AdminUsers } from "./pages/admin/AdminUsers";
 import { AdminAnalytics } from "./pages/admin/AdminAnalytics";
 import { AdminSettings } from "./pages/admin/AdminSettings";
+import { AdminBlogs } from "./pages/admin/AdminBlogs";
 import AdminToolEdit from "./pages/admin/AdminToolEdit";
 import AdminToolCreate from "./pages/admin/AdminToolCreate";
+import AdminBlogEdit from "./pages/admin/AdminBlogEdit";
+import AdminBlogCreate from "./pages/admin/AdminBlogCreate";
 import CsvImport from "./pages/admin/CsvImport";
 import UserDashboard from "./pages/UserDashboard";
 import { useState } from "react";
@@ -76,6 +79,11 @@ function App() {
                   <AdminSettings />
                 </RequireAuth>
               } />
+              <Route path="/admin/blogs" element={
+                <RequireAuth>
+                  <AdminBlogs />
+                </RequireAuth>
+              } />
               <Route path="/admin/tools/edit/:id" element={
                 <RequireAuth>
                   <AdminToolEdit />
@@ -84,6 +92,16 @@ function App() {
               <Route path="/admin/tools/new" element={
                 <RequireAuth>
                   <AdminToolCreate />
+                </RequireAuth>
+              } />
+              <Route path="/admin/blogs/edit/:id" element={
+                <RequireAuth>
+                  <AdminBlogEdit />
+                </RequireAuth>
+              } />
+              <Route path="/admin/blogs/new" element={
+                <RequireAuth>
+                  <AdminBlogCreate />
                 </RequireAuth>
               } />
               <Route path="/admin/csv-import" element={
