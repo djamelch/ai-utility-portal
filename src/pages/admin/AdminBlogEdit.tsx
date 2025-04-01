@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,6 +40,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { BlogPost } from '@/types/BlogPost';
 
 const blogPostSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters long"),
@@ -105,7 +105,6 @@ export default function AdminBlogEdit() {
     },
   });
 
-  // Fetch blog post data
   useEffect(() => {
     const fetchBlogPost = async () => {
       if (!id) return;
@@ -116,7 +115,7 @@ export default function AdminBlogEdit() {
           .from('blog_posts')
           .select('*')
           .eq('id', id)
-          .single();
+          .single() as { data: BlogPost | null, error: any };
 
         if (error) {
           throw error;
@@ -168,13 +167,12 @@ export default function AdminBlogEdit() {
     setIsSaving(true);
 
     try {
-      // Check if slug is already taken (only if slug has changed)
       if (data.slug !== originalSlug) {
         const { data: existingPost, error: checkError } = await supabase
           .from('blog_posts')
           .select('slug')
           .eq('slug', data.slug)
-          .single();
+          .single() as { data: any, error: any };
 
         if (checkError && checkError.code !== 'PGRST116') {
           throw checkError;
@@ -189,7 +187,6 @@ export default function AdminBlogEdit() {
         }
       }
 
-      // Update blog post
       const { error } = await supabase
         .from('blog_posts')
         .update({

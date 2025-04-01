@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -39,7 +38,6 @@ export default function AdminDashboard() {
   });
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
-  // Set the active tab based on the current URL
   useEffect(() => {
     if (location.pathname.includes('/admin/tools')) {
       setActiveTab('tools');
@@ -54,28 +52,18 @@ export default function AdminDashboard() {
     }
   }, [location.pathname]);
 
-  // Fetch dashboard statistics
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
         setIsLoadingStats(true);
         
-        // Get counts from different tables using Promise.all for parallel requests
         const [usersResult, toolsResult, reviewsResult, blogsResult] = await Promise.all([
-          // Count users
           supabase.from('profiles').select('*', { count: 'exact', head: true }),
-          
-          // Count tools
           supabase.from('tools').select('*', { count: 'exact', head: true }),
-          
-          // Count reviews
           supabase.from('reviews').select('*', { count: 'exact', head: true }),
-          
-          // Count blog posts
-          supabase.from('blog_posts').select('*', { count: 'exact', head: true }),
+          supabase.from('blog_posts').select('*', { count: 'exact', head: true }) as { count: number | null, error: any },
         ]);
         
-        // Count admins
         const { data: adminData, error: adminError } = await supabase
           .from('profiles')
           .select('id')
@@ -83,7 +71,6 @@ export default function AdminDashboard() {
           
         if (adminError) throw adminError;
         
-        // Calculate total clicks
         const { data: totalClicksData, error: totalClicksError } = await supabase
           .from('tools')
           .select('click_count');
@@ -115,7 +102,6 @@ export default function AdminDashboard() {
     fetchDashboardStats();
   }, [toast]);
 
-  // Direct navigation handlers for each tab
   const navigateToTab = (tab: string) => {
     setActiveTab(tab);
     

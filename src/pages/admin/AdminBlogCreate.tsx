@@ -141,7 +141,7 @@ export default function AdminBlogCreate() {
         .from('blog_posts')
         .select('slug')
         .eq('slug', data.slug)
-        .single();
+        .single() as { data: any, error: any };
 
       if (checkError && checkError.code !== 'PGRST116') {
         throw checkError;
@@ -170,7 +170,7 @@ export default function AdminBlogCreate() {
           author_id: user.id,
         })
         .select()
-        .single();
+        .single() as { data: any, error: any };
 
       if (error) {
         throw error;

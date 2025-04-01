@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,18 +29,7 @@ import { FileText, Pencil, Trash2, Plus, FileSearch, ExternalLink } from 'lucide
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-
-type BlogPost = {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  category: string;
-  read_time: string;
-  featured: boolean;
-  created_at: string;
-  updated_at: string;
-};
+import { BlogPost } from '@/types/BlogPost';
 
 export function AdminBlogs() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -62,7 +50,7 @@ export function AdminBlogs() {
       const { data, error } = await supabase
         .from('blog_posts')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as { data: BlogPost[] | null, error: any };
 
       if (error) {
         throw error;
