@@ -28,7 +28,14 @@ import { useState } from "react";
 
 function App() {
   // Create a new QueryClient instance inside the component function
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }));
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -63,22 +70,22 @@ function App() {
               } />
               <Route path="/admin/tools" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminTools />
                 </RequireAuth>
               } />
               <Route path="/admin/users" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminUsers />
                 </RequireAuth>
               } />
               <Route path="/admin/analytics" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminAnalytics />
                 </RequireAuth>
               } />
               <Route path="/admin/settings" element={
                 <RequireAuth requireAdmin={true}>
-                  <AdminDashboard />
+                  <AdminSettings />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/edit/:id" element={

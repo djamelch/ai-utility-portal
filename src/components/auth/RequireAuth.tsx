@@ -24,10 +24,10 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
   });
   
   useEffect(() => {
-    if (!isLoading && requireAdmin && !isAdmin) {
+    if (!isLoading && requireAdmin && !isAdmin && user) {
       toast.error("You need admin privileges to access this page");
     }
-  }, [isLoading, requireAdmin, isAdmin]);
+  }, [isLoading, requireAdmin, isAdmin, user]);
 
   if (isLoading) {
     return (

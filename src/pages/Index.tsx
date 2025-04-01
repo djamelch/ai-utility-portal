@@ -10,6 +10,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
+  console.log("Rendering Index page");
+  
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
