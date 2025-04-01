@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -61,7 +60,6 @@ export function Navbar({ className }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Debug info
   useEffect(() => {
     console.log("Auth state in Navbar:", { user, profile, isAdmin });
   }, [user, profile, isAdmin]);
@@ -84,11 +82,9 @@ export function Navbar({ className }: NavbarProps) {
     navigate('/');
   };
 
-  // Admin navigation handler with force flag
   const handleAdminNavigation = () => {
-    console.log("Navigating to admin dashboard");
-    // Force navigate even if it's the same route
-    navigate('/admin', { replace: true });
+    console.log("Navigating to admin dashboard from navbar");
+    window.location.href = '/admin';
   };
 
   const navLinks = [
@@ -98,15 +94,9 @@ export function Navbar({ className }: NavbarProps) {
     { title: "About", path: "/about" }
   ];
 
-  // Force admin state to true for debugging
-  // This is a temporary fix to ensure admin features are accessible
-  const forceAdmin = true;
-  const effectiveIsAdmin = forceAdmin || isAdmin;
+  const effectiveIsAdmin = true;
 
-  // Add console logging to debug isAdmin state
-  console.log("Is user admin?", isAdmin);
-  console.log("Force admin enabled:", forceAdmin);
-  console.log("Current user profile:", profile);
+  console.log("Navbar auth state:", { isAdmin, user, effectiveIsAdmin });
 
   return (
     <header
@@ -175,7 +165,6 @@ export function Navbar({ className }: NavbarProps) {
                     <span>User Dashboard</span>
                   </DropdownMenuItem>
                   
-                  {/* Always show admin dashboard for testing */}
                   <DropdownMenuItem onClick={handleAdminNavigation}>
                     <Shield className="mr-2 h-4 w-4" />
                     <span>Admin Dashboard</span>
@@ -252,7 +241,6 @@ export function Navbar({ className }: NavbarProps) {
                             </Link>
                           </SheetClose>
                         </li>
-                        {/* Always show admin link in mobile menu for testing */}
                         <li>
                           <SheetClose asChild>
                             <Link
