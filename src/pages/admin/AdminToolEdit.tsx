@@ -149,7 +149,7 @@ export default function AdminToolEdit() {
           const prosText = Array.isArray(data.pros) ? data.pros.join('\n') : '';
           const consText = Array.isArray(data.cons) ? data.cons.join('\n') : '';
           
-          // Changed from const to let to fix the error
+          // Using let instead of const since we're reassigning it below
           let faqsText = '';
           if (data.faqs) {
             try {
