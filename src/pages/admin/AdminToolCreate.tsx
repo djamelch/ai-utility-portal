@@ -50,6 +50,7 @@ const toolFormSchema = z.object({
   is_verified: z.boolean().default(false),
   pros: z.string().optional(),
   cons: z.string().optional(),
+  faqs: z.string().optional(),
   logo_url: z.string().optional(),
   featured_image_url: z.string().optional(),
   slug: z.string().optional(),
@@ -77,6 +78,7 @@ export default function AdminToolCreate() {
       is_verified: false,
       pros: '',
       cons: '',
+      faqs: '',
       logo_url: '',
       featured_image_url: '',
       slug: '',
@@ -88,6 +90,8 @@ export default function AdminToolCreate() {
   const onSubmit = async (values: ToolFormValues) => {
     setIsSaving(true);
     try {
+      console.log('Submitting form values:', values);
+      
       // Convert form values to match database schema
       const prosArray = values.pros 
         ? values.pros.split('\n').filter(Boolean).map(p => p as Json) 
@@ -105,6 +109,18 @@ export default function AdminToolCreate() {
       // Generate slug from company name if not provided
       const slug = values.slug || values.company_name.toLowerCase().replace(/\s+/g, '-');
       
+      // Process FAQs
+      let faqs: Json | null = null;
+      if (values.faqs) {
+        try {
+          // Try to parse as JSON first
+          faqs = JSON.parse(values.faqs) as Json;
+        } catch (e) {
+          // If not valid JSON, store as string
+          faqs = values.faqs as Json;
+        }
+      }
+      
       // Add a click_count field initialized to 0
       const toolData = {
         company_name: values.company_name,
@@ -116,6 +132,7 @@ export default function AdminToolCreate() {
         applicable_tasks,
         pros: prosArray,
         cons: consArray,
+        faqs,
         logo_url: values.logo_url,
         featured_image_url: values.featured_image_url,
         slug,
@@ -124,6 +141,8 @@ export default function AdminToolCreate() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+
+      console.log('Sending to database:', toolData);
 
       const { data, error } = await supabase
         .from('tools')
@@ -421,6 +440,27 @@ export default function AdminToolCreate() {
                         </FormControl>
                         <FormDescription>
                           أدخل العيوب مفصولة بسطر جديد
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="faqs"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>أسئلة شائعة / شهادات</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="الأسئلة الشائعة أو شهادات المستخدمين"
+                            {...field}
+                            rows={4}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          يمكن إدخال البيانات بتنسيق JSON
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

@@ -43,6 +43,7 @@ import { Json } from '@/integrations/supabase/types';
 const toolFormSchema = z.object({
   company_name: z.string().min(1, 'Name is required'),
   short_description: z.string().min(1, 'Description is required'),
+  full_description: z.string().optional(),
   visit_website_url: z.string().url('Must be a valid URL').min(1, 'Website URL is required'),
   primary_task: z.string().min(1, 'Primary task is required'),
   pricing: z.string().min(1, 'Pricing information is required'),
@@ -50,7 +51,11 @@ const toolFormSchema = z.object({
   is_verified: z.boolean().default(false),
   features: z.string().optional(),
   testimonials: z.string().optional(),
+  cons: z.string().optional(),
   logo_url: z.string().optional(),
+  featured_image_url: z.string().optional(),
+  slug: z.string().optional(),
+  detail_url: z.string().optional(),
 });
 
 type ToolFormValues = z.infer<typeof toolFormSchema>;
@@ -62,6 +67,7 @@ interface ToolDatabaseFields {
   is_verified?: boolean;
   features?: string;
   testimonials?: string;
+  cons?: string;
 }
 
 export default function AdminToolEdit() {
@@ -81,6 +87,7 @@ export default function AdminToolEdit() {
     defaultValues: {
       company_name: '',
       short_description: '',
+      full_description: '',
       visit_website_url: '',
       primary_task: '',
       pricing: '',
@@ -88,7 +95,11 @@ export default function AdminToolEdit() {
       is_verified: false,
       features: '',
       testimonials: '',
+      cons: '',
       logo_url: '',
+      featured_image_url: '',
+      slug: '',
+      detail_url: '',
     },
   });
 
@@ -113,21 +124,41 @@ export default function AdminToolEdit() {
         if (error) throw error;
 
         if (data) {
+          console.log('Fetched tool data:', data);
+          
           // Store additional fields that are not in the database schema but needed for form
           const newAdditionalFields = {
             id: data.id,
             is_featured: data.applicable_tasks?.some((task: Json) => task === 'featured') || false,
             is_verified: data.applicable_tasks?.some((task: Json) => task === 'verified') || false,
             features: Array.isArray(data.pros) ? data.pros.join('\n') : '',
-            testimonials: data.faqs ? JSON.stringify(data.faqs) : '',
+            testimonials: '',
+            cons: Array.isArray(data.cons) ? data.cons.join('\n') : '',
           };
           
+          // Process FAQS JSON data safely
+          let faqsText = '';
+          if (data.faqs) {
+            try {
+              if (typeof data.faqs === 'string') {
+                faqsText = data.faqs;
+              } else {
+                faqsText = JSON.stringify(data.faqs, null, 2);
+              }
+            } catch (e) {
+              console.error('Error parsing FAQs:', e);
+              faqsText = typeof data.faqs === 'string' ? data.faqs : '';
+            }
+          }
+          
+          newAdditionalFields.testimonials = faqsText;
           setAdditionalFields(newAdditionalFields);
 
           // Set form values from fetched data
           form.reset({
             company_name: data.company_name || '',
             short_description: data.short_description || '',
+            full_description: data.full_description || '',
             visit_website_url: data.visit_website_url || '',
             primary_task: data.primary_task || '',
             pricing: data.pricing || '',
@@ -135,7 +166,11 @@ export default function AdminToolEdit() {
             is_verified: newAdditionalFields.is_verified,
             features: newAdditionalFields.features,
             testimonials: newAdditionalFields.testimonials,
+            cons: newAdditionalFields.cons,
             logo_url: data.logo_url || '',
+            featured_image_url: data.featured_image_url || '',
+            slug: data.slug || '',
+            detail_url: data.detail_url || '',
           });
         }
       } catch (error: any) {
@@ -170,31 +205,67 @@ export default function AdminToolEdit() {
       if (values.is_verified) applicable_tasks.push('verified' as Json);
       
       // Convert features string to array for pros
-      const pros: Json[] = values.features ? values.features.split('\n').filter(Boolean).map(f => f as Json) : [];
+      const pros: Json[] = values.features 
+        ? values.features.split('\n').filter(Boolean).map(f => f as Json)
+        : [];
       
-      // Convert testimonials to JSON for faqs
+      // Convert cons string to array
+      const cons: Json[] = values.cons
+        ? values.cons.split('\n').filter(Boolean).map(c => c as Json)
+        : [];
+      
+      // Process testimonials for faqs
       let faqs: Json | null = null;
       try {
         if (values.testimonials) {
-          faqs = JSON.parse(values.testimonials) as Json;
+          // Try to parse as JSON first
+          try {
+            faqs = JSON.parse(values.testimonials) as Json;
+          } catch (e) {
+            // If it's not valid JSON, store as string
+            faqs = values.testimonials as Json;
+          }
         }
       } catch (e) {
-        console.warn('Could not parse testimonials as JSON, storing as string');
+        console.warn('Could not process testimonials, storing as string');
         faqs = values.testimonials as Json;
       }
+
+      console.log('Submitting tool data:', {
+        company_name: values.company_name,
+        short_description: values.short_description,
+        full_description: values.full_description,
+        visit_website_url: values.visit_website_url,
+        primary_task: values.primary_task,
+        pricing: values.pricing,
+        applicable_tasks,
+        pros,
+        cons,
+        faqs,
+        logo_url: values.logo_url,
+        featured_image_url: values.featured_image_url,
+        slug: values.slug || undefined,
+        detail_url: values.detail_url || undefined,
+      });
 
       const { error } = await supabase
         .from('tools')
         .update({
           company_name: values.company_name,
           short_description: values.short_description,
+          full_description: values.full_description,
           visit_website_url: values.visit_website_url,
           primary_task: values.primary_task,
           pricing: values.pricing,
           applicable_tasks,
           pros,
+          cons,
           faqs,
-          logo_url: values.logo_url
+          logo_url: values.logo_url,
+          featured_image_url: values.featured_image_url,
+          slug: values.slug || undefined,
+          detail_url: values.detail_url || undefined,
+          updated_at: new Date().toISOString()
         })
         .eq('id', toolId);
 
@@ -299,6 +370,24 @@ export default function AdminToolEdit() {
                       )}
                     />
 
+                    <FormField
+                      control={form.control}
+                      name="full_description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Detailed description of the tool" 
+                              {...field} 
+                              rows={5} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
@@ -362,29 +451,84 @@ export default function AdminToolEdit() {
                       />
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="logo_url"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Logo URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://example.com/logo.png" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Direct link to the tool's logo image
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="logo_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Logo URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://example.com/logo.png" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Direct link to the tool's logo image
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="featured_image_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Featured Image URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://example.com/featured.png" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Direct link to a featured image for the tool
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="slug"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Slug</FormLabel>
+                            <FormControl>
+                              <Input placeholder="tool-name" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              URL-friendly identifier (leave empty to generate automatically)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="detail_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Detail URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="/tool/tool-name" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Custom URL for tool details page (optional)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
                     <FormField
                       control={form.control}
                       name="features"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Features</FormLabel>
+                          <FormLabel>Features (Pros)</FormLabel>
                           <FormControl>
                             <Textarea
                               placeholder="List key features of the tool"
@@ -402,19 +546,40 @@ export default function AdminToolEdit() {
 
                     <FormField
                       control={form.control}
-                      name="testimonials"
+                      name="cons"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Testimonials</FormLabel>
+                          <FormLabel>Cons</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="User testimonials or reviews"
+                              placeholder="List limitations or disadvantages of the tool"
                               {...field}
                               rows={4}
                             />
                           </FormControl>
                           <FormDescription>
-                            Optional user testimonials for this tool
+                            Enter limitations separated by new lines
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="testimonials"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>FAQs / Testimonials</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="User testimonials or FAQs (can be JSON format)"
+                              {...field}
+                              rows={4}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            FAQs or testimonials for this tool (can be in JSON format)
                           </FormDescription>
                           <FormMessage />
                         </FormItem>

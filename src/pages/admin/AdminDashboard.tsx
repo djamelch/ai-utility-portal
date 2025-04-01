@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -10,19 +11,31 @@ import { AdminUsers } from './AdminUsers';
 import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   BarChart, Users, Settings, Database, LayoutDashboard, Shield,
-  FileInput, ArrowLeft
+  FileInput, ArrowLeft, Loader2
 } from 'lucide-react';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('analytics');
   const { isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
+  
+  const [dashboardStats, setDashboardStats] = useState({
+    totalUsers: 0,
+    totalTools: 0,
+    totalClicks: 0,
+    totalReviews: 0,
+    admins: 0,
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   // Set the active tab based on the current URL
   useEffect(() => {
@@ -36,6 +49,63 @@ export default function AdminDashboard() {
       setActiveTab('analytics');
     }
   }, [location.pathname]);
+
+  // Fetch dashboard statistics
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setIsLoadingStats(true);
+        
+        // Get counts from different tables using Promise.all for parallel requests
+        const [usersResult, toolsResult, reviewsResult] = await Promise.all([
+          // Count users
+          supabase.from('profiles').select('*', { count: 'exact', head: true }),
+          
+          // Count tools
+          supabase.from('tools').select('*', { count: 'exact', head: true }),
+          
+          // Count reviews
+          supabase.from('reviews').select('*', { count: 'exact', head: true }),
+        ]);
+        
+        // Count admins
+        const { data: adminData, error: adminError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin');
+          
+        if (adminError) throw adminError;
+        
+        // Calculate total clicks
+        const { data: totalClicksData, error: totalClicksError } = await supabase
+          .from('tools')
+          .select('click_count');
+          
+        if (totalClicksError) throw totalClicksError;
+        
+        const totalClicks = totalClicksData.reduce((sum, tool) => sum + (tool.click_count || 0), 0);
+        
+        setDashboardStats({
+          totalUsers: usersResult.count || 0,
+          totalTools: toolsResult.count || 0,
+          totalReviews: reviewsResult.count || 0,
+          totalClicks: totalClicks,
+          admins: adminData?.length || 0,
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        toast({
+          title: 'خطأ في تحميل البيانات',
+          description: 'لم نتمكن من جلب إحصائيات لوحة التحكم',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, [toast]);
 
   // Direct navigation handlers for each tab
   const navigateToTab = (tab: string) => {
@@ -101,39 +171,45 @@ export default function AdminDashboard() {
             <MotionWrapper animation="fadeIn" delay="delay-200">
               <Card className="mb-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border-none shadow-md">
                 <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-sm text-muted-foreground">Total Tools</h3>
-                        <Database className="h-4 w-4 text-primary" />
-                      </div>
-                      <p className="text-2xl font-bold mt-2">42</p>
+                  {isLoadingStats ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                    
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-sm text-muted-foreground">Users</h3>
-                        <Users className="h-4 w-4 text-indigo-500" />
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-sm text-muted-foreground">Total Tools</h3>
+                          <Database className="h-4 w-4 text-primary" />
+                        </div>
+                        <p className="text-2xl font-bold mt-2">{dashboardStats.totalTools}</p>
                       </div>
-                      <p className="text-2xl font-bold mt-2">187</p>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-sm text-muted-foreground">Reviews</h3>
-                        <BarChart className="h-4 w-4 text-green-500" />
+                      
+                      <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-sm text-muted-foreground">Users</h3>
+                          <Users className="h-4 w-4 text-indigo-500" />
+                        </div>
+                        <p className="text-2xl font-bold mt-2">{dashboardStats.totalUsers}</p>
                       </div>
-                      <p className="text-2xl font-bold mt-2">356</p>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-sm text-muted-foreground">Admins</h3>
-                        <Shield className="h-4 w-4 text-purple-500" />
+                      
+                      <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-sm text-muted-foreground">Reviews</h3>
+                          <BarChart className="h-4 w-4 text-green-500" />
+                        </div>
+                        <p className="text-2xl font-bold mt-2">{dashboardStats.totalReviews}</p>
                       </div>
-                      <p className="text-2xl font-bold mt-2">3</p>
+                      
+                      <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-sm text-muted-foreground">Admins</h3>
+                          <Shield className="h-4 w-4 text-purple-500" />
+                        </div>
+                        <p className="text-2xl font-bold mt-2">{dashboardStats.admins}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
               
