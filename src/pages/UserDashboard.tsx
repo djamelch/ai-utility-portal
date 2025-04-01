@@ -8,7 +8,7 @@ import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { UserRoleBadge } from '@/components/admin/users/UserRoleBadge';
-import { Shield } from 'lucide-react';
+import { Shield, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { AdminDashboardPreview } from '@/components/dashboard/AdminDashboardPreview';
@@ -17,11 +17,8 @@ export default function UserDashboard() {
   const { isAdmin, isLoading, user } = useAuth();
   const navigate = useNavigate();
   
-  // Handle admin navigation
-  const goToAdminDashboard = () => {
-    console.log("Navigating to admin dashboard from user dashboard");
-    navigate('/admin');
-  };
+  // Debug information
+  console.log("UserDashboard render:", { isAdmin, user });
   
   return (
     <RequireAuth>
@@ -40,23 +37,24 @@ export default function UserDashboard() {
                   </p>
                 </div>
                 
-                <div className="self-start flex gap-2 items-center">
-                  <UserRoleBadge isAdmin={isAdmin} />
-                  
-                  {isAdmin && (
+                {isAdmin && (
+                  <div className="self-start flex flex-col sm:flex-row gap-3">
+                    <UserRoleBadge isAdmin={true} />
                     <Button 
-                      onClick={goToAdminDashboard}
+                      variant="outline" 
+                      size="lg" 
                       className="gap-2"
+                      onClick={() => navigate('/admin')}
                     >
-                      <Shield className="h-4 w-4" />
                       Admin Dashboard
+                      <ArrowRight className="h-4 w-4" />
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </MotionWrapper>
             
-            {isAdmin && (
+            {!isAdmin && (
               <MotionWrapper animation="fadeIn" delay="delay-100">
                 <AdminDashboardPreview />
               </MotionWrapper>
