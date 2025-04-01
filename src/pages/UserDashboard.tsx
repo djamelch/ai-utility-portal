@@ -11,17 +11,10 @@ import { UserRoleBadge } from '@/components/admin/users/UserRoleBadge';
 import { Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { AdminDashboardPreview } from '@/components/dashboard/AdminDashboardPreview';
 
 export default function UserDashboard() {
   const { isAdmin, isLoading, user } = useAuth();
   const navigate = useNavigate();
-  
-  // Handle admin navigation
-  const goToAdminDashboard = () => {
-    console.log("Navigating to admin dashboard from user dashboard");
-    navigate('/admin');
-  };
   
   return (
     <RequireAuth>
@@ -40,27 +33,13 @@ export default function UserDashboard() {
                   </p>
                 </div>
                 
-                <div className="self-start flex gap-2 items-center">
-                  <UserRoleBadge isAdmin={isAdmin} />
-                  
-                  {isAdmin && (
-                    <Button 
-                      onClick={goToAdminDashboard}
-                      className="gap-2"
-                    >
-                      <Shield className="h-4 w-4" />
-                      Admin Dashboard
-                    </Button>
-                  )}
-                </div>
+                {isAdmin && (
+                  <div className="self-start">
+                    <UserRoleBadge isAdmin={true} />
+                  </div>
+                )}
               </div>
             </MotionWrapper>
-            
-            {isAdmin && (
-              <MotionWrapper animation="fadeIn" delay="delay-100">
-                <AdminDashboardPreview />
-              </MotionWrapper>
-            )}
             
             <MotionWrapper animation="fadeIn" delay="delay-200">
               <DashboardTabs />

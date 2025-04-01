@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Card,
@@ -24,28 +25,13 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { AlertCircle, Check, Save, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-
-interface SiteSettings {
-  siteName: string;
-  siteDescription: string;
-  toolsPerPage: string;
-  enableFeaturedTools: boolean;
-  enableVerifiedTools: boolean;
-}
-
-interface SecuritySettings {
-  requireEmailVerification: boolean;
-  allowUserSignup: boolean;
-  autoApproveReviews: boolean;
-}
 
 export function AdminSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
-  
-  // Create form instances
-  const generalForm = useForm<SiteSettings>({
+  const { toast } = useToast();
+
+  const generalForm = useForm({
     defaultValues: {
       siteName: 'AI Tools Directory',
       siteDescription: 'Directory of the best AI tools on the market',
@@ -55,7 +41,7 @@ export function AdminSettings() {
     },
   });
 
-  const securityForm = useForm<SecuritySettings>({
+  const securityForm = useForm({
     defaultValues: {
       requireEmailVerification: true,
       allowUserSignup: true,
@@ -63,75 +49,51 @@ export function AdminSettings() {
     },
   });
 
-  // Fetch existing settings from the database when page loads
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        // In a real implementation, you would fetch settings from a settings table
-        // For now, let's simulate fetching data
-        
-        // Simulate delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // For demo purposes, we'll hard-code some settings
-        // In real implementation, we would get these from the database
-        const generalSettings: SiteSettings = {
-          siteName: 'AI Tools Directory',
-          siteDescription: 'Find the best AI tools for your needs',
-          toolsPerPage: '12',
-          enableFeaturedTools: true,
-          enableVerifiedTools: true,
-        };
-        
-        const securitySettings: SecuritySettings = {
-          requireEmailVerification: false,
-          allowUserSignup: true,
-          autoApproveReviews: false,
-        };
-        
-        // Update the form values
-        generalForm.reset(generalSettings);
-        securityForm.reset(securitySettings);
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-        toast.error('Failed to load settings');
-      }
-    };
-    
-    fetchSettings();
-  }, []);
-
-  const handleSaveGeneral = async (data: SiteSettings) => {
+  const handleSaveGeneral = async (data: any) => {
     setIsLoading(true);
     try {
-      // In a real implementation, this would save to Supabase
+      // In a real implementation, this would save to Supabase or another backend
       console.log('Saving general settings:', data);
       
       // Simulate a delay for demonstration
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success('General settings have been updated successfully.');
+      toast({
+        title: 'Settings saved',
+        description: 'General settings have been updated successfully.',
+      });
     } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error('Failed to save settings. Please try again.');
+      toast({
+        title: 'Error',
+        description: 'Failed to save settings. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSaveSecurity = async (data: SecuritySettings) => {
+  const handleSaveSecurity = async (data: any) => {
     setIsLoading(true);
     try {
-      // In a real implementation, this would save to Supabase
+      // In a real implementation, this would save to Supabase or another backend
       console.log('Saving security settings:', data);
       
       // Simulate a delay for demonstration
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success('Security settings have been updated successfully.');
+      toast({
+        title: 'Settings saved',
+        description: 'Security settings have been updated successfully.',
+      });
     } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error('Failed to save settings. Please try again.');
+      toast({
+        title: 'Error',
+        description: 'Failed to save settings. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }

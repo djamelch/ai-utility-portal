@@ -10,14 +10,13 @@ interface UserSearchBarProps {
 
 export function UserSearchBar({ searchTerm, onSearchChange }: UserSearchBarProps) {
   return (
-    <div className="relative w-full md:w-64">
+    <div className="relative w-64">
       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         placeholder="Search users..."
         className="pl-8"
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && console.log("Searching for:", searchTerm)}
       />
     </div>
   );

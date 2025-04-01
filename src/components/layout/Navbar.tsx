@@ -20,7 +20,6 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface NavbarProps {
   className?: string;
@@ -35,7 +34,6 @@ export function Navbar({ className }: NavbarProps) {
   );
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isDarkMode) {
@@ -60,10 +58,6 @@ export function Navbar({ className }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    console.log("Auth state in Navbar:", { user, profile, isAdmin });
-  }, [user, profile, isAdmin]);
-
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
     if (!isMenuOpen) {
@@ -82,21 +76,12 @@ export function Navbar({ className }: NavbarProps) {
     navigate('/');
   };
 
-  const handleAdminNavigation = () => {
-    console.log("Navigating to admin dashboard from navbar");
-    window.location.href = '/admin';
-  };
-
   const navLinks = [
     { title: "Home", path: "/" },
     { title: "Tools", path: "/tools" },
     { title: "Blog", path: "/blog" },
     { title: "About", path: "/about" }
   ];
-
-  const effectiveIsAdmin = true;
-
-  console.log("Navbar auth state:", { isAdmin, user, effectiveIsAdmin });
 
   return (
     <header
@@ -145,7 +130,7 @@ export function Navbar({ className }: NavbarProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" className="rounded-full">
-                    {effectiveIsAdmin ? (
+                    {isAdmin ? (
                       <Shield size={20} className="text-primary" />
                     ) : (
                       <User size={20} />
@@ -157,7 +142,7 @@ export function Navbar({ className }: NavbarProps) {
                   className="bg-popover z-50 shadow-md dark:bg-gray-800"
                 >
                   <DropdownMenuLabel>
-                    {effectiveIsAdmin ? 'Admin Account' : 'User Account'}
+                    {isAdmin ? 'Admin Account' : 'User Account'}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/dashboard')}>
@@ -165,7 +150,7 @@ export function Navbar({ className }: NavbarProps) {
                     <span>User Dashboard</span>
                   </DropdownMenuItem>
                   
-                  <DropdownMenuItem onClick={handleAdminNavigation}>
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
                     <Shield className="mr-2 h-4 w-4" />
                     <span>Admin Dashboard</span>
                   </DropdownMenuItem>
@@ -284,6 +269,73 @@ export function Navbar({ className }: NavbarProps) {
             </SheetContent>
           </Sheet>
         </div>
+
+        {isMenuOpen && (
+          <div className="fixed inset-0 top-[60px] z-50 flex flex-col bg-background p-6 md:hidden animate-fadeIn">
+            <ul className="flex flex-col gap-6 pt-8">
+              {navLinks.map((link) => (
+                <li key={link.title}>
+                  <Link
+                    to={link.path}
+                    className="text-xl font-medium"
+                    onClick={toggleMenu}
+                  >
+                    {link.title}
+                  </Link>
+                </li>
+              ))}
+              {user && (
+                <>
+                  <li>
+                    <Link
+                      to="/dashboard"
+                      className="text-xl font-medium flex items-center gap-2"
+                      onClick={toggleMenu}
+                    >
+                      <LayoutDashboard className="h-5 w-5" />
+                      Your Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/admin"
+                      className="text-xl font-medium flex items-center gap-2"
+                      onClick={toggleMenu}
+                    >
+                      <Shield className="h-5 w-5" />
+                      Admin Dashboard
+                    </Link>
+                  </li>
+                </>
+              )}
+            </ul>
+            <div className="mt-auto pt-8 flex flex-col gap-4">
+              {user ? (
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => {
+                    handleSignOut();
+                    toggleMenu();
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              ) : (
+                <>
+                  <Link
+                    to="/auth"
+                    className="w-full py-3 text-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                    onClick={toggleMenu}
+                  >
+                    Sign In
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
     </header>
   );

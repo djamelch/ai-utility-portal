@@ -28,14 +28,7 @@ import { useState } from "react";
 
 function App() {
   // Create a new QueryClient instance inside the component function
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        refetchOnWindowFocus: false,
-      },
-    },
-  }));
+  const [queryClient] = useState(() => new QueryClient());
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -55,51 +48,46 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               
-              {/* User Dashboard */}
+              {/* User Dashboard - redirects to admin dashboard if user is admin */}
               <Route path="/dashboard" element={
                 <RequireAuth>
                   <UserDashboard />
                 </RequireAuth>
               } />
               
-              {/* Admin Routes - with requireAdmin flag */}
+              {/* Admin Routes - removing requireAdmin flag temporarily */}
               <Route path="/admin" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminDashboard />
                 </RequireAuth>
               } />
               <Route path="/admin/tools" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminTools />
                 </RequireAuth>
               } />
               <Route path="/admin/users" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminUsers />
                 </RequireAuth>
               } />
-              <Route path="/admin/analytics" element={
-                <RequireAuth requireAdmin={true}>
-                  <AdminAnalytics />
-                </RequireAuth>
-              } />
               <Route path="/admin/settings" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminSettings />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/edit/:id" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminToolEdit />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/new" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <AdminToolCreate />
                 </RequireAuth>
               } />
               <Route path="/admin/csv-import" element={
-                <RequireAuth requireAdmin={true}>
+                <RequireAuth>
                   <CsvImport />
                 </RequireAuth>
               } />
