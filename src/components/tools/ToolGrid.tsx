@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
@@ -184,7 +183,6 @@ export function ToolGrid({
     return <EmptyToolsMessage />;
   }
   
-  // Use different grid column settings based on columnsPerRow prop
   let gridColsClasses = "";
   switch (columnsPerRow) {
     case 1:
@@ -218,7 +216,6 @@ export function ToolGrid({
 }
 
 function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columnsPerRow?: number }) {
-  // Use different grid column settings based on columnsPerRow prop
   let gridColsClasses = "";
   switch (columnsPerRow) {
     case 1:
@@ -268,5 +265,4 @@ function EmptyToolsMessage() {
   );
 }
 
-// Add missing Button import
 import { Button } from "@/components/ui/button";

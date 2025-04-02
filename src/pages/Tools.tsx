@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
