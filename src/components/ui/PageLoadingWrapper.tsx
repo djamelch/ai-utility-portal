@@ -5,21 +5,19 @@ import { EnhancedLoadingIndicator } from "./EnhancedLoadingIndicator";
 
 interface PageLoadingWrapperProps {
   children: React.ReactNode;
-  isLoading: boolean;
+  isLoading?: boolean;
   loadingText?: string;
   variant?: "spinner" | "progress" | "dots" | "pulse";
 }
 
 export function PageLoadingWrapper({ 
   children, 
-  isLoading, 
+  isLoading = false, 
   loadingText = "Loading...",
   variant = "pulse"
 }: PageLoadingWrapperProps) {
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
-      
       {isLoading ? (
         <main className="flex-1 flex items-center justify-center">
           <EnhancedLoadingIndicator 
@@ -32,8 +30,6 @@ export function PageLoadingWrapper({
       ) : (
         children
       )}
-      
-      <Footer />
     </div>
   );
 }

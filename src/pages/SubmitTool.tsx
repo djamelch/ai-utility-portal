@@ -32,6 +32,7 @@ export default function SubmitTool() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ToolSubmissionFormValues>({
     resolver: zodResolver(toolSubmissionSchema),
@@ -50,8 +51,8 @@ export default function SubmitTool() {
     setIsSubmitting(true);
     
     try {
-      // Store the submission in the database (note: we'll use tool_submissions table which we'll create later)
-      const { error } = await supabase.from("tool_submissions").insert({
+      // Insert the data directly using the generic insert method
+      const { error } = await supabase.from('tool_submissions').insert({
         tool_name: values.name,
         website_url: values.website,
         description: values.description,
@@ -106,7 +107,7 @@ export default function SubmitTool() {
   ];
 
   return (
-    <PageLoadingWrapper>
+    <PageLoadingWrapper isLoading={isLoading}>
       <div className="flex min-h-screen flex-col">
         <Navbar />
         <main className="flex-1 pt-24 pb-12">
