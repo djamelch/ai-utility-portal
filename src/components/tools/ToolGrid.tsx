@@ -51,7 +51,7 @@ interface ToolGridProps {
 }
 
 export function ToolGrid({ 
-  limit, 
+  limit = 12, 
   queryType = "featured",
   searchTerm,
   categoryFilter,

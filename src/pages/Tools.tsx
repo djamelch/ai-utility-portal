@@ -18,6 +18,9 @@ const Tools = () => {
   const [category, setCategory] = useState("");
   const [pricing, setPricing] = useState("");
   const [sortBy, setSortBy] = useState("featured");
+  const [loadMoreCount, setLoadMoreCount] = useState(1);
+  const initialLimit = 12; // Initial number of tools to load
+  const loadMoreIncrement = 12; // Number of additional tools to load each time
 
   // Fetch categories with improved error handling
   const { 
@@ -95,12 +98,22 @@ const Tools = () => {
     // Search is already applied via the input change event
   };
 
+  const loadMore = () => {
+    setLoadMoreCount(prevCount => prevCount + 1);
+  };
+
   const clearFilters = () => {
     setSearchQuery("");
     setCategory("");
     setPricing("");
     setSortBy("featured");
+    setLoadMoreCount(1); // Reset load more count when filters change
   };
+
+  // Reset load more count when filters change
+  useEffect(() => {
+    setLoadMoreCount(1);
+  }, [searchQuery, category, pricing, sortBy]);
 
   const hasActiveFilters = searchQuery || category || pricing || sortBy !== "featured";
 
@@ -108,6 +121,9 @@ const Tools = () => {
     refetchCategories();
     refetchPricing();
   };
+
+  // Calculate current limit based on initial limit and how many times "Load More" was clicked
+  const currentLimit = initialLimit * loadMoreCount;
 
   return (
     <PageLoadingWrapper 
@@ -319,13 +335,26 @@ const Tools = () => {
                 </button>
               </div>
               
-              {/* Tools Grid with enhanced error handling */}
+              {/* Tools Grid with enhanced error handling and pagination */}
               <ToolGrid 
                 searchQuery={searchQuery}
                 category={category}
                 pricing={pricing}
                 sortBy={sortBy}
+                limit={currentLimit}
               />
+
+              {/* Load More Button */}
+              <div className="mt-10 flex justify-center">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={loadMore}
+                  className="px-8"
+                >
+                  Load More Tools
+                </Button>
+              </div>
             </MotionWrapper>
           </div>
         </main>
