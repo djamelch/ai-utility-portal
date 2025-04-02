@@ -51,7 +51,8 @@ export default function SubmitTool() {
     setIsSubmitting(true);
     
     try {
-      // Insert the data directly using the generic insert method
+      // Insert the data using a generic query to bypass TypeScript checking
+      // since our types haven't been regenerated yet
       const { error } = await supabase.from('tool_submissions').insert({
         tool_name: values.name,
         website_url: values.website,
@@ -62,7 +63,7 @@ export default function SubmitTool() {
         additional_info: values.additionalInfo,
         user_id: user?.id,
         status: "pending",
-      });
+      } as any);
 
       if (error) throw error;
       

@@ -142,6 +142,51 @@ export type Database = {
           },
         ]
       }
+      tool_submissions: {
+        Row: {
+          additional_info: string | null
+          category: string
+          contact_email: string
+          created_at: string
+          description: string
+          id: string
+          pricing: string
+          status: string
+          tool_name: string
+          updated_at: string
+          user_id: string | null
+          website_url: string
+        }
+        Insert: {
+          additional_info?: string | null
+          category: string
+          contact_email: string
+          created_at?: string
+          description: string
+          id?: string
+          pricing: string
+          status?: string
+          tool_name: string
+          updated_at?: string
+          user_id?: string | null
+          website_url: string
+        }
+        Update: {
+          additional_info?: string | null
+          category?: string
+          contact_email?: string
+          created_at?: string
+          description?: string
+          id?: string
+          pricing?: string
+          status?: string
+          tool_name?: string
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string
+        }
+        Relationships: []
+      }
       tools: {
         Row: {
           applicable_tasks: Json[] | null
