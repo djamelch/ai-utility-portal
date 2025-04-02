@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -80,7 +81,7 @@ export function Navbar({ className }: NavbarProps) {
     { title: "Home", path: "/" },
     { title: "Tools", path: "/tools" },
     { title: "Blog", path: "/blog" },
-    { title: "About", path: "/about" }
+    { title: "Submit Tool", path: "/submit-tool", isButton: true }
   ];
 
   return (
@@ -100,12 +101,20 @@ export function Navbar({ className }: NavbarProps) {
           <ul className="flex items-center gap-6">
             {navLinks.map((link) => (
               <li key={link.title}>
-                <Link 
-                  to={link.path} 
-                  className="font-medium text-foreground/80 hover:text-foreground transition-colors link-underline"
-                >
-                  {link.title}
-                </Link>
+                {link.isButton ? (
+                  <Link to={link.path}>
+                    <Button variant="default" size="sm" className="rounded-full">
+                      {link.title}
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link 
+                    to={link.path} 
+                    className="font-medium text-foreground/80 hover:text-foreground transition-colors link-underline"
+                  >
+                    {link.title}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

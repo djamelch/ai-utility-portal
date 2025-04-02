@@ -27,6 +27,7 @@ import AdminBlogEdit from "./pages/admin/AdminBlogEdit";
 import AdminBlogCreate from "./pages/admin/AdminBlogCreate";
 import CsvImport from "./pages/admin/CsvImport";
 import UserDashboard from "./pages/UserDashboard";
+import SubmitTool from "./pages/SubmitTool"; // Import the new SubmitTool page
 import { useState } from "react";
 
 function App() {
@@ -43,13 +44,13 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/tools" element={<Tools />} />
-              {/* Using the slug format for tool detail pages */}
               <Route path="/tool/:slug" element={<ToolDetail />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogPost />} />
               <Route path="/about" element={<About />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/submit-tool" element={<SubmitTool />} /> {/* Add the new route */}
               
               {/* User Dashboard - redirects to admin dashboard if user is admin */}
               <Route path="/dashboard" element={
