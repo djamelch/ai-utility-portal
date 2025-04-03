@@ -40,12 +40,12 @@ import { Json } from '@/integrations/supabase/types';
 
 // Define the form schema with Zod
 const toolFormSchema = z.object({
-  company_name: z.string().min(1, 'اسم الأداة مطلوب'),
-  short_description: z.string().min(1, 'الوصف المختصر مطلوب'),
+  company_name: z.string().min(1, 'Tool name is required'),
+  short_description: z.string().min(1, 'Short description is required'),
   full_description: z.string().optional(),
-  visit_website_url: z.string().url('يجب أن يكون رابط صحيح').min(1, 'رابط الموقع مطلوب'),
-  primary_task: z.string().min(1, 'المهمة الرئيسية مطلوبة'),
-  pricing: z.string().min(1, 'معلومات التسعير مطلوبة'),
+  visit_website_url: z.string().url('Must be a valid URL').min(1, 'Website URL is required'),
+  primary_task: z.string().min(1, 'Primary task is required'),
+  pricing: z.string().min(1, 'Pricing information is required'),
   is_featured: z.boolean().default(false),
   is_verified: z.boolean().default(false),
   pros: z.string().optional(),
@@ -153,15 +153,15 @@ export default function AdminToolCreate() {
       if (error) throw error;
 
       toast({
-        title: 'تم بنجاح',
-        description: 'تم إنشاء الأداة الجديدة بنجاح',
+        title: 'Success',
+        description: 'The new tool has been created successfully',
       });
       navigate('/admin/tools');
     } catch (error: any) {
       console.error('Error creating tool:', error);
       toast({
-        title: 'خطأ',
-        description: `فشل إنشاء الأداة: ${error.message}`,
+        title: 'Error',
+        description: `Failed to create tool: ${error.message}`,
         variant: 'destructive',
       });
     } finally {
@@ -181,22 +181,22 @@ export default function AdminToolCreate() {
                 className="mb-4"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                العودة إلى الأدوات
+                Back to Tools
               </Button>
               <h1 className="text-3xl md:text-4xl font-bold">
-                إضافة أداة جديدة
+                Add New Tool
               </h1>
               <p className="mt-2 text-muted-foreground">
-                إنشاء أداة ذكاء اصطناعي جديدة في الدليل
+                Create a new AI tool in the directory
               </p>
             </div>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>معلومات الأداة</CardTitle>
+              <CardTitle>Tool Information</CardTitle>
               <CardDescription>
-                أدخل تفاصيل حول أداة الذكاء الاصطناعي الجديدة
+                Enter details about the new AI tool
               </CardDescription>
             </CardHeader>
             <Form {...form}>
@@ -208,9 +208,9 @@ export default function AdminToolCreate() {
                       name="company_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>اسم الأداة</FormLabel>
+                          <FormLabel>Tool Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="مثال: ChatGPT" {...field} />
+                            <Input placeholder="Example: ChatGPT" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -222,7 +222,7 @@ export default function AdminToolCreate() {
                       name="visit_website_url"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>رابط الموقع</FormLabel>
+                          <FormLabel>Website URL</FormLabel>
                           <FormControl>
                             <Input placeholder="https://example.com" {...field} />
                           </FormControl>
@@ -237,10 +237,10 @@ export default function AdminToolCreate() {
                     name="short_description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>وصف مختصر</FormLabel>
+                        <FormLabel>Short Description</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="وصف موجز للأداة" 
+                            placeholder="Brief description of the tool" 
                             {...field} 
                             rows={3} 
                           />
@@ -255,16 +255,16 @@ export default function AdminToolCreate() {
                     name="full_description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>وصف كامل</FormLabel>
+                        <FormLabel>Full Description</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="وصف تفصيلي للأداة" 
+                            placeholder="Detailed description of the tool" 
                             {...field} 
                             rows={5} 
                           />
                         </FormControl>
                         <FormDescription>
-                          اشرح بالتفصيل ميزات وفوائد الأداة
+                          Explain in detail the features and benefits of the tool
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -277,25 +277,25 @@ export default function AdminToolCreate() {
                       name="primary_task"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>المهمة الرئيسية</FormLabel>
+                          <FormLabel>Primary Task</FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="اختر فئة" />
+                                <SelectValue placeholder="Select category" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="text">إنشاء النصوص</SelectItem>
-                              <SelectItem value="image">إنشاء الصور</SelectItem>
-                              <SelectItem value="audio">معالجة الصوت</SelectItem>
-                              <SelectItem value="video">إنشاء الفيديو</SelectItem>
-                              <SelectItem value="code">مساعدة البرمجة</SelectItem>
-                              <SelectItem value="research">أداة بحث</SelectItem>
-                              <SelectItem value="productivity">الإنتاجية</SelectItem>
-                              <SelectItem value="other">أخرى</SelectItem>
+                              <SelectItem value="text">Text Generation</SelectItem>
+                              <SelectItem value="image">Image Generation</SelectItem>
+                              <SelectItem value="audio">Audio Processing</SelectItem>
+                              <SelectItem value="video">Video Creation</SelectItem>
+                              <SelectItem value="code">Coding Assistant</SelectItem>
+                              <SelectItem value="research">Research Tool</SelectItem>
+                              <SelectItem value="productivity">Productivity</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -308,22 +308,22 @@ export default function AdminToolCreate() {
                       name="pricing"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>التسعير</FormLabel>
+                          <FormLabel>Pricing</FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="اختر نموذج التسعير" />
+                                <SelectValue placeholder="Select pricing model" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="free">مجاني</SelectItem>
-                              <SelectItem value="freemium">مجاني مع ميزات مدفوعة</SelectItem>
-                              <SelectItem value="subscription">اشتراك</SelectItem>
-                              <SelectItem value="one-time">دفعة واحدة</SelectItem>
-                              <SelectItem value="contact">اتصل للحصول على الأسعار</SelectItem>
+                              <SelectItem value="free">Free</SelectItem>
+                              <SelectItem value="freemium">Freemium</SelectItem>
+                              <SelectItem value="subscription">Subscription</SelectItem>
+                              <SelectItem value="one-time">One-time Payment</SelectItem>
+                              <SelectItem value="contact">Contact for Pricing</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -338,12 +338,12 @@ export default function AdminToolCreate() {
                       name="logo_url"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>رابط الشعار</FormLabel>
+                          <FormLabel>Logo URL</FormLabel>
                           <FormControl>
                             <Input placeholder="https://example.com/logo.png" {...field} />
                           </FormControl>
                           <FormDescription>
-                            رابط مباشر لصورة شعار الأداة
+                            Direct link to the tool's logo image
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -355,12 +355,12 @@ export default function AdminToolCreate() {
                       name="featured_image_url"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>رابط الصورة المميزة</FormLabel>
+                          <FormLabel>Featured Image URL</FormLabel>
                           <FormControl>
                             <Input placeholder="https://example.com/featured.png" {...field} />
                           </FormControl>
                           <FormDescription>
-                            رابط مباشر للصورة المميزة للأداة
+                            Direct link to a featured image for the tool
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -374,12 +374,12 @@ export default function AdminToolCreate() {
                       name="slug"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>الرابط المختصر (Slug)</FormLabel>
+                          <FormLabel>Slug</FormLabel>
                           <FormControl>
                             <Input placeholder="chatgpt" {...field} />
                           </FormControl>
                           <FormDescription>
-                            سيتم استخدامه في عنوان URL (اتركه فارغاً لإنشائه تلقائياً)
+                            Used in the URL (leave empty to generate automatically)
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -391,12 +391,12 @@ export default function AdminToolCreate() {
                       name="detail_url"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>رابط صفحة التفاصيل</FormLabel>
+                          <FormLabel>Detail URL</FormLabel>
                           <FormControl>
                             <Input placeholder="/tool/chatgpt" {...field} />
                           </FormControl>
                           <FormDescription>
-                            رابط لصفحة تفاصيل الأداة (اختياري)
+                            URL for the tool detail page (optional)
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -409,16 +409,16 @@ export default function AdminToolCreate() {
                     name="pros"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>المميزات</FormLabel>
+                        <FormLabel>Pros</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="اكتب المميزات الرئيسية للأداة"
+                            placeholder="Enter the main pros of the tool"
                             {...field}
                             rows={4}
                           />
                         </FormControl>
                         <FormDescription>
-                          أدخل المميزات مفصولة بسطر جديد
+                          Enter pros separated by new lines
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -430,16 +430,16 @@ export default function AdminToolCreate() {
                     name="cons"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>العيوب</FormLabel>
+                        <FormLabel>Cons</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="اكتب العيوب أو القيود الرئيسية للأداة"
+                            placeholder="Enter the main cons or limitations of the tool"
                             {...field}
                             rows={4}
                           />
                         </FormControl>
                         <FormDescription>
-                          أدخل العيوب مفصولة بسطر جديد
+                          Enter cons separated by new lines
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -451,16 +451,16 @@ export default function AdminToolCreate() {
                     name="faqs"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>أسئلة شائعة / شهادات</FormLabel>
+                        <FormLabel>FAQs / Testimonials</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="الأسئلة الشائعة أو شهادات المستخدمين"
+                            placeholder="FAQs or user testimonials"
                             {...field}
                             rows={4}
                           />
                         </FormControl>
                         <FormDescription>
-                          يمكن إدخال البيانات بتنسيق JSON
+                          Can be entered in JSON format
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -474,9 +474,9 @@ export default function AdminToolCreate() {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">أداة مميزة</FormLabel>
+                            <FormLabel className="text-base">Featured Tool</FormLabel>
                             <FormDescription>
-                              عرض هذه الأداة في أقسام المميز
+                              Display this tool in featured sections
                             </FormDescription>
                           </div>
                           <FormControl>
@@ -495,9 +495,9 @@ export default function AdminToolCreate() {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">أداة موثقة</FormLabel>
+                            <FormLabel className="text-base">Verified Tool</FormLabel>
                             <FormDescription>
-                              تمييز هذه الأداة كموثقة من قبل المشرفين
+                              Mark this tool as verified by administrators
                             </FormDescription>
                           </div>
                           <FormControl>
@@ -516,18 +516,18 @@ export default function AdminToolCreate() {
                     variant="outline" 
                     onClick={() => navigate('/admin/tools')}
                   >
-                    إلغاء
+                    Cancel
                   </Button>
                   <Button type="submit" disabled={isSaving}>
                     {isSaving ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        جاري الإنشاء...
+                        Creating...
                       </>
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        إنشاء الأداة
+                        Create Tool
                       </>
                     )}
                   </Button>
