@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import Index from "./pages/Index";
@@ -30,6 +30,23 @@ import CsvImport from "./pages/admin/CsvImport";
 import UserDashboard from "./pages/UserDashboard";
 import SubmitTool from "./pages/SubmitTool";
 import { useState } from "react";
+import { Navbar } from "./components/layout/Navbar";
+import { Footer } from "./components/layout/Footer";
+
+// Create a layout component for admin routes
+const AdminLayout = () => {
+  return (
+    <>
+      <Navbar />
+      <main className="flex-1 pt-24 pb-16">
+        <div className="container max-w-screen-xl mx-auto px-4">
+          <Outlet />
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+};
 
 function App() {
   // Create a new QueryClient instance inside the component function
@@ -60,62 +77,24 @@ function App() {
                 </RequireAuth>
               } />
               
-              {/* Admin Routes - removing requireAdmin flag temporarily */}
+              {/* Admin Routes using the AdminLayout wrapper */}
               <Route path="/admin" element={
                 <RequireAuth>
-                  <AdminDashboard />
+                  <AdminLayout />
                 </RequireAuth>
-              } />
-              <Route path="/admin/tools" element={
-                <RequireAuth>
-                  <AdminTools />
-                </RequireAuth>
-              } />
-              <Route path="/admin/users" element={
-                <RequireAuth>
-                  <AdminUsers />
-                </RequireAuth>
-              } />
-              <Route path="/admin/settings" element={
-                <RequireAuth>
-                  <AdminSettings />
-                </RequireAuth>
-              } />
-              <Route path="/admin/blogs" element={
-                <RequireAuth>
-                  <AdminBlogs />
-                </RequireAuth>
-              } />
-              <Route path="/admin/submissions" element={
-                <RequireAuth>
-                  <AdminSubmissions />
-                </RequireAuth>
-              } />
-              <Route path="/admin/tools/edit/:id" element={
-                <RequireAuth>
-                  <AdminToolEdit />
-                </RequireAuth>
-              } />
-              <Route path="/admin/tools/new" element={
-                <RequireAuth>
-                  <AdminToolCreate />
-                </RequireAuth>
-              } />
-              <Route path="/admin/blogs/edit/:id" element={
-                <RequireAuth>
-                  <AdminBlogEdit />
-                </RequireAuth>
-              } />
-              <Route path="/admin/blogs/new" element={
-                <RequireAuth>
-                  <AdminBlogCreate />
-                </RequireAuth>
-              } />
-              <Route path="/admin/csv-import" element={
-                <RequireAuth>
-                  <CsvImport />
-                </RequireAuth>
-              } />
+              }>
+                <Route index element={<AdminDashboard />} />
+                <Route path="tools" element={<AdminTools />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="blogs" element={<AdminBlogs />} />
+                <Route path="submissions" element={<AdminSubmissions />} />
+                <Route path="tools/edit/:id" element={<AdminToolEdit />} />
+                <Route path="tools/new" element={<AdminToolCreate />} />
+                <Route path="blogs/edit/:id" element={<AdminBlogEdit />} />
+                <Route path="blogs/new" element={<AdminBlogCreate />} />
+                <Route path="csv-import" element={<CsvImport />} />
+              </Route>
               
               <Route path="*" element={<NotFound />} />
             </Routes>
