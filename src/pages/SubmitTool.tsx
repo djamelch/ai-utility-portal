@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageLoadingWrapper } from "@/components/ui/PageLoadingWrapper";
@@ -14,6 +14,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Define the form schema
 const toolSubmissionSchema = z.object({
@@ -33,6 +35,11 @@ export default function SubmitTool() {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showAuthAlert, setShowAuthAlert] = useState(false);
+
+  useEffect(() => {
+    setShowAuthAlert(!user);
+  }, [user]);
 
   const form = useForm<ToolSubmissionFormValues>({
     resolver: zodResolver(toolSubmissionSchema),
@@ -48,6 +55,16 @@ export default function SubmitTool() {
   });
 
   async function onSubmit(values: ToolSubmissionFormValues) {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to submit a tool",
+        variant: "destructive",
+      });
+      setShowAuthAlert(true);
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -120,6 +137,16 @@ export default function SubmitTool() {
                   Have a great AI tool? Submit it for review and get featured on our platform.
                 </p>
               </div>
+
+              {showAuthAlert && (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Authentication Required</AlertTitle>
+                  <AlertDescription>
+                    You need to be signed in to submit a tool. Please <a href="/auth" className="underline font-semibold">sign in</a> or <a href="/auth" className="underline font-semibold">create an account</a>.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               <div className="rounded-lg border bg-card p-6 shadow-sm">
                 <Form {...form}>
@@ -262,7 +289,7 @@ export default function SubmitTool() {
                     />
 
                     <div className="flex justify-end">
-                      <Button type="submit" disabled={isSubmitting}>
+                      <Button type="submit" disabled={isSubmitting || !user}>
                         {isSubmitting ? "Submitting..." : "Submit Tool"}
                       </Button>
                     </div>

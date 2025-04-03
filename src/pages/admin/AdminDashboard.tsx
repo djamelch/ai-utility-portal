@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -11,11 +10,12 @@ import { AdminUsers } from './AdminUsers';
 import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
 import { AdminBlogs } from './AdminBlogs';
+import { AdminSubmissions } from './AdminSubmissions';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   BarChart, Users, Settings, Database, LayoutDashboard, Shield,
-  FileInput, ArrowLeft, Loader2, FileText
+  FileInput, ArrowLeft, Loader2, FileText, InboxIcon
 } from 'lucide-react';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,7 @@ export default function AdminDashboard() {
     totalReviews: 0,
     totalBlogs: 0,
     admins: 0,
+    pendingSubmissions: 0,
   });
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
@@ -48,6 +49,8 @@ export default function AdminDashboard() {
       setActiveTab('settings');
     } else if (location.pathname.includes('/admin/blogs')) {
       setActiveTab('blogs');
+    } else if (location.pathname.includes('/admin/submissions')) {
+      setActiveTab('submissions');
     } else {
       setActiveTab('analytics');
     }
@@ -58,7 +61,6 @@ export default function AdminDashboard() {
       try {
         setIsLoadingStats(true);
         
-        // Fetch all stats separately to avoid type issues
         const { count: usersCount, error: usersError } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
@@ -77,10 +79,8 @@ export default function AdminDashboard() {
           
         if (reviewsError) throw reviewsError;
         
-        // For blog posts, use a try-catch to handle potential errors gracefully
         let blogsCount = 0;
         try {
-          // Since blog_posts table exists but may not be in types yet, we need to cast it
           const { data, error } = await supabase
             .from('blog_posts')
             .select('count', { count: 'exact', head: true }) as any;
@@ -90,7 +90,6 @@ export default function AdminDashboard() {
           }
         } catch (error) {
           console.error('Error fetching blog posts count:', error);
-          // Silently continue with blogsCount as 0
         }
         
         const { data: adminData, error: adminError } = await supabase
@@ -108,6 +107,13 @@ export default function AdminDashboard() {
         
         const totalClicks = totalClicksData.reduce((sum, tool) => sum + (tool.click_count || 0), 0);
         
+        const { count: pendingSubmissionsCount, error: pendingSubmissionsError } = await supabase
+          .from('tool_submissions')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'pending');
+          
+        if (pendingSubmissionsError) throw pendingSubmissionsError;
+        
         setDashboardStats({
           totalUsers: usersCount || 0,
           totalTools: toolsCount || 0,
@@ -115,6 +121,7 @@ export default function AdminDashboard() {
           totalBlogs: blogsCount,
           totalClicks: totalClicks,
           admins: adminData?.length || 0,
+          pendingSubmissions: pendingSubmissionsCount || 0,
         });
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
@@ -146,6 +153,9 @@ export default function AdminDashboard() {
         break;
       case 'blogs':
         navigate('/admin/blogs');
+        break;
+      case 'submissions':
+        navigate('/admin/submissions');
         break;
       case 'analytics':
       default:
@@ -202,7 +212,7 @@ export default function AdminDashboard() {
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
                       <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
                         <div className="flex items-center justify-between">
                           <h3 className="font-medium text-sm text-muted-foreground">Total Tools</h3>
@@ -250,6 +260,14 @@ export default function AdminDashboard() {
                         </div>
                         <p className="text-2xl font-bold mt-2">{dashboardStats.admins}</p>
                       </div>
+
+                      <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-sm text-muted-foreground">Pending Submissions</h3>
+                          <InboxIcon className="h-4 w-4 text-yellow-500" />
+                        </div>
+                        <p className="text-2xl font-bold mt-2">{dashboardStats.pendingSubmissions}</p>
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -278,6 +296,10 @@ export default function AdminDashboard() {
                     <FileText className="h-4 w-4 mr-2" />
                     Blogs
                   </TabsTrigger>
+                  <TabsTrigger value="submissions">
+                    <InboxIcon className="h-4 w-4 mr-2" />
+                    Submissions
+                  </TabsTrigger>
                   <TabsTrigger value="settings">
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
@@ -298,6 +320,10 @@ export default function AdminDashboard() {
                 
                 <TabsContent value="blogs">
                   <AdminBlogs />
+                </TabsContent>
+                
+                <TabsContent value="submissions">
+                  <AdminSubmissions />
                 </TabsContent>
                 
                 <TabsContent value="settings">

@@ -21,13 +21,14 @@ import { AdminUsers } from "./pages/admin/AdminUsers";
 import { AdminAnalytics } from "./pages/admin/AdminAnalytics";
 import { AdminSettings } from "./pages/admin/AdminSettings";
 import { AdminBlogs } from "./pages/admin/AdminBlogs";
+import { AdminSubmissions } from "./pages/admin/AdminSubmissions";
 import AdminToolEdit from "./pages/admin/AdminToolEdit";
 import AdminToolCreate from "./pages/admin/AdminToolCreate";
 import AdminBlogEdit from "./pages/admin/AdminBlogEdit";
 import AdminBlogCreate from "./pages/admin/AdminBlogCreate";
 import CsvImport from "./pages/admin/CsvImport";
 import UserDashboard from "./pages/UserDashboard";
-import SubmitTool from "./pages/SubmitTool"; // Import the new SubmitTool page
+import SubmitTool from "./pages/SubmitTool";
 import { useState } from "react";
 
 function App() {
@@ -50,7 +51,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/submit-tool" element={<SubmitTool />} /> {/* Add the new route */}
+              <Route path="/submit-tool" element={<SubmitTool />} />
               
               {/* User Dashboard - redirects to admin dashboard if user is admin */}
               <Route path="/dashboard" element={
@@ -83,6 +84,11 @@ function App() {
               <Route path="/admin/blogs" element={
                 <RequireAuth>
                   <AdminBlogs />
+                </RequireAuth>
+              } />
+              <Route path="/admin/submissions" element={
+                <RequireAuth>
+                  <AdminSubmissions />
                 </RequireAuth>
               } />
               <Route path="/admin/tools/edit/:id" element={
