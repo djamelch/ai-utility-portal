@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -93,7 +92,6 @@ export function AdminTools() {
   const filterTools = () => {
     let result = [...tools];
     
-    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(tool => 
@@ -103,22 +101,18 @@ export function AdminTools() {
       );
     }
     
-    // Apply sorting
     result = result.sort((a, b) => {
       const fieldA = a[sortField];
       const fieldB = b[sortField];
       
-      // Handle null values
       if (fieldA === null && fieldB === null) return 0;
       if (fieldA === null) return sortDirection === 'asc' ? 1 : -1;
       if (fieldB === null) return sortDirection === 'asc' ? -1 : 1;
       
-      // Handle different data types
       if (typeof fieldA === 'number' && typeof fieldB === 'number') {
         return sortDirection === 'asc' ? fieldA - fieldB : fieldB - fieldA;
       }
       
-      // Default string comparison
       const strA = String(fieldA).toLowerCase();
       const strB = String(fieldB).toLowerCase();
       
@@ -250,17 +244,27 @@ export function AdminTools() {
                       <TableCell className="hidden md:table-cell">{tool.pricing || 'N/A'}</TableCell>
                       <TableCell className="hidden md:table-cell">
                         <div className="flex flex-wrap gap-1.5">
-                          {tool.is_featured && (
-                            <Badge variant="featured" className="flex items-center gap-1">
+                          {tool.is_featured && tool.is_verified ? (
+                            <Badge variant="featured" className="flex items-center gap-1.5">
                               <Award className="h-3 w-3" />
-                              <span>Featured</span>
-                            </Badge>
-                          )}
-                          {tool.is_verified && (
-                            <Badge variant="verified" className="flex items-center gap-1">
                               <ShieldCheck className="h-3 w-3" />
-                              <span>Verified</span>
+                              <span>Featured & Verified</span>
                             </Badge>
+                          ) : (
+                            <>
+                              {tool.is_featured && (
+                                <Badge variant="featured" className="flex items-center gap-1">
+                                  <Award className="h-3 w-3" />
+                                  <span>Featured</span>
+                                </Badge>
+                              )}
+                              {tool.is_verified && (
+                                <Badge variant="verified" className="flex items-center gap-1">
+                                  <ShieldCheck className="h-3 w-3" />
+                                  <span>Verified</span>
+                                </Badge>
+                              )}
+                            </>
                           )}
                         </div>
                       </TableCell>

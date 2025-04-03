@@ -10,24 +10,25 @@ import { Badge } from "@/components/ui/badge";
 export interface Tool {
   id: string | number;
   name?: string;
-  company_name?: string; // Added for database compatibility
+  company_name?: string;
   description?: string;
-  short_description?: string; // Added for database compatibility
+  short_description?: string;
   logo?: string;
-  logo_url?: string; // Added for database compatibility
+  logo_url?: string;
   category?: string;
-  primary_task?: string; // Added for database compatibility
+  primary_task?: string;
   rating?: number;
   reviewCount?: number;
   pricing?: string;
   url?: string;
-  visit_website_url?: string; // Added for database compatibility
-  detail_url?: string; // Added for database compatibility
+  visit_website_url?: string;
+  detail_url?: string;
   slug?: string;
   isFeatured?: boolean;
   isNew?: boolean;
   isVerified?: boolean;
-  // Additional properties from database
+  is_featured?: boolean;
+  is_verified?: boolean;
   full_description?: string;
   featured_image_url?: string;
   click_count?: number;
@@ -60,7 +61,10 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   const logo = tool.logo || tool.logo_url || "";
   const category = tool.category || tool.primary_task || "";
   const url = tool.visit_website_url || tool.detail_url || tool.url || "#";
-  const { id, rating = 0, reviewCount = 0, pricing = "", isFeatured, isNew, isVerified } = tool;
+  const { id, rating = 0, reviewCount = 0, pricing = "" } = tool;
+  const isFeatured = tool.isFeatured || tool.is_featured;
+  const isVerified = tool.isVerified || tool.is_verified;
+  const isNew = tool.isNew;
 
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
@@ -266,7 +270,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
-      <div className="absolute top-4 right-4 flex flex-col gap-2">
+      <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
         {isFeatured && isVerified ? (
           <Badge variant="featured" className="flex items-center gap-1.5">
             <Award className="h-3 w-3" />

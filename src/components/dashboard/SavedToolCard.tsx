@@ -18,6 +18,8 @@ interface SavedToolProps {
   visit_website_url?: string;
   isFeatured?: boolean;
   isVerified?: boolean;
+  is_featured?: boolean;  // Adding database column names for mapping
+  is_verified?: boolean;  // Adding database column names for mapping
   onRemove: (favoriteId: string) => void;
 }
 
@@ -32,10 +34,16 @@ export function SavedToolCard({
   visit_website_url,
   isFeatured,
   isVerified,
+  is_featured,
+  is_verified,
   onRemove
 }: SavedToolProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Map both property naming conventions to handle API vs database responses
+  const isToolFeatured = isFeatured || is_featured;
+  const isToolVerified = isVerified || is_verified;
   
   const handleVisit = async () => {
     if (!visit_website_url) return;
@@ -85,9 +93,9 @@ export function SavedToolCard({
         </div>
         
         {/* Add badges for featured and verified tools */}
-        {(isFeatured || isVerified) && (
+        {(isToolFeatured || isToolVerified) && (
           <div className="mt-2 flex flex-wrap gap-2">
-            {isFeatured && isVerified ? (
+            {isToolFeatured && isToolVerified ? (
               <Badge variant="featured" className="flex items-center gap-1.5">
                 <Award className="h-3 w-3" />
                 <ShieldCheck className="h-3 w-3" />
@@ -95,13 +103,13 @@ export function SavedToolCard({
               </Badge>
             ) : (
               <>
-                {isFeatured && (
+                {isToolFeatured && (
                   <Badge variant="featured" className="flex items-center gap-1.5">
                     <Award className="h-3 w-3" />
                     <span>Featured</span>
                   </Badge>
                 )}
-                {isVerified && (
+                {isToolVerified && (
                   <Badge variant="verified" className="flex items-center gap-1.5">
                     <ShieldCheck className="h-3 w-3" />
                     <span>Verified</span>
