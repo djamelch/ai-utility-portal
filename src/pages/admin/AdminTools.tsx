@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { 
-  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2 
+  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2, Award, ShieldCheck 
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { 
@@ -31,6 +31,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 
 interface Tool {
   id: number;
@@ -40,6 +41,8 @@ interface Tool {
   primary_task: string | null;
   updated_at: string | null;
   click_count: number | null;
+  is_featured: boolean | null;
+  is_verified: boolean | null;
 }
 
 export function AdminTools() {
@@ -68,7 +71,7 @@ export function AdminTools() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('tools')
-        .select('id, company_name, short_description, pricing, primary_task, updated_at, click_count')
+        .select('id, company_name, short_description, pricing, primary_task, updated_at, click_count, is_featured, is_verified')
         .order('company_name');
 
       if (error) throw error;
@@ -222,6 +225,7 @@ export function AdminTools() {
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
+                  <TableHead className="hidden md:table-cell">Status</TableHead>
                   <TableHead className="hidden md:table-cell">
                     <button 
                       className="flex items-center gap-1"
@@ -244,6 +248,22 @@ export function AdminTools() {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">{tool.primary_task || 'N/A'}</TableCell>
                       <TableCell className="hidden md:table-cell">{tool.pricing || 'N/A'}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex flex-wrap gap-1.5">
+                          {tool.is_featured && (
+                            <Badge variant="featured" className="flex items-center gap-1">
+                              <Award className="h-3 w-3" />
+                              <span>Featured</span>
+                            </Badge>
+                          )}
+                          {tool.is_verified && (
+                            <Badge variant="verified" className="flex items-center gap-1">
+                              <ShieldCheck className="h-3 w-3" />
+                              <span>Verified</span>
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="hidden md:table-cell">{tool.click_count || 0}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -274,7 +294,7 @@ export function AdminTools() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No tools found.
                     </TableCell>
                   </TableRow>

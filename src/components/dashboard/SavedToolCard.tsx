@@ -4,17 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { BookmarkX, ExternalLink } from 'lucide-react';
+import { BookmarkX, ExternalLink, Award, ShieldCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface SavedToolProps {
   id: number;
   name: string;
-  short_description: string;
+  short_description: string | null;
   logo_url: string | null;
   primary_task: string | null;
   pricing: string | null;
   favorite_id: string;
   visit_website_url?: string;
+  isFeatured?: boolean;
+  isVerified?: boolean;
   onRemove: (favoriteId: string) => void;
 }
 
@@ -27,6 +30,8 @@ export function SavedToolCard({
   pricing,
   favorite_id,
   visit_website_url,
+  isFeatured,
+  isVerified,
   onRemove
 }: SavedToolProps) {
   const navigate = useNavigate();
@@ -78,6 +83,35 @@ export function SavedToolCard({
             <BookmarkX className="h-4 w-4" />
           </Button>
         </div>
+        
+        {/* Add badges for featured and verified tools */}
+        {(isFeatured || isVerified) && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {isFeatured && isVerified ? (
+              <Badge variant="featured" className="flex items-center gap-1.5">
+                <Award className="h-3 w-3" />
+                <ShieldCheck className="h-3 w-3" />
+                <span>Featured & Verified</span>
+              </Badge>
+            ) : (
+              <>
+                {isFeatured && (
+                  <Badge variant="featured" className="flex items-center gap-1.5">
+                    <Award className="h-3 w-3" />
+                    <span>Featured</span>
+                  </Badge>
+                )}
+                {isVerified && (
+                  <Badge variant="verified" className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-3 w-3" />
+                    <span>Verified</span>
+                  </Badge>
+                )}
+              </>
+            )}
+          </div>
+        )}
+        
         <p className="mt-2 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem]">
           {short_description}
         </p>

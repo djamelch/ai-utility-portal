@@ -1,11 +1,11 @@
-
-import { Star, ExternalLink, Heart } from "lucide-react";
+import { Star, ExternalLink, Heart, Award, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { Badge } from "@/components/ui/badge";
 
 export interface Tool {
   id: string | number;
@@ -26,6 +26,7 @@ export interface Tool {
   slug?: string;
   isFeatured?: boolean;
   isNew?: boolean;
+  isVerified?: boolean;
   // Additional properties from database
   full_description?: string;
   featured_image_url?: string;
@@ -59,7 +60,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
   const logo = tool.logo || tool.logo_url || "";
   const category = tool.category || tool.primary_task || "";
   const url = tool.visit_website_url || tool.detail_url || tool.url || "#";
-  const { id, rating = 0, reviewCount = 0, pricing = "", isFeatured, isNew } = tool;
+  const { id, rating = 0, reviewCount = 0, pricing = "", isFeatured, isNew, isVerified } = tool;
 
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
@@ -266,10 +267,27 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
       <div className="absolute top-4 right-4 flex flex-col gap-2">
-        {isFeatured && (
-          <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary dark:bg-primary/20 shadow-sm">
-            Featured
-          </span>
+        {isFeatured && isVerified ? (
+          <Badge variant="featured" className="flex items-center gap-1.5">
+            <Award className="h-3 w-3" />
+            <ShieldCheck className="h-3 w-3" />
+            <span>Featured & Verified</span>
+          </Badge>
+        ) : (
+          <>
+            {isFeatured && (
+              <Badge variant="featured" className="flex items-center gap-1.5">
+                <Award className="h-3 w-3" />
+                <span>Featured</span>
+              </Badge>
+            )}
+            {isVerified && (
+              <Badge variant="verified" className="flex items-center gap-1.5">
+                <ShieldCheck className="h-3 w-3" />
+                <span>Verified</span>
+              </Badge>
+            )}
+          </>
         )}
         {isNew && (
           <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 shadow-sm">
