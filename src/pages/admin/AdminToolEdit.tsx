@@ -68,6 +68,8 @@ interface ToolDatabaseFields {
   features?: string;
   testimonials?: string;
   cons?: string;
+  // Add detail_url to match the form values type
+  detail_url?: string;
 }
 
 export default function AdminToolEdit() {
@@ -134,6 +136,8 @@ export default function AdminToolEdit() {
             features: Array.isArray(data.pros) ? data.pros.join('\n') : '',
             testimonials: '',
             cons: Array.isArray(data.cons) ? data.cons.join('\n') : '',
+            // Add detail_url to match what's used in the form
+            detail_url: (data as any).detail_url || '',
           };
           
           // Process FAQS JSON data safely
@@ -170,7 +174,8 @@ export default function AdminToolEdit() {
             logo_url: data.logo_url || '',
             featured_image_url: data.featured_image_url || '',
             slug: data.slug || '',
-            detail_url: data.detail_url || '',
+            // Use the detail_url from data or an empty string
+            detail_url: (data as any).detail_url || '',
           });
         }
       } catch (error: any) {
