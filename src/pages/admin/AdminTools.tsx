@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,13 +71,19 @@ export function AdminTools() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('tools')
-        .select('id, company_name, short_description, pricing, primary_task, updated_at, click_count, is_featured, is_verified')
-        .order('company_name');
+        .select('id, company_name, short_description, pricing, primary_task, updated_at, click_count');
 
       if (error) throw error;
 
-      setTools(data || []);
-      setFilteredTools(data || []);
+      // Since is_featured and is_verified columns don't exist, set them to false by default
+      const toolsWithFeatures = data?.map(tool => ({
+        ...tool,
+        is_featured: false,
+        is_verified: false
+      })) || [];
+
+      setTools(toolsWithFeatures);
+      setFilteredTools(toolsWithFeatures);
     } catch (error) {
       console.error('Error fetching tools:', error);
       toast({
