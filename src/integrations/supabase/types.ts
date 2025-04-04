@@ -194,7 +194,6 @@ export type Database = {
           company_name: string | null
           cons: Json[] | null
           created_at: string | null
-          detail_url: string | null
           faqs: Json | null
           featured_image_url: string | null
           full_description: string | null
@@ -214,7 +213,6 @@ export type Database = {
           company_name?: string | null
           cons?: Json[] | null
           created_at?: string | null
-          detail_url?: string | null
           faqs?: Json | null
           featured_image_url?: string | null
           full_description?: string | null
@@ -234,7 +232,6 @@ export type Database = {
           company_name?: string | null
           cons?: Json[] | null
           created_at?: string | null
-          detail_url?: string | null
           faqs?: Json | null
           featured_image_url?: string | null
           full_description?: string | null

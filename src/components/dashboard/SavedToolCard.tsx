@@ -64,6 +64,34 @@ export function SavedToolCard({
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
+      {/* Move badges to absolute positioned div at top-right */}
+      {(isToolFeatured || isToolVerified) && (
+        <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+          {isToolFeatured && isToolVerified ? (
+            <Badge variant="featured" className="flex items-center gap-1.5">
+              <Award className="h-3 w-3" />
+              <ShieldCheck className="h-3 w-3" />
+              <span>Featured & Verified</span>
+            </Badge>
+          ) : (
+            <>
+              {isToolFeatured && (
+                <Badge variant="featured" className="flex items-center gap-1.5">
+                  <Award className="h-3 w-3" />
+                  <span>Featured</span>
+                </Badge>
+              )}
+              {isToolVerified && (
+                <Badge variant="verified" className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-3 w-3" />
+                  <span>Verified</span>
+                </Badge>
+              )}
+            </>
+          )}
+        </div>
+      )}
+      
       <div className="p-4 relative flex-1 flex flex-col">
         <div className="flex justify-between items-start">
           <div className="flex gap-3 items-center">
@@ -92,33 +120,7 @@ export function SavedToolCard({
           </Button>
         </div>
         
-        {/* Add badges for featured and verified tools */}
-        {(isToolFeatured || isToolVerified) && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {isToolFeatured && isToolVerified ? (
-              <Badge variant="featured" className="flex items-center gap-1.5">
-                <Award className="h-3 w-3" />
-                <ShieldCheck className="h-3 w-3" />
-                <span>Featured & Verified</span>
-              </Badge>
-            ) : (
-              <>
-                {isToolFeatured && (
-                  <Badge variant="featured" className="flex items-center gap-1.5">
-                    <Award className="h-3 w-3" />
-                    <span>Featured</span>
-                  </Badge>
-                )}
-                {isToolVerified && (
-                  <Badge variant="verified" className="flex items-center gap-1.5">
-                    <ShieldCheck className="h-3 w-3" />
-                    <span>Verified</span>
-                  </Badge>
-                )}
-              </>
-            )}
-          </div>
-        )}
+        {/* Remove the badges from here since they're now at the top right */}
         
         <p className="mt-2 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem]">
           {short_description}
