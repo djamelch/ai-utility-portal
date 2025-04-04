@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +38,6 @@ import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { Json } from '@/integrations/supabase/types';
 
-// Define the form schema with Zod
 const toolFormSchema = z.object({
   company_name: z.string().min(1, 'Name is required'),
   short_description: z.string().min(1, 'Description is required'),
@@ -60,7 +58,6 @@ const toolFormSchema = z.object({
 
 type ToolFormValues = z.infer<typeof toolFormSchema>;
 
-// Interface to store additional fields for the database
 interface ToolDatabaseFields {
   id?: number;
   is_featured?: boolean;
@@ -68,7 +65,6 @@ interface ToolDatabaseFields {
   features?: string;
   testimonials?: string;
   cons?: string;
-  // Add detail_url to match the form values type
   detail_url?: string;
 }
 
@@ -83,7 +79,6 @@ export default function AdminToolEdit() {
     is_verified: false
   });
 
-  // Initialize form with react-hook-form
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolFormSchema),
     defaultValues: {
@@ -105,12 +100,10 @@ export default function AdminToolEdit() {
     },
   });
 
-  // Fetch tool data
   useEffect(() => {
     const fetchTool = async () => {
       try {
         setIsLoading(true);
-        // Convert string id to number for the database query
         const toolId = parseInt(id || '0', 10);
         
         if (isNaN(toolId)) {
@@ -128,7 +121,6 @@ export default function AdminToolEdit() {
         if (data) {
           console.log('Fetched tool data:', data);
           
-          // Store additional fields that are not in the database schema but needed for form
           const newAdditionalFields = {
             id: data.id,
             is_featured: data.applicable_tasks?.some((task: Json) => task === 'featured') || false,
@@ -136,11 +128,9 @@ export default function AdminToolEdit() {
             features: Array.isArray(data.pros) ? data.pros.join('\n') : '',
             testimonials: '',
             cons: Array.isArray(data.cons) ? data.cons.join('\n') : '',
-            // Add detail_url to match what's used in the form
-            detail_url: (data as any).detail_url || '',
+            detail_url: data.detail_url || '',
           };
           
-          // Process FAQS JSON data safely
           let faqsText = '';
           if (data.faqs) {
             try {
@@ -158,7 +148,6 @@ export default function AdminToolEdit() {
           newAdditionalFields.testimonials = faqsText;
           setAdditionalFields(newAdditionalFields);
 
-          // Set form values from fetched data
           form.reset({
             company_name: data.company_name || '',
             short_description: data.short_description || '',
@@ -174,8 +163,7 @@ export default function AdminToolEdit() {
             logo_url: data.logo_url || '',
             featured_image_url: data.featured_image_url || '',
             slug: data.slug || '',
-            // Use the detail_url from data or an empty string
-            detail_url: (data as any).detail_url || '',
+            detail_url: data.detail_url || '',
           });
         }
       } catch (error: any) {
@@ -193,41 +181,33 @@ export default function AdminToolEdit() {
     fetchTool();
   }, [id, form, toast]);
 
-  // Handle form submission
   const onSubmit = async (values: ToolFormValues) => {
     setIsSaving(true);
     try {
-      // Convert form values to database format
       const toolId = parseInt(id || '0', 10);
       
       if (isNaN(toolId)) {
         throw new Error('Invalid tool ID');
       }
 
-      // Prepare applicable_tasks array based on is_featured and is_verified
       const applicable_tasks: Json[] = [];
       if (values.is_featured) applicable_tasks.push('featured' as Json);
       if (values.is_verified) applicable_tasks.push('verified' as Json);
       
-      // Convert features string to array for pros
       const pros: Json[] = values.features 
         ? values.features.split('\n').filter(Boolean).map(f => f as Json)
         : [];
       
-      // Convert cons string to array
       const cons: Json[] = values.cons
         ? values.cons.split('\n').filter(Boolean).map(c => c as Json)
         : [];
       
-      // Process testimonials for faqs
       let faqs: Json | null = null;
       try {
         if (values.testimonials) {
-          // Try to parse as JSON first
           try {
             faqs = JSON.parse(values.testimonials) as Json;
           } catch (e) {
-            // If it's not valid JSON, store as string
             faqs = values.testimonials as Json;
           }
         }
