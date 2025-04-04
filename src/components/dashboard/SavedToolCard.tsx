@@ -21,6 +21,7 @@ interface SavedToolProps {
   is_featured?: boolean;  // Adding database column names for mapping
   is_verified?: boolean;  // Adding database column names for mapping
   onRemove: (favoriteId: string) => void;
+  detail_url?: string;    // Adding missing detail_url property
 }
 
 export function SavedToolCard({
@@ -36,6 +37,7 @@ export function SavedToolCard({
   isVerified,
   is_featured,
   is_verified,
+  detail_url,
   onRemove
 }: SavedToolProps) {
   const navigate = useNavigate();
@@ -64,7 +66,7 @@ export function SavedToolCard({
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
-      {/* Move badges to absolute positioned div at top-right */}
+      {/* Enhanced visibility of indicators at top-right */}
       {(isToolFeatured || isToolVerified) && (
         <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
           {isToolFeatured && isToolVerified ? (

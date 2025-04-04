@@ -35,6 +35,9 @@ export interface Tool {
   pros?: any[];
   faqs?: any;
   detail_url?: string;
+  is_featured?: boolean;
+  is_verified?: boolean;
+  isVerified?: boolean;
 }
 
 interface ToolGridProps {
@@ -150,7 +153,8 @@ export function ToolGrid({
     visit_website_url: dbTool.visit_website_url || "",
     detail_url: dbTool.detail_url || "",
     slug: dbTool.slug || "",
-    isFeatured: false,
+    isFeatured: Boolean(dbTool.is_featured),
+    isVerified: Boolean(dbTool.is_verified),
     isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
     ...dbTool
   }));
