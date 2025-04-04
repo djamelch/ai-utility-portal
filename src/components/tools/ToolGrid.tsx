@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
@@ -5,6 +6,7 @@ import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { EnhancedLoadingIndicator } from "@/components/ui/EnhancedLoadingIndicator";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Json } from "@/integrations/supabase/types";
 
 export interface Tool {
   id: number | string;
@@ -155,6 +157,8 @@ export function ToolGrid({
     slug: dbTool.slug || "",
     isFeatured: Boolean(dbTool.is_featured),
     isVerified: Boolean(dbTool.is_verified),
+    is_featured: dbTool.is_featured,
+    is_verified: dbTool.is_verified,
     isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
     ...dbTool
   }));

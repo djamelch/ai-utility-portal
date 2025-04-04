@@ -122,8 +122,6 @@ export function SavedToolCard({
           </Button>
         </div>
         
-        {/* Remove the badges from here since they're now at the top right */}
-        
         <p className="mt-2 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem]">
           {short_description}
         </p>
