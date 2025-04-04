@@ -199,6 +199,8 @@ export type Database = {
           featured_image_url: string | null
           full_description: string | null
           id: number
+          is_featured: boolean | null
+          is_verified: boolean | null
           logo_url: string | null
           pricing: string | null
           primary_task: string | null
@@ -219,6 +221,8 @@ export type Database = {
           featured_image_url?: string | null
           full_description?: string | null
           id?: number
+          is_featured?: boolean | null
+          is_verified?: boolean | null
           logo_url?: string | null
           pricing?: string | null
           primary_task?: string | null
@@ -239,6 +243,8 @@ export type Database = {
           featured_image_url?: string | null
           full_description?: string | null
           id?: number
+          is_featured?: boolean | null
+          is_verified?: boolean | null
           logo_url?: string | null
           pricing?: string | null
           primary_task?: string | null
