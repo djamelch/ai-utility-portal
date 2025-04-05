@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -71,16 +70,11 @@ export function AdminTools() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('tools')
-        .select('id, company_name, short_description, pricing, primary_task, updated_at, click_count');
+        .select('id, company_name, short_description, pricing, primary_task, updated_at, click_count, is_featured, is_verified');
 
       if (error) throw error;
 
-      // Since is_featured and is_verified columns don't exist, set them to false by default
-      const toolsWithFeatures = data?.map(tool => ({
-        ...tool,
-        is_featured: false,
-        is_verified: false
-      })) || [];
+      const toolsWithFeatures = data || [];
 
       setTools(toolsWithFeatures);
       setFilteredTools(toolsWithFeatures);
@@ -102,7 +96,7 @@ export function AdminTools() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(tool => 
-        tool.company_name.toLowerCase().includes(query) || 
+        (tool.company_name && tool.company_name.toLowerCase().includes(query)) || 
         (tool.short_description && tool.short_description.toLowerCase().includes(query)) ||
         (tool.primary_task && tool.primary_task.toLowerCase().includes(query))
       );
@@ -120,8 +114,8 @@ export function AdminTools() {
         return sortDirection === 'asc' ? fieldA - fieldB : fieldB - fieldA;
       }
       
-      const strA = String(fieldA).toLowerCase();
-      const strB = String(fieldB).toLowerCase();
+      const strA = typeof fieldA === 'string' ? fieldA.toLowerCase() : '';
+      const strB = typeof fieldB === 'string' ? fieldB.toLowerCase() : '';
       
       return sortDirection === 'asc' 
         ? strA.localeCompare(strB)
