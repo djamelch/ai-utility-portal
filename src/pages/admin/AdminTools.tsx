@@ -221,7 +221,15 @@ export function AdminTools() {
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
-                  <TableHead className="hidden md:table-cell">Status</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={() => handleSort('is_featured')}
+                    >
+                      Status
+                      <ArrowUpDown className="h-3 w-3" />
+                    </button>
+                  </TableHead>
                   <TableHead className="hidden md:table-cell">
                     <button 
                       className="flex items-center gap-1"
