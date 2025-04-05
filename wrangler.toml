@@ -1,0 +1,7 @@
+name = "aianytool"
+main = "./dist/index.js"  # المسار إلى الملف الرئيسي بعد البناء
+compatibility_date = "2025-04-05"  # تأكد من تغيير التاريخ
+account_id = "90fa152a04decb2d054f34c86911b267"  # ضع حساب Cloudflare ID الخاص بك هنا
+workers_dev = true  # تشغيل التطبيق على workers.dev (لاستضافة مجانية عبر Cloudflare Workers)
+route = ""  # يمكنك تركه فارغًا الآن أو إضافة مسار إذا كنت تريد نشره على نطاق معين
+zone_id = "your_zone_id"  # اختياري: إذا كنت ترغب في ربط التطبيق بنطاق Cloudflare مخصص
