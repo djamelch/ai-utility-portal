@@ -1,3 +1,4 @@
+
 import { Star, ExternalLink, Heart, Award, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -262,6 +263,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
     <div 
       className={cn(
         "group relative h-full flex flex-col rounded-xl border border-border/60 dark:border-accent/10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md p-4",
+        isFeatured ? "border-2 border-amber-400 dark:border-amber-500" : "",
         className
       )}
     >
@@ -272,16 +274,16 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
         {isFeatured && isVerified ? (
-          <Badge variant="featured" className="flex items-center gap-1.5">
-            <Award className="h-3 w-3" />
-            <ShieldCheck className="h-3 w-3" />
+          <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+            <Award className="h-3 w-3 text-white" />
+            <ShieldCheck className="h-3 w-3 text-white" />
             <span>Featured & Verified</span>
           </Badge>
         ) : (
           <>
             {isFeatured && (
-              <Badge variant="featured" className="flex items-center gap-1.5">
-                <Award className="h-3 w-3" />
+              <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+                <Award className="h-3 w-3 text-white" />
                 <span>Featured</span>
               </Badge>
             )}
@@ -323,6 +325,9 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-lg truncate">
+              {isFeatured && (
+                <Award className="inline h-4 w-4 text-amber-500 mr-1 align-text-bottom" />
+              )}
               <Link to={`/tool/${toolSlug}`} className="hover:text-primary transition-colors">
                 {name}
               </Link>
