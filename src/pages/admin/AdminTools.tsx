@@ -32,6 +32,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface Tool {
   id: number;
@@ -245,8 +246,20 @@ export function AdminTools() {
               <TableBody>
                 {filteredTools.length > 0 ? (
                   filteredTools.map((tool) => (
-                    <TableRow key={tool.id}>
-                      <TableCell className="font-medium">{tool.company_name}</TableCell>
+                    <TableRow 
+                      key={tool.id}
+                      className={cn(
+                        tool.is_featured ? "border-2 border-amber-400 dark:border-amber-500" : "",
+                      )}
+                    >
+                      <TableCell className="font-medium">
+                        <div className="flex items-center">
+                          {tool.is_featured && (
+                            <Award className="h-4 w-4 text-amber-500 mr-2 shrink-0" />
+                          )}
+                          <span>{tool.company_name}</span>
+                        </div>
+                      </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <div className="line-clamp-1">{tool.short_description || 'N/A'}</div>
                       </TableCell>
@@ -255,16 +268,16 @@ export function AdminTools() {
                       <TableCell className="hidden md:table-cell">
                         <div className="flex flex-wrap gap-1.5">
                           {tool.is_featured && tool.is_verified ? (
-                            <Badge variant="featured" className="flex items-center gap-1.5">
-                              <Award className="h-3 w-3" />
-                              <ShieldCheck className="h-3 w-3" />
+                            <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+                              <Award className="h-3 w-3 text-white" />
+                              <ShieldCheck className="h-3 w-3 text-white" />
                               <span>Featured & Verified</span>
                             </Badge>
                           ) : (
                             <>
                               {tool.is_featured && (
-                                <Badge variant="featured" className="flex items-center gap-1">
-                                  <Award className="h-3 w-3" />
+                                <Badge variant="featured" className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+                                  <Award className="h-3 w-3 text-white" />
                                   <span>Featured</span>
                                 </Badge>
                               )}
