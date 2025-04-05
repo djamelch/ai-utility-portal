@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const Tools = () => {
   const [showFilters, setShowFilters] = useState(false);
@@ -21,7 +22,32 @@ const Tools = () => {
   const initialLimit = 12; // Initial number of tools to load
   const loadMoreIncrement = 12; // Number of additional tools to load each time
 
-  // Fetch categories with improved error handling
+  const generateSEOTitle = () => {
+    if (category && pricing) {
+      return `${category} AI Tools with ${pricing} Pricing - AI Tools Directory`;
+    } else if (category) {
+      return `${category} AI Tools - Find the Best ${category} Tools`;
+    } else if (pricing) {
+      return `${pricing} AI Tools - Find ${pricing} AI Solutions`;
+    } else if (searchQuery) {
+      return `${searchQuery} - AI Tools Search Results`;
+    } 
+    return "AI Tools Directory - Find and Compare the Best AI Tools";
+  };
+
+  const generateSEODescription = () => {
+    if (category && pricing) {
+      return `Browse our selection of ${pricing} AI tools for ${category}. Compare features, pricing, and reviews to find the best ${category} AI solution for your needs.`;
+    } else if (category) {
+      return `Discover the best AI tools for ${category}. Our directory features top-rated ${category} solutions with reviews, features, and pricing information.`;
+    } else if (pricing) {
+      return `Find ${pricing} AI tools across various categories. Compare features and read reviews to find the right ${pricing} AI solution.`;
+    } else if (searchQuery) {
+      return `Search results for "${searchQuery}" in our AI tools directory. Browse, compare, and find the perfect AI tools that match your search.`;
+    }
+    return "Browse our comprehensive directory of AI tools. Compare features, pricing, and reviews to find the perfect AI solutions for your needs.";
+  };
+
   const { 
     data: categories = [], 
     isLoading: isCategoriesLoading, 
@@ -41,7 +67,6 @@ const Tools = () => {
           throw error;
         }
         
-        // Extract unique categories
         return Array.from(new Set(
           data.map(item => item.primary_task).filter(Boolean)
         ));
@@ -55,7 +80,6 @@ const Tools = () => {
     staleTime: 1000 * 60 * 5 // 5 minutes
   });
   
-  // Fetch pricing options with improved error handling
   const { 
     data: pricingOptions = [], 
     isLoading: isPricingLoading,
@@ -75,7 +99,6 @@ const Tools = () => {
           throw error;
         }
         
-        // Extract unique pricing options
         return Array.from(new Set(
           data.map(item => item.pricing).filter(Boolean)
         ));
@@ -109,7 +132,6 @@ const Tools = () => {
     setLoadMoreCount(1); // Reset load more count when filters change
   };
 
-  // Reset load more count when filters change
   useEffect(() => {
     setLoadMoreCount(1);
   }, [searchQuery, category, pricing, sortBy]);
@@ -121,7 +143,6 @@ const Tools = () => {
     refetchPricing();
   };
 
-  // Calculate current limit based on initial limit and how many times "Load More" was clicked
   const currentLimit = initialLimit * loadMoreCount;
 
   return (
@@ -130,6 +151,12 @@ const Tools = () => {
       loadingText="Loading AI tools directory..."
       variant="pulse"
     >
+      <SEOHead
+        title={generateSEOTitle()}
+        description={generateSEODescription()}
+        keywords={`AI tools, artificial intelligence, ${category || 'machine learning'}, ${pricing || 'software tools'}, AI directory`}
+        canonicalUrl="/tools"
+      />
       <div className="flex min-h-screen flex-col">
         <Navbar />
         
@@ -164,7 +191,6 @@ const Tools = () => {
               </Alert>
             ) : (
               <MotionWrapper animation="fadeIn" delay="delay-200">
-                {/* Search and Filters */}
                 <div className="mb-8">
                   <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1">
@@ -226,7 +252,6 @@ const Tools = () => {
                     </div>
                   </form>
                   
-                  {/* Mobile filters */}
                   {showFilters && (
                     <div className="mt-4 grid grid-cols-2 gap-3 md:hidden">
                       <select 
@@ -267,7 +292,6 @@ const Tools = () => {
                     </div>
                   )}
                   
-                  {/* Active filters */}
                   {hasActiveFilters && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {searchQuery && (
@@ -334,7 +358,6 @@ const Tools = () => {
                 </button>
               </div>
               
-              {/* Tools Grid with enhanced error handling and pagination */}
               <ToolGrid 
                 searchQuery={searchQuery}
                 category={category}
@@ -343,7 +366,6 @@ const Tools = () => {
                 limit={currentLimit}
               />
 
-              {/* Load More Button */}
               <div className="mt-10 flex justify-center">
                 <Button 
                   variant="outline" 

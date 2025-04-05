@@ -11,6 +11,7 @@ import { UserRoleBadge } from '@/components/admin/users/UserRoleBadge';
 import { Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 export default function UserDashboard() {
   const { isAdmin, isLoading, user } = useAuth();
@@ -18,6 +19,13 @@ export default function UserDashboard() {
   
   return (
     <RequireAuth>
+      <SEOHead
+        title="User Dashboard - AI Tools Directory"
+        description="Manage your account, saved AI tools, and reviews in your personal dashboard."
+        keywords="user dashboard, account management, saved tools, AI tools directory"
+        canonicalUrl="/dashboard"
+        ogType="profile"
+      />
       <PageLoadingWrapper isLoading={isLoading} loadingText="Loading dashboard...">
         <Navbar />
         <main className="flex-1 pt-24 pb-16">

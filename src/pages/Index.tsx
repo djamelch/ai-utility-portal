@@ -8,10 +8,17 @@ import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const Index = () => {
   return (
     <div className="flex min-h-screen flex-col">
+      <SEOHead 
+        title="AI Tools Directory - Find and Compare the Best AI Tools"
+        description="Discover the best AI tools for productivity, creativity, and business. Our comprehensive directory helps you find and compare the perfect AI solutions for your needs."
+        keywords="AI tools, artificial intelligence, machine learning tools, productivity tools, AI directory, top AI tools"
+        canonicalUrl="/"
+      />
       <Navbar />
       
       <main className="flex-1">

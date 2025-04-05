@@ -1,8 +1,7 @@
-
 import { Star, ExternalLink, Heart, Award, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
@@ -46,7 +45,7 @@ interface ToolCardProps {
   className?: string;
 }
 
-export function ToolCard({ tool, className }: ToolCardProps) {
+export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
@@ -312,12 +311,18 @@ export function ToolCard({ tool, className }: ToolCardProps) {
               onError={() => {
                 setImgError(true);
               }}
+              loading="lazy"
+              width="56"
+              height="56"
             />
           ) : (
             <img 
               src={placeholderImage} 
               alt={`${name} logo placeholder`} 
               className="h-full w-full object-cover"
+              width="56"
+              height="56"
+              loading="lazy"
             />
           )}
         </div>
@@ -430,4 +435,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       </div>
     </div>
   );
-}
+});
+
+ToolCard.displayName = "ToolCard";
