@@ -203,7 +203,14 @@ export function ToolGrid({
   }
   
   if (!tools.length) {
-    return <EmptyToolsMessage />;
+    return (
+      <div className="text-center p-12 bg-secondary/10 rounded-xl border border-border/40">
+        <h3 className="text-xl font-medium">No tools found</h3>
+        <p className="text-muted-foreground mt-2">
+          Try adjusting your search criteria
+        </p>
+      </div>
+    );
   }
   
   let gridColsClasses = "";
@@ -279,7 +286,7 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
 
 function EmptyToolsMessage() {
   return (
-    <div className="text-center p-8">
+    <div className="text-center p-12 bg-secondary/10 rounded-xl border border-border/40">
       <h3 className="text-xl font-medium">No tools found</h3>
       <p className="text-muted-foreground mt-2">
         Try adjusting your search criteria
