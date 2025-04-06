@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -257,7 +256,10 @@ export function AdminTools() {
                       <TableCell className="font-medium">
                         <div className="flex items-center">
                           {tool.is_featured && (
-                            <Award className="h-4 w-4 text-amber-500 mr-2 shrink-0" />
+                            <div className="relative mr-2 shrink-0">
+                              <div className="w-6 h-6 bg-blue-500 rotate-45 transform origin-bottom-left"></div>
+                              <Award className="absolute -right-1 -top-1 h-4 w-4 text-white -rotate-45" />
+                            </div>
                           )}
                           {tool.is_verified && (
                             <ShieldCheck className="h-4 w-4 text-green-500 mr-2 shrink-0" />

@@ -275,30 +275,21 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
-      {(isFeatured || isVerified) && (
-        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
-          {isFeatured && isVerified ? (
-            <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
-              <Award className="h-3 w-3 text-white" />
-              <ShieldCheck className="h-3 w-3 text-white" />
-              <span>Featured & Verified</span>
-            </Badge>
-          ) : (
-            <>
-              {isFeatured && (
-                <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
-                  <Award className="h-3 w-3 text-white" />
-                  <span>Featured</span>
-                </Badge>
-              )}
-              {isVerified && (
-                <Badge variant="verified" className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3 w-3" />
-                  <span>Verified</span>
-                </Badge>
-              )}
-            </>
-          )}
+      {isFeatured && (
+        <div className="absolute -top-1 -right-1 z-10">
+          <div className="relative">
+            <div className="w-10 h-10 bg-blue-500 rotate-45 transform origin-bottom-left"></div>
+            <Award className="absolute -right-1 -top-1 h-5 w-5 text-white -rotate-45" />
+          </div>
+        </div>
+      )}
+      
+      {isVerified && (
+        <div className="absolute top-3 left-3 z-10">
+          <Badge variant="verified" className="flex items-center gap-1.5">
+            <ShieldCheck className="h-3 w-3" />
+            <span>Verified</span>
+          </Badge>
         </div>
       )}
 
@@ -331,12 +322,6 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-lg truncate">
-              {isFeatured && (
-                <Award className="inline h-4 w-4 text-amber-500 mr-1 align-text-bottom" />
-              )}
-              {isVerified && (
-                <ShieldCheck className="inline h-4 w-4 text-green-500 mr-1 align-text-bottom" />
-              )}
               <Link to={`/tool/${toolSlug}`} className="hover:text-primary transition-colors">
                 {name}
               </Link>
