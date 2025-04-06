@@ -43,9 +43,11 @@ export function SavedToolCard({
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Map both property naming conventions to handle API vs database responses
-  const isToolFeatured = isFeatured || is_featured;
-  const isToolVerified = isVerified || is_verified;
+  // Make sure we capture both naming conventions for these properties
+  const isToolFeatured = Boolean(isFeatured || is_featured);
+  const isToolVerified = Boolean(isVerified || is_verified);
+  
+  console.log("SavedToolCard data:", { name, isToolFeatured, isToolVerified, is_featured, is_verified });
   
   const handleVisit = async () => {
     if (!visit_website_url) return;
@@ -70,16 +72,16 @@ export function SavedToolCard({
       {(isToolFeatured || isToolVerified) && (
         <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
           {isToolFeatured && isToolVerified ? (
-            <Badge variant="featured" className="flex items-center gap-1.5">
-              <Award className="h-3 w-3" />
-              <ShieldCheck className="h-3 w-3" />
+            <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+              <Award className="h-3 w-3 text-white" />
+              <ShieldCheck className="h-3 w-3 text-white" />
               <span>Featured & Verified</span>
             </Badge>
           ) : (
             <>
               {isToolFeatured && (
-                <Badge variant="featured" className="flex items-center gap-1.5">
-                  <Award className="h-3 w-3" />
+                <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+                  <Award className="h-3 w-3 text-white" />
                   <span>Featured</span>
                 </Badge>
               )}
@@ -110,7 +112,12 @@ export function SavedToolCard({
                 </span>
               </div>
             )}
-            <h3 className="font-semibold text-lg">{name}</h3>
+            <h3 className="font-semibold text-lg">
+              {isToolFeatured && (
+                <Award className="inline h-4 w-4 text-amber-500 mr-1 align-text-bottom" />
+              )}
+              {name}
+            </h3>
           </div>
           <Button 
             variant="ghost" 

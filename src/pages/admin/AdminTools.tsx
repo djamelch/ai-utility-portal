@@ -76,6 +76,7 @@ export function AdminTools() {
 
       if (error) throw error;
 
+      console.log("Admin tools data:", data);
       const toolsWithFeatures = data || [];
 
       setTools(toolsWithFeatures);

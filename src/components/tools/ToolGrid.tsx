@@ -138,30 +138,40 @@ export function ToolGrid({
     refetchOnWindowFocus: false
   });
 
-  const tools = (dbTools || []).map(dbTool => ({
-    id: dbTool.id,
-    name: dbTool.company_name || "",
-    company_name: dbTool.company_name || "",
-    description: dbTool.short_description || "",
-    short_description: dbTool.short_description || "",
-    logo: dbTool.logo_url || "",
-    logo_url: dbTool.logo_url || "",
-    category: dbTool.primary_task || "",
-    primary_task: dbTool.primary_task || "",
-    rating: 4,
-    reviewCount: 0,
-    pricing: dbTool.pricing || "",
-    url: dbTool.visit_website_url || dbTool.detail_url || "#",
-    visit_website_url: dbTool.visit_website_url || "",
-    detail_url: dbTool.detail_url || "",
-    slug: dbTool.slug || "",
-    isFeatured: Boolean(dbTool.is_featured),
-    isVerified: Boolean(dbTool.is_verified),
-    is_featured: dbTool.is_featured,
-    is_verified: dbTool.is_verified,
-    isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
-    ...dbTool
-  }));
+  const tools = (dbTools || []).map(dbTool => {
+    // Log the raw tool data to help with debugging
+    console.log("Raw tool data:", { 
+      id: dbTool.id, 
+      name: dbTool.company_name, 
+      is_featured: dbTool.is_featured, 
+      is_verified: dbTool.is_verified 
+    });
+    
+    return {
+      id: dbTool.id,
+      name: dbTool.company_name || "",
+      company_name: dbTool.company_name || "",
+      description: dbTool.short_description || "",
+      short_description: dbTool.short_description || "",
+      logo: dbTool.logo_url || "",
+      logo_url: dbTool.logo_url || "",
+      category: dbTool.primary_task || "",
+      primary_task: dbTool.primary_task || "",
+      rating: 4,
+      reviewCount: 0,
+      pricing: dbTool.pricing || "",
+      url: dbTool.visit_website_url || dbTool.detail_url || "#",
+      visit_website_url: dbTool.visit_website_url || "",
+      detail_url: dbTool.detail_url || "",
+      slug: dbTool.slug || "",
+      isFeatured: Boolean(dbTool.is_featured),
+      isVerified: Boolean(dbTool.is_verified),
+      is_featured: dbTool.is_featured,
+      is_verified: dbTool.is_verified,
+      isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
+      ...dbTool
+    };
+  });
   
   if (isLoading) {
     return <ToolGridSkeleton count={limit || 8} columnsPerRow={columnsPerRow} />;

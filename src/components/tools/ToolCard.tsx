@@ -1,3 +1,4 @@
+
 import { Star, ExternalLink, Heart, Award, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -62,9 +63,13 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
   const category = tool.category || tool.primary_task || "";
   const url = tool.visit_website_url || tool.detail_url || tool.url || "#";
   const { id, rating = 0, reviewCount = 0, pricing = "" } = tool;
-  const isFeatured = tool.isFeatured || tool.is_featured;
-  const isVerified = tool.isVerified || tool.is_verified;
+  
+  // Ensure we capture both naming conventions for these properties
+  const isFeatured = Boolean(tool.isFeatured || tool.is_featured);
+  const isVerified = Boolean(tool.isVerified || tool.is_verified);
   const isNew = tool.isNew;
+
+  console.log("Tool data:", { name, isFeatured, isVerified, is_featured: tool.is_featured, is_verified: tool.is_verified });
 
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
@@ -271,26 +276,31 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
-      <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
-        {isFeatured && isVerified ? (
-          <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
-            <Award className="h-3 w-3 text-white" />
-            <ShieldCheck className="h-3 w-3 text-white" />
-            <span>Featured & Verified</span>
-          </Badge>
-        ) : (
+      {/* Enhanced visibility of badges at top-right */}
+      <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+        {(isFeatured || isVerified) && (
           <>
-            {isFeatured && (
+            {isFeatured && isVerified ? (
               <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
                 <Award className="h-3 w-3 text-white" />
-                <span>Featured</span>
+                <ShieldCheck className="h-3 w-3 text-white" />
+                <span>Featured & Verified</span>
               </Badge>
-            )}
-            {isVerified && (
-              <Badge variant="verified" className="flex items-center gap-1.5">
-                <ShieldCheck className="h-3 w-3" />
-                <span>Verified</span>
-              </Badge>
+            ) : (
+              <>
+                {isFeatured && (
+                  <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+                    <Award className="h-3 w-3 text-white" />
+                    <span>Featured</span>
+                  </Badge>
+                )}
+                {isVerified && (
+                  <Badge variant="verified" className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-3 w-3" />
+                    <span>Verified</span>
+                  </Badge>
+                )}
+              </>
             )}
           </>
         )}
