@@ -131,6 +131,7 @@ export function ToolGrid({
           throw error;
         }
         
+        console.log("Database tools data:", data);
         return data || [];
       } catch (error) {
         console.error("Error in tools query:", error);

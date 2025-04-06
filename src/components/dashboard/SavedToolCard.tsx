@@ -63,7 +63,7 @@ export function SavedToolCard({
   };
   
   return (
-    <div className="relative h-full flex flex-col rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md border border-border/60 dark:border-accent/10">
+    <div className={`relative h-full flex flex-col rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md border ${isToolFeatured ? 'border-2 border-amber-400 dark:border-amber-500' : 'border-border/60 dark:border-accent/10'}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-50 pointer-events-none" />
       
       {/* Glass-like highlight effect on top */}
