@@ -250,13 +250,17 @@ export function AdminTools() {
                     <TableRow 
                       key={tool.id}
                       className={cn(
-                        tool.is_featured ? "border-2 border-amber-400 dark:border-amber-500" : "",
+                        tool.is_featured ? "border-l-4 border-l-amber-400 dark:border-l-amber-500" : "",
+                        tool.is_verified ? "border-r-4 border-r-green-400 dark:border-r-green-500" : "",
                       )}
                     >
                       <TableCell className="font-medium">
                         <div className="flex items-center">
                           {tool.is_featured && (
                             <Award className="h-4 w-4 text-amber-500 mr-2 shrink-0" />
+                          )}
+                          {tool.is_verified && (
+                            <ShieldCheck className="h-4 w-4 text-green-500 mr-2 shrink-0" />
                           )}
                           <span>{tool.company_name}</span>
                         </div>
