@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { 
-  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2, Award, ShieldCheck 
+  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2, Award, ShieldCheck, Star, StarOff
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { 
@@ -29,10 +28,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
+import { Toggle } from '@/components/ui/toggle';
 
 interface Tool {
   id: number;
@@ -55,6 +55,7 @@ export function AdminTools() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sortField, setSortField] = useState<keyof Tool>('company_name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [updatingFeatures, setUpdatingFeatures] = useState<Record<number, boolean>>({});
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -168,6 +169,44 @@ export function AdminTools() {
     setIsDeleteDialogOpen(true);
   };
 
+  const toggleFeaturedStatus = async (tool: Tool) => {
+    try {
+      setUpdatingFeatures(prev => ({ ...prev, [tool.id]: true }));
+      
+      const newStatus = !tool.is_featured;
+      
+      const { error } = await supabase
+        .from('tools')
+        .update({ 
+          is_featured: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tool.id);
+
+      if (error) throw error;
+
+      setTools(prevTools => 
+        prevTools.map(t => 
+          t.id === tool.id ? { ...t, is_featured: newStatus } : t
+        )
+      );
+
+      toast({
+        title: 'Success',
+        description: `Tool ${newStatus ? 'marked as featured' : 'removed from featured'}`,
+      });
+    } catch (error) {
+      console.error('Error updating featured status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update featured status',
+        variant: 'destructive',
+      });
+    } finally {
+      setUpdatingFeatures(prev => ({ ...prev, [tool.id]: false }));
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -268,27 +307,49 @@ export function AdminTools() {
                       <TableCell className="hidden md:table-cell">{tool.pricing || 'N/A'}</TableCell>
                       <TableCell className="hidden md:table-cell">
                         <div className="flex flex-wrap gap-1.5">
-                          {tool.is_featured && tool.is_verified ? (
-                            <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+                          {tool.is_featured && (
+                            <Badge variant="featured" className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
                               <Award className="h-3 w-3 text-white" />
-                              <ShieldCheck className="h-3 w-3 text-white" />
-                              <span>Featured & Verified</span>
+                              <span>Featured</span>
+                              <Toggle 
+                                size="sm"
+                                variant="outline"
+                                aria-label="Remove featured status"
+                                pressed={true}
+                                disabled={updatingFeatures[tool.id]}
+                                onPressedChange={() => toggleFeaturedStatus(tool)}
+                              >
+                                {updatingFeatures[tool.id] ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <StarOff className="h-3 w-3" />
+                                )}
+                              </Toggle>
                             </Badge>
-                          ) : (
-                            <>
-                              {tool.is_featured && (
-                                <Badge variant="featured" className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
-                                  <Award className="h-3 w-3 text-white" />
-                                  <span>Featured</span>
-                                </Badge>
+                          )}
+                          {!tool.is_featured && (
+                            <Toggle 
+                              size="sm"
+                              variant="outline"
+                              aria-label="Mark as featured"
+                              pressed={false}
+                              disabled={updatingFeatures[tool.id]}
+                              onPressedChange={() => toggleFeaturedStatus(tool)}
+                              className="flex items-center gap-1"
+                            >
+                              {updatingFeatures[tool.id] ? (
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              ) : (
+                                <Star className="h-3 w-3 mr-1" />
                               )}
-                              {tool.is_verified && (
-                                <Badge variant="verified" className="flex items-center gap-1">
-                                  <ShieldCheck className="h-3 w-3" />
-                                  <span>Verified</span>
-                                </Badge>
-                              )}
-                            </>
+                              <span>Feature</span>
+                            </Toggle>
+                          )}
+                          {tool.is_verified && (
+                            <Badge variant="verified" className="flex items-center gap-1">
+                              <ShieldCheck className="h-3 w-3" />
+                              <span>Verified</span>
+                            </Badge>
                           )}
                         </div>
                       </TableCell>
