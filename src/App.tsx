@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "@/context/AuthContext";
 import { RequireAuth } from "@/components/auth/RequireAuth";
-import { Index } from "./pages/Index";
+import Index from "./pages/Index";
 import Tools from "./pages/Tools";
 import ToolDetail from "./pages/ToolDetail";
 import Blog from "./pages/Blog";
