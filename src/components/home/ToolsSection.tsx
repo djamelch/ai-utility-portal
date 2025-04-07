@@ -64,6 +64,7 @@ export function ToolsSection({
         return [];
       }
       
+      console.log(`Fetched ${queryType} tools:`, data);
       return data as any[];
     }
   });

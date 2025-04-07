@@ -123,8 +123,8 @@ export default function AdminToolEdit() {
           
           const newAdditionalFields = {
             id: data.id,
-            is_featured: data.applicable_tasks?.some((task: Json) => task === 'featured') || false,
-            is_verified: data.applicable_tasks?.some((task: Json) => task === 'verified') || false,
+            is_featured: Boolean(data.is_featured),
+            is_verified: Boolean(data.is_verified),
             features: Array.isArray(data.pros) ? data.pros.join('\n') : '',
             testimonials: '',
             cons: Array.isArray(data.cons) ? data.cons.join('\n') : '',
@@ -190,68 +190,34 @@ export default function AdminToolEdit() {
         throw new Error('Invalid tool ID');
       }
 
-      const applicable_tasks: Json[] = [];
-      if (values.is_featured) applicable_tasks.push('featured' as Json);
-      if (values.is_verified) applicable_tasks.push('verified' as Json);
-      
-      const pros: Json[] = values.features 
-        ? values.features.split('\n').filter(Boolean).map(f => f as Json)
-        : [];
-      
-      const cons: Json[] = values.cons
-        ? values.cons.split('\n').filter(Boolean).map(c => c as Json)
-        : [];
-      
-      let faqs: Json | null = null;
-      try {
-        if (values.testimonials) {
-          try {
-            faqs = JSON.parse(values.testimonials) as Json;
-          } catch (e) {
-            faqs = values.testimonials as Json;
-          }
-        }
-      } catch (e) {
-        console.warn('Could not process testimonials, storing as string');
-        faqs = values.testimonials as Json;
-      }
-
-      console.log('Submitting tool data:', {
+      const updateData = {
         company_name: values.company_name,
         short_description: values.short_description,
         full_description: values.full_description,
         visit_website_url: values.visit_website_url,
         primary_task: values.primary_task,
         pricing: values.pricing,
-        applicable_tasks,
-        pros,
-        cons,
-        faqs,
+        is_featured: values.is_featured,
+        is_verified: values.is_verified,
+        pros: values.features 
+          ? values.features.split('\n').filter(Boolean).map(f => f as any)
+          : [],
+        cons: values.cons
+          ? values.cons.split('\n').filter(Boolean).map(c => c as any)
+          : [],
+        faqs: values.testimonials ? values.testimonials as any : null,
         logo_url: values.logo_url,
         featured_image_url: values.featured_image_url,
         slug: values.slug || undefined,
         detail_url: values.detail_url || undefined,
-      });
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Submitting tool data:', updateData);
 
       const { error } = await supabase
         .from('tools')
-        .update({
-          company_name: values.company_name,
-          short_description: values.short_description,
-          full_description: values.full_description,
-          visit_website_url: values.visit_website_url,
-          primary_task: values.primary_task,
-          pricing: values.pricing,
-          applicable_tasks,
-          pros,
-          cons,
-          faqs,
-          logo_url: values.logo_url,
-          featured_image_url: values.featured_image_url,
-          slug: values.slug || undefined,
-          detail_url: values.detail_url || undefined,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', toolId);
 
       if (error) throw error;
