@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
@@ -7,6 +6,7 @@ import { EnhancedLoadingIndicator } from "@/components/ui/EnhancedLoadingIndicat
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Json } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
 
 export interface Tool {
   id: number | string;
@@ -52,6 +52,7 @@ interface ToolGridProps {
   pricing?: string;
   sortBy?: string;
   columnsPerRow?: number;
+  features?: string[];
 }
 
 export function ToolGrid({ 
@@ -63,14 +64,15 @@ export function ToolGrid({
   category = "",
   pricing = "",
   sortBy = "featured",
-  columnsPerRow = 4
+  columnsPerRow = 4,
+  features = []
 }: ToolGridProps) {
   const effectiveSearchTerm = searchQuery || searchTerm || "";
   const effectiveCategoryFilter = category || categoryFilter || "";
   const effectiveSortBy = sortBy !== "featured" ? sortBy : queryType;
   
   const { data: dbTools = [], isLoading, error, refetch } = useQuery({
-    queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, effectiveSortBy],
+    queryKey: ["tools", queryType, limit, effectiveSearchTerm, effectiveCategoryFilter, pricing, effectiveSortBy, features],
     queryFn: async () => {
       try {
         let query = supabase.from("tools").select("*");
@@ -96,6 +98,13 @@ export function ToolGrid({
         
         if (pricing) {
           query = query.eq("pricing", pricing);
+        }
+        
+        if (features.length > 0) {
+          features.forEach(feature => {
+            const keyword = feature.replace(/-/g, ' ');
+            query = query.or(`short_description.ilike.%${keyword}%,full_description.ilike.%${keyword}%`);
+          });
         }
         
         switch (effectiveSortBy) {
@@ -139,7 +148,6 @@ export function ToolGrid({
   });
 
   const tools = (dbTools || []).map(dbTool => {
-    // Log the raw tool data to help with debugging
     console.log("Raw tool data:", { 
       id: dbTool.id, 
       name: dbTool.company_name, 
@@ -282,5 +290,3 @@ function EmptyToolsMessage() {
     </div>
   );
 }
-
-import { Button } from "@/components/ui/button";

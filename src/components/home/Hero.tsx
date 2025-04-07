@@ -17,7 +17,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-// Define the Category type
 interface Category {
   id: string;
   name: string;
@@ -33,12 +32,9 @@ export function Hero() {
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const navigate = useNavigate();
   
-  // Fetch categories with their tool counts
   const { data: categories = [] } = useQuery({
     queryKey: ["categories-with-counts"],
     queryFn: async () => {
-      // This is a simplified approach - in a real app, you might have a categories table
-      // Here we're extracting unique categories from the tools table and counting them
       const { data, error } = await supabase
         .from("tools")
         .select("primary_task");
@@ -48,7 +44,6 @@ export function Hero() {
         return [];
       }
       
-      // Count occurrences of each category
       const categoryCounts: Record<string, number> = {};
       data.forEach(tool => {
         if (tool.primary_task) {
@@ -56,9 +51,8 @@ export function Hero() {
         }
       });
       
-      // Convert to array and sort by count (descending)
       const sortedCategories: Category[] = Object.entries(categoryCounts)
-        .filter(([name]) => name) // Filter out null/empty categories
+        .filter(([name]) => name)
         .map(([name, count]) => ({
           id: name.toLowerCase().replace(/\s+/g, '-'),
           name,
@@ -70,7 +64,6 @@ export function Hero() {
     }
   });
   
-  // Fetch pricing options
   const { data: pricingOptions = [] } = useQuery({
     queryKey: ["pricing-options"],
     queryFn: async () => {
@@ -83,7 +76,6 @@ export function Hero() {
         return [];
       }
       
-      // Get unique pricing options
       const uniquePricing = Array.from(new Set(
         data.map(tool => tool.pricing).filter(Boolean)
       ));
@@ -92,11 +84,9 @@ export function Hero() {
     }
   });
   
-  // Fetch statistics
   const { data: statistics } = useQuery({
     queryKey: ["home-statistics"],
     queryFn: async () => {
-      // Get tool count
       const { count: toolCount, error: toolError } = await supabase
         .from("tools")
         .select("*", { count: "exact", head: true });
@@ -105,7 +95,6 @@ export function Hero() {
         console.error("Error fetching tool count:", toolError);
       }
       
-      // Get category count (unique primary_task values)
       const { data: categoryData, error: categoryError } = await supabase
         .from("tools")
         .select("primary_task");
@@ -119,7 +108,6 @@ export function Hero() {
         if (tool.primary_task) uniqueCategories.add(tool.primary_task);
       });
       
-      // Get review count
       const { count: reviewCount, error: reviewError } = await supabase
         .from("reviews")
         .select("*", { count: "exact", head: true });
@@ -136,7 +124,6 @@ export function Hero() {
     }
   });
   
-  // Handle search submission
   const handleSearch = () => {
     const queryParams = new URLSearchParams();
     
@@ -163,17 +150,14 @@ export function Hero() {
     navigate(`/tools?${queryParams.toString()}`);
   };
   
-  // Handle feature toggle
   const handleFeatureToggle = (features: string[]) => {
     setSelectedFeatures(features);
   };
   
-  // Popular categories limited to 5 for display
   const popularCategories = categories.slice(0, 5);
   
   return (
     <section className="relative overflow-hidden pt-32 pb-16 md:pt-40 md:pb-24">
-      {/* Background gradient */}
       <div className="absolute inset-0 hero-gradient"></div>
       
       <div className="container-tight relative z-10">
@@ -191,7 +175,6 @@ export function Hero() {
           </p>
         </MotionWrapper>
         
-        {/* Search bar with filters */}
         <MotionWrapper animation="fadeIn" delay="delay-200" className="mt-8 md:mt-12">
           <div className="flex flex-col md:flex-row gap-3 mx-auto max-w-xl">
             <div className="relative flex-1 flex rounded-md border border-input bg-background shadow-sm">
@@ -227,7 +210,6 @@ export function Hero() {
             </Button>
           </div>
           
-          {/* Advanced Filters */}
           <Collapsible 
             open={showAdvancedFilters} 
             onOpenChange={setShowAdvancedFilters}
@@ -275,11 +257,13 @@ export function Hero() {
               <div className="mb-4">
                 <label className="text-sm font-medium mb-2 block">Tool Features</label>
                 <ToggleGroup type="multiple" value={selectedFeatures} onValueChange={handleFeatureToggle} className="flex flex-wrap gap-2">
-                  <ToggleGroupItem value="api" className="text-xs">API Access</ToggleGroupItem>
+                  <ToggleGroupItem value="api-access" className="text-xs">API Access</ToggleGroupItem>
                   <ToggleGroupItem value="free-trial" className="text-xs">Free Trial</ToggleGroupItem>
                   <ToggleGroupItem value="no-signup" className="text-xs">No Signup</ToggleGroupItem>
                   <ToggleGroupItem value="mobile-friendly" className="text-xs">Mobile Friendly</ToggleGroupItem>
                   <ToggleGroupItem value="browser-extension" className="text-xs">Browser Extension</ToggleGroupItem>
+                  <ToggleGroupItem value="offline-mode" className="text-xs">Offline Mode</ToggleGroupItem>
+                  <ToggleGroupItem value="team-collaboration" className="text-xs">Team Collaboration</ToggleGroupItem>
                 </ToggleGroup>
               </div>
               
@@ -290,7 +274,6 @@ export function Hero() {
           </Collapsible>
         </MotionWrapper>
         
-        {/* Popular Categories */}
         <MotionWrapper animation="fadeIn" delay="delay-300" className="mt-8">
           <div className="flex flex-wrap justify-center gap-3">
             <span className="text-sm text-muted-foreground">Popular:</span>
@@ -306,7 +289,6 @@ export function Hero() {
           </div>
         </MotionWrapper>
         
-        {/* Featured metrics */}
         <MotionWrapper animation="fadeIn" delay="delay-400" className="mt-16">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[

@@ -3,6 +3,7 @@ import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ToolGrid } from "@/components/tools/ToolGrid";
+import { AdvancedFilters } from "@/components/tools/AdvancedFilters";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { supabase } from "@/integrations/supabase/client";
 import { PageLoadingWrapper } from "@/components/ui/PageLoadingWrapper";
@@ -11,16 +12,24 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { useSearchParams } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const Tools = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [category, setCategory] = useState("");
-  const [pricing, setPricing] = useState("");
-  const [sortBy, setSortBy] = useState("featured");
+  
+  const searchQuery = searchParams.get("search") || "";
+  const category = searchParams.get("category") || "";
+  const pricing = searchParams.get("pricing") || "";
+  const sortBy = searchParams.get("sortBy") || "featured";
+  const features = searchParams.get("features")?.split(",") || [];
+  
+  const [searchInput, setSearchInput] = useState(searchQuery);
   const [loadMoreCount, setLoadMoreCount] = useState(1);
-  const initialLimit = 12; // Initial number of tools to load
-  const loadMoreIncrement = 12; // Number of additional tools to load each time
+  const initialLimit = 12;
+  const loadMoreIncrement = 12;
 
   const generateSEOTitle = () => {
     if (category && pricing) {
@@ -77,7 +86,7 @@ const Tools = () => {
     },
     retry: 3,
     retryDelay: 2000,
-    staleTime: 1000 * 60 * 5 // 5 minutes
+    staleTime: 1000 * 60 * 5
   });
   
   const { 
@@ -109,7 +118,7 @@ const Tools = () => {
     },
     retry: 3,
     retryDelay: 2000,
-    staleTime: 1000 * 60 * 5 // 5 minutes
+    staleTime: 1000 * 60 * 5
   });
 
   const isLoading = isCategoriesLoading || isPricingLoading;
@@ -117,7 +126,16 @@ const Tools = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Search is already applied via the input change event
+    const params = new URLSearchParams(searchParams);
+    
+    if (searchInput) {
+      params.set("search", searchInput);
+    } else {
+      params.delete("search");
+    }
+    
+    setSearchParams(params);
+    setLoadMoreCount(1);
   };
 
   const loadMore = () => {
@@ -125,18 +143,16 @@ const Tools = () => {
   };
 
   const clearFilters = () => {
-    setSearchQuery("");
-    setCategory("");
-    setPricing("");
-    setSortBy("featured");
-    setLoadMoreCount(1); // Reset load more count when filters change
+    setSearchInput("");
+    setSearchParams(new URLSearchParams());
+    setLoadMoreCount(1);
   };
 
   useEffect(() => {
     setLoadMoreCount(1);
-  }, [searchQuery, category, pricing, sortBy]);
+  }, [searchQuery, category, pricing, sortBy, features]);
 
-  const hasActiveFilters = searchQuery || category || pricing || sortBy !== "featured";
+  const hasActiveFilters = searchQuery || category || pricing || sortBy !== "featured" || features.length > 0;
 
   const retryFetching = () => {
     refetchCategories();
@@ -192,158 +208,71 @@ const Tools = () => {
             ) : (
               <MotionWrapper animation="fadeIn" delay="delay-200">
                 <div className="mb-8">
-                  <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+                  <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-                      <input
+                      <Input
                         type="text"
                         placeholder="Search for tools..."
-                        className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4"
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
                       />
                     </div>
                     
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setShowFilters(!showFilters)}
-                      className="md:hidden inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2"
+                      className={cn(
+                        "md:hidden inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2",
+                        showFilters && "bg-accent"
+                      )}
                     >
                       <Filter size={18} />
                       Filters
-                    </button>
+                      {hasActiveFilters && (
+                        <span className="ml-1 h-5 w-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
+                          !
+                        </span>
+                      )}
+                    </Button>
                     
-                    <div className="hidden md:flex items-center gap-3">
-                      <select 
-                        className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                      >
-                        <option value="">All Categories</option>
-                        {categories.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                      
-                      <select 
-                        className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                        value={pricing}
-                        onChange={(e) => setPricing(e.target.value)}
-                      >
-                        <option value="">All Pricing</option>
-                        {pricingOptions.map((price) => (
-                          <option key={price} value={price}>
-                            {price}
-                          </option>
-                        ))}
-                      </select>
-                      
-                      <select 
-                        className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                      >
-                        <option value="featured">Featured</option>
-                        <option value="newest">Newest</option>
-                        <option value="popular">Most Popular</option>
-                      </select>
-                    </div>
+                    <Button type="submit">
+                      Search
+                    </Button>
                   </form>
                   
-                  {showFilters && (
-                    <div className="mt-4 grid grid-cols-2 gap-3 md:hidden">
-                      <select 
-                        className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                      >
-                        <option value="">All Categories</option>
-                        {categories.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
+                  <div className={cn("mb-6", !showFilters && "hidden md:block")}>
+                    <div className="bg-secondary/10 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <SlidersHorizontal size={18} />
+                          Advanced Filters
+                        </h3>
+                        {hasActiveFilters && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={clearFilters}
+                          >
+                            Reset All
+                          </Button>
+                        )}
+                      </div>
                       
-                      <select 
-                        className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                        value={pricing}
-                        onChange={(e) => setPricing(e.target.value)}
-                      >
-                        <option value="">All Pricing</option>
-                        {pricingOptions.map((price) => (
-                          <option key={price} value={price}>
-                            {price}
-                          </option>
-                        ))}
-                      </select>
-                      
-                      <select 
-                        className="col-span-2 rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                      >
-                        <option value="featured">Featured</option>
-                        <option value="newest">Newest</option>
-                        <option value="popular">Most Popular</option>
-                      </select>
+                      <AdvancedFilters 
+                        categories={categories} 
+                        pricingOptions={pricingOptions}
+                      />
                     </div>
-                  )}
+                  </div>
                   
                   {hasActiveFilters && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {searchQuery && (
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          Search: {searchQuery}
-                          <button aria-label="Remove filter" onClick={() => setSearchQuery("")}>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {category && (
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          Category: {category}
-                          <button aria-label="Remove filter" onClick={() => setCategory("")}>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {pricing && (
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          Pricing: {pricing}
-                          <button aria-label="Remove filter" onClick={() => setPricing("")}>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                      
-                      {sortBy !== "featured" && (
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          Sort: {sortBy === "newest" ? "Newest" : "Most Popular"}
-                          <button aria-label="Remove filter" onClick={() => setSortBy("featured")}>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                      
-                      <button 
-                        onClick={clearFilters}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-                      >
-                        Remove All Filters
-                      </button>
+                    <div className="mb-6">
+                      <h3 className="text-sm font-medium mb-2">Active Filters:</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {/* Active filters will be shown here */}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -351,19 +280,13 @@ const Tools = () => {
             )}
             
             <MotionWrapper animation="fadeIn" delay="delay-300">
-              <div className="mb-6 flex items-center justify-between">
-                <button className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-                  <SlidersHorizontal size={16} />
-                  Advanced Filters
-                </button>
-              </div>
-              
               <ToolGrid 
                 searchQuery={searchQuery}
                 category={category}
                 pricing={pricing}
                 sortBy={sortBy}
                 limit={currentLimit}
+                features={features}
               />
 
               <div className="mt-10 flex justify-center">
