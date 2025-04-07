@@ -18,8 +18,6 @@ interface SavedTool {
   pricing: string | null;
   favorite_id: string;
   visit_website_url?: string;
-  is_featured?: boolean;
-  is_verified?: boolean;
 }
 
 export function SavedToolsTab() {
@@ -50,16 +48,12 @@ export function SavedToolsTab() {
             logo_url,
             primary_task,
             pricing,
-            visit_website_url,
-            is_featured,
-            is_verified
+            visit_website_url
           )
         `)
         .eq('user_id', user?.id);
 
       if (error) throw error;
-
-      console.log("Saved tools data:", data);
 
       const formattedTools = data
         .filter(item => item.tools)
@@ -71,12 +65,9 @@ export function SavedToolsTab() {
           primary_task: item.tools.primary_task,
           pricing: item.tools.pricing,
           favorite_id: item.id,
-          visit_website_url: item.tools.visit_website_url,
-          is_featured: item.tools.is_featured,
-          is_verified: item.tools.is_verified
+          visit_website_url: item.tools.visit_website_url
         }));
 
-      console.log("Formatted saved tools:", formattedTools);
       setSavedTools(formattedTools);
     } catch (error) {
       console.error('Error fetching saved tools:', error);
@@ -141,8 +132,6 @@ export function SavedToolsTab() {
                 pricing={tool.pricing}
                 favorite_id={tool.favorite_id}
                 visit_website_url={tool.visit_website_url}
-                is_featured={tool.is_featured}
-                is_verified={tool.is_verified}
                 onRemove={handleRemoveSaved}
               />
             ))}

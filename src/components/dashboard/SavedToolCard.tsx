@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,9 +47,7 @@ export function SavedToolCard({
   const isToolFeatured = Boolean(isFeatured || is_featured);
   const isToolVerified = Boolean(isVerified || is_verified);
   
-  // Debug log to help identify issues
-  console.log(`SavedToolCard ${name} - Featured: ${isToolFeatured}, Verified: ${isToolVerified}`, 
-    { origFeatured: is_featured, origVerified: is_verified });
+  console.log("SavedToolCard data:", { name, isToolFeatured, isToolVerified, is_featured, is_verified });
   
   const handleVisit = async () => {
     if (!visit_website_url) return;
@@ -62,16 +61,16 @@ export function SavedToolCard({
   };
   
   return (
-    <div className={`relative h-full flex flex-col rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md border ${isToolFeatured ? 'border-2 border-amber-400 dark:border-amber-500' : 'border-border/60 dark:border-accent/10'}`}>
+    <div className="relative h-full flex flex-col rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md border border-border/60 dark:border-accent/10">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-50 pointer-events-none" />
       
       {/* Glass-like highlight effect on top */}
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
-      {/* Featured & Verified badges - moved to top-left for more visibility */}
+      {/* Enhanced visibility of indicators at top-right */}
       {(isToolFeatured || isToolVerified) && (
-        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+        <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
           {isToolFeatured && isToolVerified ? (
             <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
               <Award className="h-3 w-3 text-white" />
@@ -116,9 +115,6 @@ export function SavedToolCard({
             <h3 className="font-semibold text-lg">
               {isToolFeatured && (
                 <Award className="inline h-4 w-4 text-amber-500 mr-1 align-text-bottom" />
-              )}
-              {isToolVerified && (
-                <ShieldCheck className="inline h-4 w-4 text-green-500 mr-1 align-text-bottom" />
               )}
               {name}
             </h3>

@@ -35,42 +35,33 @@ export function ToolsSection({
   const { data: dbTools = [], isLoading } = useQuery({
     queryKey: ["tools", queryType, limit],
     queryFn: async () => {
-      try {
-        let query = supabase.from("tools").select("*");
-        
-        switch (queryType) {
-          case "top-rated":
-            query = query.order("id", { ascending: false });
-            break;
-          case "recent":
-            query = query.order("created_at", { ascending: false });
-            break;
-          case "featured":
-          default:
-            if (queryType === "featured") {
-              query = query.eq("is_featured", true);
-            }
-            query = query.order("id");
-            break;
-        }
-        
-        if (limit) {
-          query = query.limit(limit);
-        }
-        
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error("Error fetching tools:", error);
-          return [];
-        }
-        
-        console.log(`ToolsSection fetched ${data?.length} tools for type ${queryType}`);
-        return data as any[];
-      } catch (error) {
-        console.error(`Error in ToolsSection query for ${queryType}:`, error);
+      let query = supabase.from("tools").select("*");
+      
+      switch (queryType) {
+        case "top-rated":
+          query = query.order("id", { ascending: false });
+          break;
+        case "recent":
+          query = query.order("created_at", { ascending: false });
+          break;
+        case "featured":
+        default:
+          query = query.order("id");
+          break;
+      }
+      
+      if (limit) {
+        query = query.limit(limit);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error("Error fetching tools:", error);
         return [];
       }
+      
+      return data as any[];
     }
   });
 
@@ -91,10 +82,7 @@ export function ToolsSection({
     visit_website_url: dbTool.visit_website_url || "",
     detail_url: dbTool.detail_url || "",
     slug: dbTool.slug || "",
-    is_featured: Boolean(dbTool.is_featured),
-    is_verified: Boolean(dbTool.is_verified),
-    isFeatured: Boolean(dbTool.is_featured),
-    isVerified: Boolean(dbTool.is_verified),
+    isFeatured: false,
     isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
     ...dbTool
   }));

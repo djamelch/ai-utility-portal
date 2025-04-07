@@ -1,3 +1,4 @@
+
 import { Star, ExternalLink, Heart, Award, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -63,12 +64,12 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
   const url = tool.visit_website_url || tool.detail_url || tool.url || "#";
   const { id, rating = 0, reviewCount = 0, pricing = "" } = tool;
   
-  const isFeatured = tool.isFeatured === true || tool.is_featured === true;
-  const isVerified = tool.isVerified === true || tool.is_verified === true;
+  // Ensure we capture both naming conventions for these properties
+  const isFeatured = Boolean(tool.isFeatured || tool.is_featured);
+  const isVerified = Boolean(tool.isVerified || tool.is_verified);
   const isNew = tool.isNew;
 
-  console.log(`ToolCard ${name} - Featured: ${isFeatured}, Verified: ${isVerified}`, 
-    { origFeatured: tool.is_featured, origVerified: tool.is_verified });
+  console.log("Tool data:", { name, isFeatured, isVerified, is_featured: tool.is_featured, is_verified: tool.is_verified });
 
   const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
   
@@ -275,23 +276,40 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
       <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
-      {isFeatured && (
-        <div className="absolute -top-1 -right-1 z-10">
-          <div className="relative">
-            <div className="w-10 h-10 bg-blue-500 rotate-45 transform origin-bottom-left"></div>
-            <Award className="absolute -right-1 -top-1 h-5 w-5 text-white -rotate-45" />
-          </div>
-        </div>
-      )}
-      
-      {isVerified && (
-        <div className="absolute top-3 left-3 z-10">
-          <Badge variant="verified" className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3 w-3" />
-            <span>Verified</span>
-          </Badge>
-        </div>
-      )}
+      {/* Enhanced visibility of badges at top-right */}
+      <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+        {(isFeatured || isVerified) && (
+          <>
+            {isFeatured && isVerified ? (
+              <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+                <Award className="h-3 w-3 text-white" />
+                <ShieldCheck className="h-3 w-3 text-white" />
+                <span>Featured & Verified</span>
+              </Badge>
+            ) : (
+              <>
+                {isFeatured && (
+                  <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+                    <Award className="h-3 w-3 text-white" />
+                    <span>Featured</span>
+                  </Badge>
+                )}
+                {isVerified && (
+                  <Badge variant="verified" className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-3 w-3" />
+                    <span>Verified</span>
+                  </Badge>
+                )}
+              </>
+            )}
+          </>
+        )}
+        {isNew && (
+          <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 shadow-sm">
+            New
+          </span>
+        )}
+      </div>
 
       <div className="flex items-start gap-3 relative">
         <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/90 dark:bg-secondary/20 shadow-sm border border-border/50 dark:border-border/20">
@@ -322,6 +340,9 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-lg truncate">
+              {isFeatured && (
+                <Award className="inline h-4 w-4 text-amber-500 mr-1 align-text-bottom" />
+              )}
               <Link to={`/tool/${toolSlug}`} className="hover:text-primary transition-colors">
                 {name}
               </Link>

@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
@@ -97,10 +98,6 @@ export function ToolGrid({
           query = query.eq("pricing", pricing);
         }
         
-        if (queryType === 'featured') {
-          query = query.eq('is_featured', true);
-        }
-        
         switch (effectiveSortBy) {
           case "top-rated":
             query = query.order("id", { ascending: false });
@@ -113,8 +110,6 @@ export function ToolGrid({
             query = query.order("click_count", { ascending: false });
             break;
           case "featured":
-            query = query.order('is_featured', { ascending: false }).order("id");
-            break;
           default:
             query = query.order("id");
             break;
@@ -131,7 +126,6 @@ export function ToolGrid({
           throw error;
         }
         
-        console.log("Database tools data:", data);
         return data || [];
       } catch (error) {
         console.error("Error in tools query:", error);
@@ -145,6 +139,7 @@ export function ToolGrid({
   });
 
   const tools = (dbTools || []).map(dbTool => {
+    // Log the raw tool data to help with debugging
     console.log("Raw tool data:", { 
       id: dbTool.id, 
       name: dbTool.company_name, 
@@ -169,10 +164,10 @@ export function ToolGrid({
       visit_website_url: dbTool.visit_website_url || "",
       detail_url: dbTool.detail_url || "",
       slug: dbTool.slug || "",
-      is_featured: Boolean(dbTool.is_featured),
-      is_verified: Boolean(dbTool.is_verified),
       isFeatured: Boolean(dbTool.is_featured),
       isVerified: Boolean(dbTool.is_verified),
+      is_featured: dbTool.is_featured,
+      is_verified: dbTool.is_verified,
       isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
       ...dbTool
     };
