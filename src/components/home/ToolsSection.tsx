@@ -46,7 +46,10 @@ export function ToolsSection({
           break;
         case "featured":
         default:
-          query = query.order("id");
+          // If queryType is "featured", filter by is_featured being true
+          query = queryType === "featured" 
+            ? query.eq("is_featured", true).order("id") 
+            : query.order("id");
           break;
       }
       
@@ -82,7 +85,10 @@ export function ToolsSection({
     visit_website_url: dbTool.visit_website_url || "",
     detail_url: dbTool.detail_url || "",
     slug: dbTool.slug || "",
-    isFeatured: false,
+    isFeatured: Boolean(dbTool.is_featured),
+    isVerified: Boolean(dbTool.is_verified),
+    is_featured: dbTool.is_featured,
+    is_verified: dbTool.is_verified,
     isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
     ...dbTool
   }));

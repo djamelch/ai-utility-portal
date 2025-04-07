@@ -77,6 +77,10 @@ export function ToolGrid({
       try {
         let query = supabase.from("tools").select("*");
         
+        if (queryType === "featured") {
+          query = query.eq("is_featured", true);
+        }
+        
         if (effectiveSearchTerm) {
           query = query.or(`company_name.ilike.%${effectiveSearchTerm}%,short_description.ilike.%${effectiveSearchTerm}%,full_description.ilike.%${effectiveSearchTerm}%`);
         }
@@ -119,6 +123,11 @@ export function ToolGrid({
             query = query.order("click_count", { ascending: false });
             break;
           case "featured":
+            if (queryType !== "featured") {
+              query = query.eq("is_featured", true);
+            }
+            query = query.order("id");
+            break;
           default:
             query = query.order("id");
             break;
