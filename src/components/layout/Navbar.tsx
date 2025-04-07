@@ -21,6 +21,14 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface NavbarProps {
   className?: string;
@@ -33,6 +41,8 @@ export function Navbar({ className }: NavbarProps) {
     localStorage.getItem("theme") === "dark" || 
     (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)
   );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -75,6 +85,16 @@ export function Navbar({ className }: NavbarProps) {
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    if (searchTerm.trim()) {
+      navigate(`/tools?search=${encodeURIComponent(searchTerm)}`);
+      setIsSearchOpen(false);
+    }
   };
 
   const navLinks = [
@@ -120,12 +140,35 @@ export function Navbar({ className }: NavbarProps) {
           </ul>
           
           <div className="flex items-center gap-4">
-            <button 
-              aria-label="Search" 
-              className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Search size={20} />
-            </button>
+            <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+              <DialogTrigger asChild>
+                <button 
+                  aria-label="Search" 
+                  className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Search size={20} />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Search AI Tools</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSearch} className="flex items-center space-x-2 mt-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                    <Input
+                      type="text"
+                      placeholder="Search AI tools..."
+                      className="pl-10"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <Button type="submit">Search</Button>
+                </form>
+              </DialogContent>
+            </Dialog>
             
             <button
               aria-label="Toggle dark mode"
@@ -182,6 +225,36 @@ export function Navbar({ className }: NavbarProps) {
         </div>
 
         <div className="flex items-center gap-4 md:hidden">
+          <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+            <DialogTrigger asChild>
+              <button 
+                aria-label="Search" 
+                className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Search size={20} />
+              </button>
+            </DialogTrigger>
+            <DialogContent className="w-[95%] sm:max-w-md mx-auto">
+              <DialogHeader>
+                <DialogTitle>Search AI Tools</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
+                <div className="relative flex-1 w-full">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                  <Input
+                    type="text"
+                    placeholder="Search AI tools..."
+                    className="pl-10 w-full"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <Button type="submit" className="w-full sm:w-auto">Search</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+
           <button
             aria-label="Toggle dark mode"
             onClick={toggleDarkMode}
