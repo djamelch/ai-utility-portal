@@ -69,32 +69,20 @@ export function SavedToolCard({
       <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
       
       {/* Enhanced visibility of indicators at top-right */}
-      {(isToolFeatured || isToolVerified) && (
-        <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-          {isToolFeatured && isToolVerified ? (
-            <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
-              <Award className="h-3 w-3 text-white" />
-              <ShieldCheck className="h-3 w-3 text-white" />
-              <span>Featured & Verified</span>
-            </Badge>
-          ) : (
-            <>
-              {isToolFeatured && (
-                <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
-                  <Award className="h-3 w-3 text-white" />
-                  <span>Featured</span>
-                </Badge>
-              )}
-              {isToolVerified && (
-                <Badge variant="verified" className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3 w-3" />
-                  <span>Verified</span>
-                </Badge>
-              )}
-            </>
-          )}
-        </div>
-      )}
+      <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+        {isToolFeatured && (
+          <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+            <Award className="h-3 w-3 text-white" />
+            <span>Featured</span>
+          </Badge>
+        )}
+        {isToolVerified && (
+          <Badge variant="verified" className="flex items-center gap-1.5">
+            <ShieldCheck className="h-3 w-3" />
+            <span>Verified</span>
+          </Badge>
+        )}
+      </div>
       
       <div className="p-4 relative flex-1 flex flex-col">
         <div className="flex justify-between items-start">
@@ -115,6 +103,9 @@ export function SavedToolCard({
             <h3 className="font-semibold text-lg">
               {isToolFeatured && (
                 <Award className="inline h-4 w-4 text-amber-500 mr-1 align-text-bottom" />
+              )}
+              {isToolVerified && (
+                <ShieldCheck className="inline h-4 w-4 text-blue-500 mr-1 align-text-bottom" />
               )}
               {name}
             </h3>
