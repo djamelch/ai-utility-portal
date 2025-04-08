@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { 
-  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2, Award, ShieldCheck, Star, StarOff
+  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2, Award, ShieldCheck, Star, StarOff, Shield
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { 
@@ -56,6 +57,7 @@ export function AdminTools() {
   const [sortField, setSortField] = useState<keyof Tool>('company_name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [updatingFeatures, setUpdatingFeatures] = useState<Record<number, boolean>>({});
+  const [updatingVerified, setUpdatingVerified] = useState<Record<number, boolean>>({});
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -207,6 +209,44 @@ export function AdminTools() {
     }
   };
 
+  const toggleVerifiedStatus = async (tool: Tool) => {
+    try {
+      setUpdatingVerified(prev => ({ ...prev, [tool.id]: true }));
+      
+      const newStatus = !tool.is_verified;
+      
+      const { error } = await supabase
+        .from('tools')
+        .update({ 
+          is_verified: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tool.id);
+
+      if (error) throw error;
+
+      setTools(prevTools => 
+        prevTools.map(t => 
+          t.id === tool.id ? { ...t, is_verified: newStatus } : t
+        )
+      );
+
+      toast({
+        title: 'Success',
+        description: `Tool ${newStatus ? 'marked as verified' : 'removed from verified'}`,
+      });
+    } catch (error) {
+      console.error('Error updating verified status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update verified status',
+        variant: 'destructive',
+      });
+    } finally {
+      setUpdatingVerified(prev => ({ ...prev, [tool.id]: false }));
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -297,6 +337,9 @@ export function AdminTools() {
                           {tool.is_featured && (
                             <Award className="h-4 w-4 text-amber-500 mr-2 shrink-0" />
                           )}
+                          {tool.is_verified && (
+                            <ShieldCheck className="h-4 w-4 text-blue-500 mr-2 shrink-0" />
+                          )}
                           <span>{tool.company_name}</span>
                         </div>
                       </TableCell>
@@ -307,6 +350,7 @@ export function AdminTools() {
                       <TableCell className="hidden md:table-cell">{tool.pricing || 'N/A'}</TableCell>
                       <TableCell className="hidden md:table-cell">
                         <div className="flex flex-wrap gap-1.5">
+                          {/* Featured Status Badge and Toggle */}
                           {tool.is_featured && (
                             <Badge variant="featured" className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
                               <Award className="h-3 w-3 text-white" />
@@ -345,11 +389,45 @@ export function AdminTools() {
                               <span>Feature</span>
                             </Toggle>
                           )}
+                          
+                          {/* Verified Status Badge and Toggle */}
                           {tool.is_verified && (
                             <Badge variant="verified" className="flex items-center gap-1">
                               <ShieldCheck className="h-3 w-3" />
                               <span>Verified</span>
+                              <Toggle 
+                                size="sm"
+                                variant="outline"
+                                aria-label="Remove verified status"
+                                pressed={true}
+                                disabled={updatingVerified[tool.id]}
+                                onPressedChange={() => toggleVerifiedStatus(tool)}
+                              >
+                                {updatingVerified[tool.id] ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Shield className="h-3 w-3" />
+                                )}
+                              </Toggle>
                             </Badge>
+                          )}
+                          {!tool.is_verified && (
+                            <Toggle 
+                              size="sm"
+                              variant="outline"
+                              aria-label="Mark as verified"
+                              pressed={false}
+                              disabled={updatingVerified[tool.id]}
+                              onPressedChange={() => toggleVerifiedStatus(tool)}
+                              className="flex items-center gap-1"
+                            >
+                              {updatingVerified[tool.id] ? (
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              ) : (
+                                <ShieldCheck className="h-3 w-3 mr-1" />
+                              )}
+                              <span>Verify</span>
+                            </Toggle>
                           )}
                         </div>
                       </TableCell>
