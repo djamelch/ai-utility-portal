@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
@@ -44,7 +45,7 @@ export interface Tool {
 
 interface ToolGridProps {
   limit?: number;
-  queryType?: "featured" | "top-rated" | "recent" | "popular";
+  queryType?: "featured" | "top-rated" | "recent" | "popular" | "all";
   searchTerm?: string;
   categoryFilter?: string;
   searchQuery?: string;
@@ -57,7 +58,7 @@ interface ToolGridProps {
 
 export function ToolGrid({ 
   limit = 12, 
-  queryType = "featured",
+  queryType = "all",
   searchTerm,
   categoryFilter,
   searchQuery = "",
@@ -77,6 +78,7 @@ export function ToolGrid({
       try {
         let query = supabase.from("tools").select("*");
         
+        // Only apply the featured filter if queryType is explicitly "featured"
         if (queryType === "featured") {
           query = query.eq("is_featured", true);
         }
@@ -111,30 +113,12 @@ export function ToolGrid({
           });
         }
         
-        switch (effectiveSortBy) {
-          case "top-rated":
-            query = query.order("id", { ascending: false });
-            break;
-          case "newest":
-          case "recent":
-            query = query.order("created_at", { ascending: false });
-            break;
-          case "popular":
-            query = query.order("click_count", { ascending: false });
-            break;
-          case "featured":
-            if (queryType !== "featured") {
-              query = query.eq("is_featured", true);
-            }
-            query = query.order("id");
-            break;
-          default:
-            query = query.order("id");
-            break;
-        }
+        // We'll handle sorting in our JS code after fetching
+        // Here we just need to ensure we get all the data
         
         if (limit) {
-          query = query.limit(limit);
+          // We're not applying the limit at the query level anymore
+          // We'll apply it after sorting the data in JS
         }
         
         const { data, error } = await query;
@@ -156,14 +140,8 @@ export function ToolGrid({
     refetchOnWindowFocus: false
   });
 
+  // Prepare and sort tools
   const tools = (dbTools || []).map(dbTool => {
-    console.log("Raw tool data:", { 
-      id: dbTool.id, 
-      name: dbTool.company_name, 
-      is_featured: dbTool.is_featured, 
-      is_verified: dbTool.is_verified 
-    });
-    
     return {
       id: dbTool.id,
       name: dbTool.company_name || "",
@@ -174,7 +152,7 @@ export function ToolGrid({
       logo_url: dbTool.logo_url || "",
       category: dbTool.primary_task || "",
       primary_task: dbTool.primary_task || "",
-      rating: 4,
+      rating: 4, // This would ideally be the actual rating from reviews
       reviewCount: 0,
       pricing: dbTool.pricing || "",
       url: dbTool.visit_website_url || dbTool.detail_url || "#",
@@ -189,6 +167,31 @@ export function ToolGrid({
       ...dbTool
     };
   });
+
+  // Custom sort function that prioritizes Featured > Verified > Others
+  const sortedTools = [...tools].sort((a, b) => {
+    // First priority: Featured tools
+    if (Boolean(a.is_featured) && !Boolean(b.is_featured)) return -1;
+    if (!Boolean(a.is_featured) && Boolean(b.is_featured)) return 1;
+    
+    // Second priority: Verified tools
+    if (Boolean(a.is_verified) && !Boolean(b.is_verified)) return -1;
+    if (!Boolean(a.is_verified) && Boolean(b.is_verified)) return 1;
+    
+    // Third priority: Rating
+    if ((a.rating || 0) > (b.rating || 0)) return -1;
+    if ((a.rating || 0) < (b.rating || 0)) return 1;
+    
+    // Fourth priority: Category (if specified in filters)
+    if (effectiveCategoryFilter && a.primary_task === effectiveCategoryFilter && b.primary_task !== effectiveCategoryFilter) return -1;
+    if (effectiveCategoryFilter && a.primary_task !== effectiveCategoryFilter && b.primary_task === effectiveCategoryFilter) return 1;
+    
+    // Fifth priority: By click count (popularity)
+    return (b.click_count || 0) - (a.click_count || 0);
+  });
+
+  // Apply limit after sorting
+  const limitedTools = limit ? sortedTools.slice(0, limit) : sortedTools;
   
   if (isLoading) {
     return <ToolGridSkeleton count={limit || 8} columnsPerRow={columnsPerRow} />;
@@ -214,7 +217,7 @@ export function ToolGrid({
     );
   }
   
-  if (!tools.length) {
+  if (!limitedTools.length) {
     return <EmptyToolsMessage />;
   }
   
@@ -237,7 +240,7 @@ export function ToolGrid({
   
   return (
     <div className={`grid ${gridColsClasses} gap-4`}>
-      {tools.map((tool, index) => (
+      {limitedTools.map((tool, index) => (
         <MotionWrapper 
           key={tool.id} 
           animation="fadeIn" 

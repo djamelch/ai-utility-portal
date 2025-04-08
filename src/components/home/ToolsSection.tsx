@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface ToolsSectionProps {
   title: string;
   description: string;
-  queryType: "featured" | "top-rated" | "recent";
+  queryType: "featured" | "top-rated" | "recent" | "all";
   limit?: number;
 }
 
@@ -45,15 +45,18 @@ export function ToolsSection({
           query = query.order("created_at", { ascending: false });
           break;
         case "featured":
+          // Only filter by is_featured if we're specifically showing featured tools
+          query = query.eq("is_featured", true).order("id");
+          break;
+        case "all":
         default:
-          // If queryType is "featured", filter by is_featured being true
-          query = queryType === "featured" 
-            ? query.eq("is_featured", true).order("id") 
-            : query.order("id");
+          // No filtering, we'll sort in JS
+          query = query.order("id");
           break;
       }
       
-      if (limit) {
+      // We'll apply limit after sorting for "all"
+      if (limit && queryType !== "all") {
         query = query.limit(limit);
       }
       
@@ -64,7 +67,6 @@ export function ToolsSection({
         return [];
       }
       
-      console.log(`Fetched ${queryType} tools:`, data);
       return data as any[];
     }
   });
@@ -93,6 +95,31 @@ export function ToolsSection({
     isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
     ...dbTool
   }));
+
+  // Sort tools if queryType is "all"
+  const sortedTools = queryType === "all" 
+    ? [...tools].sort((a, b) => {
+        // First priority: Featured
+        if (Boolean(a.is_featured) && !Boolean(b.is_featured)) return -1;
+        if (!Boolean(a.is_featured) && Boolean(b.is_featured)) return 1;
+        
+        // Second priority: Verified
+        if (Boolean(a.is_verified) && !Boolean(b.is_verified)) return -1;
+        if (!Boolean(a.is_verified) && Boolean(b.is_verified)) return 1;
+        
+        // Third priority: Rating and then popularity
+        if ((a.rating || 0) !== (b.rating || 0)) {
+          return (b.rating || 0) - (a.rating || 0);
+        }
+        
+        return (b.click_count || 0) - (a.click_count || 0);
+      })
+    : tools;
+  
+  // Apply limit after sorting for "all" queryType
+  const displayTools = queryType === "all" && limit 
+    ? sortedTools.slice(0, limit) 
+    : sortedTools;
   
   return (
     <section className="section-padding">
@@ -125,7 +152,7 @@ export function ToolsSection({
                       <EnhancedLoadingIndicator variant="pulse" text="Loading tools..." />
                     </div>
                   </CarouselItem>
-                ) : tools.length === 0 ? (
+                ) : displayTools.length === 0 ? (
                   <CarouselItem className="pl-2 md:pl-4 basis-full sm:basis-full">
                     <div className="text-center p-8">
                       <h3 className="text-xl font-medium">No tools found</h3>
@@ -135,7 +162,7 @@ export function ToolsSection({
                     </div>
                   </CarouselItem>
                 ) : (
-                  tools.map((tool, index) => (
+                  displayTools.map((tool, index) => (
                     <CarouselItem key={tool.id} className="pl-2 md:pl-4 basis-full sm:basis-full">
                       <MotionWrapper 
                         animation="fadeIn" 
@@ -159,7 +186,11 @@ export function ToolsSection({
               <EnhancedLoadingIndicator variant="pulse" text="Loading tools..." />
             </div>
           ) : (
-            <ToolGrid queryType={queryType} limit={limit} columnsPerRow={3} />
+            <ToolGrid 
+              queryType={queryType === "all" ? "all" : queryType} 
+              limit={limit} 
+              columnsPerRow={3} 
+            />
           )
         )}
         

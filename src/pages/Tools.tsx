@@ -281,6 +281,7 @@ const Tools = () => {
             
             <MotionWrapper animation="fadeIn" delay="delay-300">
               <ToolGrid 
+                queryType="all"
                 searchQuery={searchQuery}
                 category={category}
                 pricing={pricing}
