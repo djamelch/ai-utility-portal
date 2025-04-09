@@ -66,13 +66,13 @@ export function SavedToolCard({
       {/* Enhanced visibility of indicators at top-right */}
       <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
         {isToolFeatured && (
-          <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
-            <Award className="h-3 w-3 text-white" />
+          <Badge variant="featured" className="flex items-center gap-1.5">
+            <Award className="h-3 w-3" />
             <span>Featured</span>
           </Badge>
         )}
         {isToolVerified && (
-          <Badge variant="verified" className="flex items-center gap-1.5 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+          <Badge variant="verified" className="flex items-center gap-1.5">
             <ShieldCheck className="h-3 w-3" />
             <span>Verified</span>
           </Badge>
