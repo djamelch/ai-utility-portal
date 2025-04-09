@@ -1,8 +1,6 @@
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { BookmarkX, ExternalLink, Award, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -41,13 +39,10 @@ export function SavedToolCard({
   onRemove
 }: SavedToolProps) {
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   // Make sure we capture both naming conventions for these properties
   const isToolFeatured = Boolean(isFeatured || is_featured);
   const isToolVerified = Boolean(isVerified || is_verified);
-  
-  console.log("SavedToolCard data:", { name, isToolFeatured, isToolVerified, is_featured, is_verified });
   
   const handleVisit = async () => {
     if (!visit_website_url) return;
