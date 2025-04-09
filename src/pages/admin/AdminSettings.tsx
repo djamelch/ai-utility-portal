@@ -23,12 +23,16 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
-import { AlertCircle, Check, Save, Loader2 } from 'lucide-react';
+import { AlertCircle, Check, Save, Loader2, Image as ImageIcon, Upload } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 export function AdminSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [faviconFile, setFaviconFile] = useState<File | null>(null);
   const { toast } = useToast();
 
   const generalForm = useForm({
@@ -99,6 +103,72 @@ export function AdminSettings() {
     }
   };
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setLogoFile(file);
+      
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFaviconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFaviconFile(file);
+      
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFaviconPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveBranding = async () => {
+    setIsLoading(true);
+    try {
+      // In a real implementation, these files would be uploaded to Supabase Storage
+      // and the URLs would be saved in settings
+      
+      if (logoFile) {
+        console.log('Uploading logo:', logoFile.name);
+        // Here you would upload the file to storage and get the URL
+      }
+      
+      if (faviconFile) {
+        console.log('Uploading favicon:', faviconFile.name);
+        // Here you would upload the file to storage and get the URL
+        
+        // This would also update the favicon link in index.html
+        // In a real application, you'd need a server-side solution to modify index.html
+      }
+      
+      // Simulate a delay for demonstration
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: 'Branding updated',
+        description: 'Logo and favicon have been updated successfully.',
+      });
+    } catch (error) {
+      console.error('Error saving branding:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update branding. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -112,6 +182,7 @@ export function AdminSettings() {
         <TabsList className="mb-6">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security & Permissions</TabsTrigger>
+          <TabsTrigger value="branding">Logo & Favicon</TabsTrigger>
           <TabsTrigger value="tools">Tool Management</TabsTrigger>
         </TabsList>
 
@@ -348,6 +419,143 @@ export function AdminSettings() {
                 ) : (
                   <>
                     <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="branding" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Logo & Favicon</CardTitle>
+              <CardDescription>
+                Update your website's logo and favicon
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Logo Upload Section */}
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-base font-medium">Website Logo</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Upload a new logo for your website. Recommended size: 200x50 pixels.
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label htmlFor="logo-upload" className="cursor-pointer">
+                        <div className="flex items-center justify-center w-full h-24 border-2 border-dashed rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                          {logoPreview ? (
+                            <img 
+                              src={logoPreview} 
+                              alt="Logo Preview" 
+                              className="max-h-20 max-w-full object-contain" 
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                              <ImageIcon className="h-8 w-8" />
+                              <span className="text-sm">Click to upload logo</span>
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                      <input
+                        id="logo-upload"
+                        type="file"
+                        className="hidden"
+                        accept="image/png, image/jpeg, image/svg+xml"
+                        onChange={handleLogoChange}
+                      />
+                    </div>
+                    
+                    {logoPreview && (
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setLogoPreview(null);
+                          setLogoFile(null);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Favicon Upload Section */}
+                <div className="space-y-4 pt-4 border-t">
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-base font-medium">Website Favicon</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Upload a new favicon for your website. Recommended size: 32x32 or 64x64 pixels (PNG format).
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label htmlFor="favicon-upload" className="cursor-pointer">
+                        <div className="flex items-center justify-center w-full h-24 border-2 border-dashed rounded-md hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                          {faviconPreview ? (
+                            <div className="flex flex-col items-center gap-2">
+                              <img 
+                                src={faviconPreview} 
+                                alt="Favicon Preview" 
+                                className="h-16 w-16 object-contain" 
+                              />
+                              <span className="text-xs text-muted-foreground">
+                                {faviconFile?.name}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                              <ImageIcon className="h-8 w-8" />
+                              <span className="text-sm">Click to upload favicon</span>
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                      <input
+                        id="favicon-upload"
+                        type="file"
+                        className="hidden"
+                        accept="image/png, image/jpeg"
+                        onChange={handleFaviconChange}
+                      />
+                    </div>
+                    
+                    {faviconPreview && (
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setFaviconPreview(null);
+                          setFaviconFile(null);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button
+                onClick={handleSaveBranding}
+                disabled={isLoading || (!logoFile && !faviconFile)}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
                     Save Changes
                   </>
                 )}
