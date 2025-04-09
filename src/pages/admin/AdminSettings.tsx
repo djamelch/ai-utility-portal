@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -35,6 +34,19 @@ export function AdminSettings() {
   const [faviconFile, setFaviconFile] = useState<File | null>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    const savedLogo = localStorage.getItem('site-logo');
+    const savedFavicon = localStorage.getItem('site-favicon');
+    
+    if (savedLogo) {
+      setLogoPreview(savedLogo);
+    }
+    
+    if (savedFavicon) {
+      setFaviconPreview(savedFavicon);
+    }
+  }, []);
+
   const generalForm = useForm({
     defaultValues: {
       siteName: 'AI Tools Directory',
@@ -56,10 +68,8 @@ export function AdminSettings() {
   const handleSaveGeneral = async (data: any) => {
     setIsLoading(true);
     try {
-      // In a real implementation, this would save to Supabase or another backend
       console.log('Saving general settings:', data);
       
-      // Simulate a delay for demonstration
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
@@ -81,10 +91,8 @@ export function AdminSettings() {
   const handleSaveSecurity = async (data: any) => {
     setIsLoading(true);
     try {
-      // In a real implementation, this would save to Supabase or another backend
       console.log('Saving security settings:', data);
       
-      // Simulate a delay for demonstration
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
@@ -108,7 +116,6 @@ export function AdminSettings() {
       const file = e.target.files[0];
       setLogoFile(file);
       
-      // Create a preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogoPreview(reader.result as string);
@@ -122,7 +129,6 @@ export function AdminSettings() {
       const file = e.target.files[0];
       setFaviconFile(file);
       
-      // Create a preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         setFaviconPreview(reader.result as string);
@@ -134,24 +140,19 @@ export function AdminSettings() {
   const handleSaveBranding = async () => {
     setIsLoading(true);
     try {
-      // In a real implementation, these files would be uploaded to Supabase Storage
-      // and the URLs would be saved in settings
-      
-      if (logoFile) {
-        console.log('Uploading logo:', logoFile.name);
-        // Here you would upload the file to storage and get the URL
+      if (logoPreview) {
+        localStorage.setItem('site-logo', logoPreview);
+        console.log('Logo saved to localStorage');
       }
       
-      if (faviconFile) {
-        console.log('Uploading favicon:', faviconFile.name);
-        // Here you would upload the file to storage and get the URL
+      if (faviconPreview) {
+        localStorage.setItem('site-favicon', faviconPreview);
+        console.log('Favicon saved to localStorage');
         
-        // This would also update the favicon link in index.html
-        // In a real application, you'd need a server-side solution to modify index.html
+        window.location.reload();
       }
       
-      // Simulate a delay for demonstration
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
         title: 'Branding updated',
@@ -437,7 +438,6 @@ export function AdminSettings() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {/* Logo Upload Section */}
                 <div className="space-y-4">
                   <div className="flex flex-col gap-2">
                     <h3 className="text-base font-medium">Website Logo</h3>
@@ -479,6 +479,7 @@ export function AdminSettings() {
                         onClick={() => {
                           setLogoPreview(null);
                           setLogoFile(null);
+                          localStorage.removeItem('site-logo');
                         }}
                       >
                         Remove
@@ -487,7 +488,6 @@ export function AdminSettings() {
                   </div>
                 </div>
                 
-                {/* Favicon Upload Section */}
                 <div className="space-y-4 pt-4 border-t">
                   <div className="flex flex-col gap-2">
                     <h3 className="text-base font-medium">Website Favicon</h3>
@@ -534,6 +534,7 @@ export function AdminSettings() {
                         onClick={() => {
                           setFaviconPreview(null);
                           setFaviconFile(null);
+                          localStorage.removeItem('site-favicon');
                         }}
                       >
                         Remove
