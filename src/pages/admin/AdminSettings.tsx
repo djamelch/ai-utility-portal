@@ -148,8 +148,6 @@ export function AdminSettings() {
       if (faviconPreview) {
         localStorage.setItem('site-favicon', faviconPreview);
         console.log('Favicon saved to localStorage');
-        
-        window.location.reload();
       }
       
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -158,6 +156,8 @@ export function AdminSettings() {
         title: 'Branding updated',
         description: 'Logo and favicon have been updated successfully.',
       });
+      
+      window.location.reload();
     } catch (error) {
       console.error('Error saving branding:', error);
       toast({

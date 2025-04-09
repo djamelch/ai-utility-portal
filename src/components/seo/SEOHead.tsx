@@ -1,5 +1,6 @@
 
 import { Helmet } from 'react-helmet-async';
+import { useEffect, useState } from 'react';
 
 interface SEOProps {
   title?: string;
@@ -27,6 +28,27 @@ export const SEOHead: React.FC<SEOProps> = ({
   const siteUrl = "https://your-domain.com";
   const fullUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
   
+  const [storedLogo, setStoredLogo] = useState<string | null>(null);
+  const [storedFavicon, setStoredFavicon] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Load logo and favicon from localStorage
+    const savedLogo = localStorage.getItem('site-logo');
+    const savedFavicon = localStorage.getItem('site-favicon');
+    
+    if (savedLogo) {
+      setStoredLogo(savedLogo);
+    }
+    
+    if (savedFavicon) {
+      setStoredFavicon(savedFavicon);
+    }
+  }, []);
+  
+  // Use custom props if provided, otherwise use stored values, then fall back to defaults
+  const finalLogo = customLogo || storedLogo || ogImage;
+  const finalFavicon = customFavicon || storedFavicon || null;
+  
   return (
     <Helmet>
       {/* Basic Metadata */}
@@ -38,8 +60,8 @@ export const SEOHead: React.FC<SEOProps> = ({
       <link rel="canonical" href={fullUrl} />
       
       {/* Favicon */}
-      {customFavicon && (
-        <link rel="icon" href={customFavicon} type="image/png" />
+      {finalFavicon && (
+        <link rel="icon" href={finalFavicon} type="image/png" />
       )}
       
       {/* Open Graph / Facebook */}
@@ -47,14 +69,14 @@ export const SEOHead: React.FC<SEOProps> = ({
       <meta property="og:url" content={fullUrl} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={customLogo || ogImage} />
+      <meta property="og:image" content={finalLogo} />
       
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={fullUrl} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={customLogo || ogImage} />
+      <meta name="twitter:image" content={finalLogo} />
       
       {children}
     </Helmet>
