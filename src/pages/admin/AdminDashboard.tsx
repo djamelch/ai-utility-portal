@@ -300,6 +300,12 @@ export default function AdminDashboard() {
             </TabsContent>
           )}
           
+          {location.pathname === '/admin/tools' && (
+            <TabsContent value="tools">
+              <AdminTools />
+            </TabsContent>
+          )}
+          
           {location.pathname === '/admin/users' && (
             <TabsContent value="users">
               <AdminUsers />
