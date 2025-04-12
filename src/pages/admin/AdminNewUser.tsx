@@ -132,20 +132,23 @@ export function AdminNewUser() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-row items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <FormLabel className="text-base">
-                تفعيل إنشاء المشرفين
-              </FormLabel>
-              <FormDescription>
-                السماح بإنشاء مستخدمين جدد بصلاحيات مشرف
-              </FormDescription>
+          {/* Wrap this in a Form component to provide the FormContext */}
+          <Form {...form}>
+            <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  تفعيل إنشاء المشرفين
+                </FormLabel>
+                <FormDescription>
+                  السماح بإنشاء مستخدمين جدد بصلاحيات مشرف
+                </FormDescription>
+              </div>
+              <Switch
+                checked={enableAdminCreation}
+                onCheckedChange={handleEnableAdminCreation}
+              />
             </div>
-            <Switch
-              checked={enableAdminCreation}
-              onCheckedChange={handleEnableAdminCreation}
-            />
-          </div>
+          </Form>
           
           {!enableAdminCreation && (
             <Alert className="mt-4 border-amber-500 bg-amber-50 dark:bg-amber-900/20">
