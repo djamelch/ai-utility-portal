@@ -31,8 +31,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const newUserSchema = z.object({
-  email: z.string().email({ message: "البريد الإلكتروني غير صالح" }),
-  password: z.string().min(6, { message: "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   makeAdmin: z.boolean().default(false),
 });
 
@@ -56,10 +56,10 @@ export function AdminNewUser() {
     setEnableAdminCreation(!enableAdminCreation);
     
     toast({
-      title: enableAdminCreation ? "تم تعطيل إنشاء المشرفين" : "تم تفعيل إنشاء المشرفين",
+      title: enableAdminCreation ? "Admin creation disabled" : "Admin creation enabled",
       description: enableAdminCreation ? 
-        "لن يتمكن المستخدمون الجدد من أن يكونوا مشرفين" : 
-        "يمكنك الآن إنشاء مستخدمين جدد كمشرفين",
+        "New users cannot be created as admins" : 
+        "You can now create new users as admins",
     });
   };
 
@@ -75,7 +75,7 @@ export function AdminNewUser() {
       });
       
       if (signUpError) throw signUpError;
-      if (!userData.user) throw new Error("فشل إنشاء المستخدم");
+      if (!userData.user) throw new Error("Failed to create user");
       
       const userId = userData.user.id;
       
@@ -93,8 +93,8 @@ export function AdminNewUser() {
       }
       
       toast({
-        title: "تم إنشاء المستخدم بنجاح",
-        description: `تم إضافة ${data.email} ${data.makeAdmin && enableAdminCreation ? 'كمشرف' : 'كمستخدم عادي'}`,
+        title: "User created successfully",
+        description: `${data.email} added as ${data.makeAdmin && enableAdminCreation ? 'an admin' : 'a regular user'}`,
       });
       
       // Reset form
@@ -103,8 +103,8 @@ export function AdminNewUser() {
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast({
-        title: "فشل إنشاء المستخدم",
-        description: error.message || "حدث خطأ غير متوقع",
+        title: "Failed to create user",
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -115,9 +115,9 @@ export function AdminNewUser() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold">إدارة المستخدمين</h2>
+        <h2 className="text-lg font-semibold">User Management</h2>
         <p className="text-muted-foreground">
-          إنشاء مستخدمين جدد وإدارة أدوارهم
+          Create new users and manage their roles
         </p>
       </div>
       
@@ -125,10 +125,10 @@ export function AdminNewUser() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-purple-500" />
-            إعدادات إنشاء المشرفين
+            Admin Creation Settings
           </CardTitle>
           <CardDescription>
-            التحكم في إمكانية إنشاء مستخدمين جدد بصلاحيات مشرف
+            Control the ability to create new users with admin privileges
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -137,10 +137,10 @@ export function AdminNewUser() {
             <div className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">
-                  تفعيل إنشاء المشرفين
+                  Enable Admin Creation
                 </FormLabel>
                 <FormDescription>
-                  السماح بإنشاء مستخدمين جدد بصلاحيات مشرف
+                  Allow creation of new users with admin privileges
                 </FormDescription>
               </div>
               <Switch
@@ -153,9 +153,9 @@ export function AdminNewUser() {
           {!enableAdminCreation && (
             <Alert className="mt-4 border-amber-500 bg-amber-50 dark:bg-amber-900/20">
               <AlertCircle className="h-4 w-4 text-amber-600" />
-              <AlertTitle>خاصية إنشاء المشرفين معطلة</AlertTitle>
+              <AlertTitle>Admin creation is disabled</AlertTitle>
               <AlertDescription>
-                قم بتفعيل الخيار أعلاه لتتمكن من إنشاء مستخدمين جدد بصلاحيات مشرف.
+                Enable the option above to create new users with admin privileges.
               </AlertDescription>
             </Alert>
           )}
@@ -166,10 +166,10 @@ export function AdminNewUser() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-blue-500" />
-            إنشاء مستخدم جديد
+            Create New User
           </CardTitle>
           <CardDescription>
-            إضافة مستخدم جديد للنظام مع تحديد دوره
+            Add a new user to the system and define their role
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -180,12 +180,12 @@ export function AdminNewUser() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>البريد الإلكتروني</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input 
-                          placeholder="ادخل البريد الإلكتروني" 
+                          placeholder="Enter email address" 
                           className="pl-10" 
                           {...field} 
                         />
@@ -201,13 +201,13 @@ export function AdminNewUser() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>كلمة المرور</FormLabel>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input 
                           type="password" 
-                          placeholder="أدخل كلمة المرور" 
+                          placeholder="Enter password" 
                           className="pl-10" 
                           {...field} 
                         />
@@ -226,10 +226,10 @@ export function AdminNewUser() {
                     <div className="space-y-0.5">
                       <FormLabel className="text-base flex items-center gap-2">
                         <Shield className="h-4 w-4 text-purple-500" />
-                        مشرف
+                        Admin
                       </FormLabel>
                       <FormDescription>
-                        تعيين هذا المستخدم كمشرف مع صلاحيات كاملة
+                        Set this user as an admin with full privileges
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -251,12 +251,12 @@ export function AdminNewUser() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    جاري الإنشاء...
+                    Creating...
                   </>
                 ) : (
                   <>
                     <UserCheck className="mr-2 h-4 w-4" />
-                    إنشاء المستخدم
+                    Create User
                   </>
                 )}
               </Button>
