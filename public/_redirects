@@ -1,0 +1,7 @@
+
+# Redirect default Netlify subdomain to primary domain
+https://ai-tools-directory.pages.dev/* https://your-domain.com/:splat 301!
+
+# Handle single page application routing - send all paths to index.html
+/*    /index.html   200
+
