@@ -10,11 +10,12 @@ import { AdminAnalytics } from './AdminAnalytics';
 import { AdminSettings } from './AdminSettings';
 import { AdminBlogs } from './AdminBlogs';
 import { AdminSubmissions } from './AdminSubmissions';
+import { AdminNewUser } from './AdminNewUser';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   BarChart, Users, Settings, Database, LayoutDashboard, Shield,
-  FileInput, ArrowLeft, Loader2, FileText, InboxIcon
+  FileInput, ArrowLeft, Loader2, FileText, InboxIcon, UserPlus
 } from 'lucide-react';
 import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
@@ -137,6 +138,9 @@ export default function AdminDashboard() {
       case 'submissions':
         navigate('/admin/submissions');
         break;
+      case 'newuser':
+        navigate('/admin/newuser');
+        break;
       case 'analytics':
       default:
         navigate('/admin');
@@ -255,7 +259,8 @@ export default function AdminDashboard() {
                  location.pathname.includes('/admin/users') ? 'users' :
                  location.pathname.includes('/admin/blogs') ? 'blogs' :
                  location.pathname.includes('/admin/submissions') ? 'submissions' :
-                 location.pathname.includes('/admin/settings') ? 'settings' : 'analytics'}
+                 location.pathname.includes('/admin/settings') ? 'settings' :
+                 location.pathname.includes('/admin/newuser') ? 'newuser' : 'analytics'}
           onValueChange={navigateToTab}
           className="w-full"
         >
@@ -280,6 +285,10 @@ export default function AdminDashboard() {
               <InboxIcon className="h-4 w-4 mr-2" />
               Submissions
             </TabsTrigger>
+            <TabsTrigger value="newuser">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add User
+            </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
               Settings
@@ -289,6 +298,12 @@ export default function AdminDashboard() {
           {location.pathname === '/admin' && (
             <TabsContent value="analytics">
               <AdminAnalytics />
+            </TabsContent>
+          )}
+          
+          {location.pathname === '/admin/newuser' && (
+            <TabsContent value="newuser">
+              <AdminNewUser />
             </TabsContent>
           )}
         </Tabs>

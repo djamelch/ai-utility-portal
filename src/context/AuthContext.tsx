@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,8 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Profile doesn't exist, create one
-      // CHANGED: Make all new users admins by default
-      const role = 'admin'; // Changed from conditional to always be 'admin'
+      // CHANGED: New users are always regular users (not admins)
+      const role = 'user'; // Changed to always be 'user'
       
       // Create the user profile using RPC
       const { error: createError } = await supabase.rpc('create_new_profile', {
@@ -79,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fallback to create a mock profile for authentication to continue working
       setProfile({
         id: userId,
-        role: 'admin', // Changed from 'user' to 'admin' for fallback too
+        role: 'user', // Changed from 'admin' to 'user' for fallback too
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
