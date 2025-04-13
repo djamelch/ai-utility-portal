@@ -28,28 +28,22 @@ export function AdminUsers() {
     try {
       setIsLoading(true);
       
-      // Fetch users from Supabase auth - get the users from auth.users
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) throw authError;
-
-      // Fetch profiles to get role information
+      // Fetch profiles directly (more reliable than trying to use admin API)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, role, created_at');
+        .select('id, email, role, created_at, last_sign_in_at');
       
       if (profilesError) throw profilesError;
       
-      // Map auth users with profile data
-      const mappedUsers: User[] = authUsers?.users.map(user => {
-        const profile = profiles?.find(p => p.id === user.id);
+      // Map profiles to user format
+      const mappedUsers: User[] = profiles?.map(profile => {
         return {
-          id: user.id,
-          email: user.email || 'No email',
-          created_at: user.created_at || new Date().toISOString(),
-          last_sign_in_at: user.last_sign_in_at,
+          id: profile.id,
+          email: profile.email || 'No email',
+          created_at: profile.created_at || new Date().toISOString(),
+          last_sign_in_at: profile.last_sign_in_at,
           // Check if role in profile is 'admin'
-          is_admin: profile?.role === 'admin'
+          is_admin: profile.role === 'admin'
         };
       }) || [];
       
@@ -58,7 +52,7 @@ export function AdminUsers() {
       console.error('Error fetching users:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load users. You may not have admin privileges.',
+        description: 'Failed to load users. Please check your database permissions.',
         variant: 'destructive',
       });
     } finally {
@@ -68,19 +62,12 @@ export function AdminUsers() {
   
   const handleDeleteUser = async (userToDelete: User) => {
     try {
-      // Delete the user from auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(userToDelete.id);
-      
-      if (authError) throw authError;
-      
-      // Profile will be automatically deleted via cascade
-      
-      // Update the local state
-      setUsers(users.filter(user => user.id !== userToDelete.id));
-      
+      // We can't directly delete users without admin API privileges
+      // Instead, we'll create an edge function or use an alternative approach
+      // For now, show a message about this limitation
       toast({
-        title: 'Success',
-        description: `User ${userToDelete.email} has been deleted.`,
+        title: 'Information',
+        description: 'User deletion requires additional server-side privileges. Please contact the system administrator.',
       });
     } catch (error: any) {
       console.error('Error deleting user:', error);

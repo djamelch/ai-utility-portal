@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -309,6 +310,24 @@ export default function AdminDashboard() {
           {location.pathname === '/admin/users' && (
             <TabsContent value="users">
               <AdminUsers />
+            </TabsContent>
+          )}
+          
+          {location.pathname === '/admin/blogs' && (
+            <TabsContent value="blogs">
+              <AdminBlogs />
+            </TabsContent>
+          )}
+          
+          {location.pathname === '/admin/submissions' && (
+            <TabsContent value="submissions">
+              <AdminSubmissions />
+            </TabsContent>
+          )}
+          
+          {location.pathname === '/admin/settings' && (
+            <TabsContent value="settings">
+              <AdminSettings />
             </TabsContent>
           )}
           
