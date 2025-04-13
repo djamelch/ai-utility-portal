@@ -1,5 +1,6 @@
 
-name = "ai-tools-directory"
+# wrangler.toml
+name = "aianytool"
 main = "./dist/index.js"
 compatibility_date = "2025-04-12"
 account_id = "90fa152a04decb2d054f34c86911b267"
