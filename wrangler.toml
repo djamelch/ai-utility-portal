@@ -4,24 +4,14 @@ main = "./dist/index.js"
 compatibility_date = "2025-04-12"
 account_id = "90fa152a04decb2d054f34c86911b267"
 workers_dev = true
-route = ""
-zone_id = ""
 
 [site]
 bucket = "./dist"
-entry-point = "."
 
 [build]
 command = "npm run build"
 upload.format = "service-worker"
-watch_dir = "src"
 
 [env.production]
 name = "ai-tools-directory-prod"
-route = "https://your-domain.com/*"
-zones = ["your-zone-id"]
-
-[env.staging]
-name = "ai-tools-directory-staging"
-workers_dev = true
-
+workers_dev = false
