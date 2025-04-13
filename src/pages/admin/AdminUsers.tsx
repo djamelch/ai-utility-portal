@@ -29,25 +29,36 @@ export function AdminUsers() {
       setIsLoading(true);
       
       // Fetch profiles directly - only select columns that exist in the profiles table
-      const { data: profiles, error: profilesError } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('id, role, created_at, updated_at');
       
-      if (profilesError) throw profilesError;
+      if (error) throw error;
       
-      // Since we don't have emails in profiles, we'll use a placeholder or id as email
-      const mappedUsers: User[] = profiles?.map(profile => {
-        return {
-          id: profile.id,
-          email: `user-${profile.id.substring(0, 8)}@example.com`, // Placeholder email based on ID
-          created_at: profile.created_at || new Date().toISOString(),
-          last_sign_in_at: profile.updated_at, // Using updated_at as a proxy for last sign in
-          // Check if role in profile is 'admin'
-          is_admin: profile.role === 'admin'
-        };
-      }) || [];
-      
-      setUsers(mappedUsers);
+      // Make sure data is not null before mapping
+      if (data) {
+        // Since we don't have emails in profiles, we'll use a placeholder or id as email
+        const mappedUsers: User[] = data.map(profile => {
+          return {
+            id: profile.id,
+            email: `user-${profile.id.substring(0, 8)}@example.com`, // Placeholder email based on ID
+            created_at: profile.created_at || new Date().toISOString(),
+            last_sign_in_at: profile.updated_at, // Using updated_at as a proxy for last sign in
+            // Check if role in profile is 'admin'
+            is_admin: profile.role === 'admin'
+          };
+        });
+        
+        setUsers(mappedUsers);
+      } else {
+        // Handle the case where data is null
+        setUsers([]);
+        toast({
+          title: 'Warning',
+          description: 'No user profiles were found.',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -55,6 +66,7 @@ export function AdminUsers() {
         description: 'Failed to load users. Please check your database permissions.',
         variant: 'destructive',
       });
+      setUsers([]); // Set empty array on error
     } finally {
       setIsLoading(false);
     }
