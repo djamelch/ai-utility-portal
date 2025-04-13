@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,6 +20,8 @@ import { PageLoadingWrapper } from '@/components/ui/PageLoadingWrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
 
 export default function AdminDashboard() {
   const { isAdmin, isLoading } = useAuth();
@@ -154,8 +155,9 @@ export default function AdminDashboard() {
       loadingText="Loading admin dashboard..."
       variant="progress"
     >
+      <Navbar />
       <MotionWrapper animation="fadeIn">
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-24">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold">
               Admin Dashboard
@@ -338,6 +340,7 @@ export default function AdminDashboard() {
           )}
         </Tabs>
       </MotionWrapper>
+      <Footer />
     </PageLoadingWrapper>
   );
 }
