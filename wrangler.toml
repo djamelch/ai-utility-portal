@@ -9,10 +9,9 @@ workers_dev = true
 [site]
 bucket = "./dist"
 
-# Completely removing build configuration to let Cloudflare handle it
-# [build]
-# command = "npm run build"
-# upload.format = "service-worker"
+[vars]
+ROLLUP_SKIP_NATIVES = "true"
+NODE_OPTIONS = "--no-experimental-fetch"
 
 [env.production]
 name = "ai-tools-directory-prod"

@@ -16,3 +16,6 @@ yarn.lock
 **/rollup-linux-*
 **/rollup-darwin-*
 **/rollup-win32-*
+# Exclude native modules
+**/*.node
+**/native/**
