@@ -16,3 +16,7 @@ upload.format = "service-worker"
 name = "ai-tools-directory-prod"
 workers_dev = false
 route = "*/*"
+
+[vars]
+ROLLUP_SKIP_NATIVE = "true"
+NODE_OPTIONS = "--no-experimental-fetch"
