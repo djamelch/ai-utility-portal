@@ -38,4 +38,19 @@ export default defineConfig(({ mode }) => ({
       '@rollup/rollup-linux-x64-musl',
     ],
   },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      external: [
+        '@rollup/rollup-linux-x64-gnu',
+        '@rollup/rollup-darwin-x64',
+        '@rollup/rollup-darwin-arm64',
+        '@rollup/rollup-linux-arm64-gnu',
+        '@rollup/rollup-linux-arm64-musl',
+        '@rollup/rollup-win32-x64-msvc',
+        '@rollup/rollup-linux-x64-musl',
+      ]
+    }
+  }
 }));
