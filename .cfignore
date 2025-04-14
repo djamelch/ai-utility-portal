@@ -8,6 +8,5 @@ node_modules
 README.md
 supabase/functions
 .turbo
-# Remove these to prevent lockfile conflicts
-# pnpm-lock.yaml
-# yarn.lock
+pnpm-lock.yaml
+yarn.lock

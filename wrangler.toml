@@ -9,10 +9,9 @@ workers_dev = true
 [site]
 bucket = "./dist"
 
-# Remove the build command to let Cloudflare use your project's npm scripts
-# [build]
-# command = "npm run build"
-# upload.format = "service-worker"
+[build]
+command = "npm run build"
+upload.format = "service-worker"
 
 [env.production]
 name = "ai-tools-directory-prod"
