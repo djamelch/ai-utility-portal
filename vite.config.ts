@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import rollupMockPlugin from "./src/rollup-mock-plugin";
+import rollupMockPlugin from "./src/rollup-mock-plugin.js";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -21,9 +21,9 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       // Add alias for problematic Rollup modules
-      '@rollup/rollup-linux-x64-gnu': path.resolve(__dirname, './src/rollup-mock-plugin.ts'),
-      '@rollup/rollup-darwin-x64': path.resolve(__dirname, './src/rollup-mock-plugin.ts'),
-      '@rollup/rollup-win32-x64-msvc': path.resolve(__dirname, './src/rollup-mock-plugin.ts'),
+      '@rollup/rollup-linux-x64-gnu': path.resolve(__dirname, './src/rollup-linux-x64-gnu.js'),
+      '@rollup/rollup-darwin-x64': path.resolve(__dirname, './src/rollup-linux-x64-gnu.js'),
+      '@rollup/rollup-win32-x64-msvc': path.resolve(__dirname, './src/rollup-linux-x64-gnu.js'),
     },
   },
   // Configure build options to handle Rollup platform-specific dependencies
