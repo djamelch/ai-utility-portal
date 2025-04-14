@@ -8,14 +8,5 @@ node_modules
 README.md
 supabase/functions
 .turbo
-# Exclude all lockfiles to prevent dependency conflicts
-package-lock.json
 pnpm-lock.yaml
 yarn.lock
-# Exclude any platform-specific build artifacts
-**/rollup-linux-*
-**/rollup-darwin-*
-**/rollup-win32-*
-# Exclude native modules
-**/*.node
-**/native/**

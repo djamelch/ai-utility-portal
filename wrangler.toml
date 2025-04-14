@@ -9,9 +9,9 @@ workers_dev = true
 [site]
 bucket = "./dist"
 
-[vars]
-ROLLUP_SKIP_NATIVES = "true"
-NODE_OPTIONS = "--no-experimental-fetch"
+[build]
+command = "npm run build"
+upload.format = "service-worker"
 
 [env.production]
 name = "ai-tools-directory-prod"
