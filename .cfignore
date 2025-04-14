@@ -12,3 +12,7 @@ supabase/functions
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+# Exclude any platform-specific build artifacts
+**/rollup-linux-*
+**/rollup-darwin-*
+**/rollup-win32-*
