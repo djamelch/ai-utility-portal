@@ -15,6 +15,10 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Add alias for our mock module
+      '@rollup/rollup-linux-x64-gnu': path.resolve(__dirname, './src/rollup-mock.js'),
+      '@rollup/rollup-darwin-x64': path.resolve(__dirname, './src/rollup-mock.js'),
+      '@rollup/rollup-win32-x64-msvc': path.resolve(__dirname, './src/rollup-mock.js'),
     },
   },
   optimizeDeps: {
