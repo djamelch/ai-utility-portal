@@ -8,7 +8,7 @@ node_modules
 README.md
 supabase/functions
 .turbo
-# Remove all lockfile references completely
+# Exclude all lockfiles to prevent dependency conflicts
 package-lock.json
 pnpm-lock.yaml
 yarn.lock

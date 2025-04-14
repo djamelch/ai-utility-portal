@@ -9,7 +9,7 @@ workers_dev = true
 [site]
 bucket = "./dist"
 
-# Remove the build command completely to let Cloudflare use its own build process
+# Completely removing build configuration to let Cloudflare handle it
 # [build]
 # command = "npm run build"
 # upload.format = "service-worker"

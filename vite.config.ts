@@ -20,13 +20,21 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Add build configuration to optimize for Cloudflare
+  // Configure build options to handle Rollup platform-specific dependencies
   build: {
     target: 'esnext',
     minify: 'terser',
-    // This might help with the missing module issue
     rollupOptions: {
-      external: [/^@rollup\/rollup-linux.*/],
+      // Explicitly exclude all platform-specific Rollup modules
+      external: [
+        /^@rollup\/rollup-linux-.*/, 
+        /^@rollup\/rollup-darwin-.*/, 
+        /^@rollup\/rollup-win32-.*/
+      ],
     },
   },
+  optimizeDeps: {
+    // Skip optional dependencies that might cause issues
+    exclude: ['@rollup/rollup-linux-x64-gnu', '@rollup/rollup-darwin-x64', '@rollup/rollup-win32-x64-msvc'],
+  }
 }));
