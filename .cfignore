@@ -7,6 +7,3 @@ node_modules
 .vscode
 README.md
 supabase/functions
-.turbo
-pnpm-lock.yaml
-yarn.lock
