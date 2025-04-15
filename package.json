@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     
-    "build": "npm run build",
+    "build": "bun run vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "bun run vite preview",
     "start": "npm start",
-    "dev": "npm run dev"
+    "dev": "bun run vite"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
