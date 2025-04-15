@@ -202,10 +202,12 @@ export function Navbar({ className }: NavbarProps) {
                     <span>User Dashboard</span>
                   </DropdownMenuItem>
                   
-                  <DropdownMenuItem onClick={() => navigate('/admin')}>
-                    <Shield className="mr-2 h-4 w-4" />
-                    <span>Admin Dashboard</span>
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Admin Dashboard</span>
+                    </DropdownMenuItem>
+                  )}
                   
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -296,30 +298,31 @@ export function Navbar({ className }: NavbarProps) {
                     ))}
                     
                     {user && (
-                      <>
-                        <li>
-                          <SheetClose asChild>
-                            <Link
-                              to="/dashboard"
-                              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-                            >
-                              <LayoutDashboard className="h-5 w-5" />
-                              User Dashboard
-                            </Link>
-                          </SheetClose>
-                        </li>
-                        <li>
-                          <SheetClose asChild>
-                            <Link
-                              to="/admin"
-                              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
-                            >
-                              <Shield className="h-5 w-5" />
-                              Admin Dashboard
-                            </Link>
-                          </SheetClose>
-                        </li>
-                      </>
+                      <li>
+                        <SheetClose asChild>
+                          <Link
+                            to="/dashboard"
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                          >
+                            <LayoutDashboard className="h-5 w-5" />
+                            User Dashboard
+                          </Link>
+                        </SheetClose>
+                      </li>
+                    )}
+                    
+                    {user && isAdmin && (
+                      <li>
+                        <SheetClose asChild>
+                          <Link
+                            to="/admin"
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
+                          >
+                            <Shield className="h-5 w-5" />
+                            Admin Dashboard
+                          </Link>
+                        </SheetClose>
+                      </li>
                     )}
                   </ul>
                 </nav>
@@ -367,28 +370,28 @@ export function Navbar({ className }: NavbarProps) {
                 </li>
               ))}
               {user && (
-                <>
-                  <li>
-                    <Link
-                      to="/dashboard"
-                      className="text-xl font-medium flex items-center gap-2"
-                      onClick={toggleMenu}
-                    >
-                      <LayoutDashboard className="h-5 w-5" />
-                      Your Dashboard
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/admin"
-                      className="text-xl font-medium flex items-center gap-2"
-                      onClick={toggleMenu}
-                    >
-                      <Shield className="h-5 w-5" />
-                      Admin Dashboard
-                    </Link>
-                  </li>
-                </>
+                <li>
+                  <Link
+                    to="/dashboard"
+                    className="text-xl font-medium flex items-center gap-2"
+                    onClick={toggleMenu}
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    Your Dashboard
+                  </Link>
+                </li>
+              )}
+              {user && isAdmin && (
+                <li>
+                  <Link
+                    to="/admin"
+                    className="text-xl font-medium flex items-center gap-2"
+                    onClick={toggleMenu}
+                  >
+                    <Shield className="h-5 w-5" />
+                    Admin Dashboard
+                  </Link>
+                </li>
               )}
             </ul>
             <div className="mt-auto pt-8 flex flex-col gap-4">

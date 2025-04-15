@@ -5,9 +5,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Database, Shield, Users, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PromoteToAdmin } from '../admin/PromoteToAdmin';
+import { useAuth } from '@/context/AuthContext';
 
 export function AdminDashboardPreview() {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
+  
+  // If user is already an admin, don't show the preview
+  if (isAdmin) {
+    return null;
+  }
   
   // Direct navigation handlers for each admin section
   const navigateToAdminAnalytics = () => navigate('/admin');
