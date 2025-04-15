@@ -9,7 +9,7 @@ workers_dev = true
 bucket = "./dist"
 
 [build]
-command = "npm run build"
+command = "NODE_OPTIONS='--no-experimental-fetch' ROLLUP_SKIP_NATIVE=true npm run build"
 upload.format = "service-worker"
 
 [env.production]
@@ -17,7 +17,7 @@ name = "ai-tools-directory-prod"
 workers_dev = false
 route = "*/*"
 
-# Skip native Rollup dependencies during build
+# Environment variables for the build process
 [vars]
 ROLLUP_SKIP_NATIVE = "true"
 NODE_OPTIONS = "--no-experimental-fetch"
