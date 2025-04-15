@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -202,6 +201,7 @@ export function Navbar({ className }: NavbarProps) {
                     <span>User Dashboard</span>
                   </DropdownMenuItem>
                   
+                  {/* Only show Admin Dashboard option for admin users */}
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       <Shield className="mr-2 h-4 w-4" />
@@ -311,6 +311,7 @@ export function Navbar({ className }: NavbarProps) {
                       </li>
                     )}
                     
+                    {/* Only show Admin Dashboard option for admin users */}
                     {user && isAdmin && (
                       <li>
                         <SheetClose asChild>
@@ -381,6 +382,7 @@ export function Navbar({ className }: NavbarProps) {
                   </Link>
                 </li>
               )}
+              {/* Only show Admin Dashboard option for admin users */}
               {user && isAdmin && (
                 <li>
                   <Link
