@@ -9,7 +9,7 @@ workers_dev = true
 bucket = "./dist"
 
 [build]
-command = "NODE_OPTIONS='--no-experimental-fetch' ROLLUP_SKIP_NATIVE=true npm run build"
+command = "NODE_OPTIONS='--no-experimental-fetch' ROLLUP_SKIP_NATIVE=true vite build"
 upload.format = "service-worker"
 
 [env.production]
