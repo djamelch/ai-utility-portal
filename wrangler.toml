@@ -17,8 +17,10 @@ name = "ai-tools-directory-prod"
 workers_dev = false
 route = "*/*"
 
+# Skip native Rollup dependencies during build
 [vars]
 ROLLUP_SKIP_NATIVE = "true"
 NODE_OPTIONS = "--no-experimental-fetch"
 
+# Specify the build output directory for Cloudflare Pages
 pages_build_output_dir = "dist"
