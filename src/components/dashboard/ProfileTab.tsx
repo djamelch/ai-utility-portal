@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { PromoteToAdmin } from '@/components/admin/PromoteToAdmin';
 
 export function ProfileTab() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -28,6 +28,14 @@ export function ProfileTab() {
                   {user?.email}
                 </div>
               </div>
+              {isAdmin && (
+                <div>
+                  <label className="text-sm font-medium">Role</label>
+                  <div className="mt-1 p-2 border rounded bg-muted/30 text-primary font-medium">
+                    Administrator
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           
@@ -44,13 +52,15 @@ export function ProfileTab() {
                 </Button>
               </div>
               
-              <div className="mt-6 pt-6 border-t">
-                <h3 className="text-lg font-medium mb-4">Developer Options</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Click the button below to upgrade your account to an admin account. This will give you access to the admin dashboard.
-                </p>
-                <PromoteToAdmin />
-              </div>
+              {!isAdmin && (
+                <div className="mt-6 pt-6 border-t">
+                  <h3 className="text-lg font-medium mb-4">Developer Options</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Click the button below to upgrade your account to an admin account. This will give you access to the admin dashboard.
+                  </p>
+                  <PromoteToAdmin />
+                </div>
+              )}
             </div>
           </div>
         </div>

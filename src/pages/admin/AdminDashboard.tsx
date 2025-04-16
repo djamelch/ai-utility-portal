@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { MotionWrapper } from '@/components/ui/MotionWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const { isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -342,5 +343,13 @@ export default function AdminDashboard() {
       </MotionWrapper>
       <Footer />
     </PageLoadingWrapper>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <RequireAuth requireAdmin={true}>
+      <AdminDashboardContent />
+    </RequireAuth>
   );
 }
