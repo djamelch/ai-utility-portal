@@ -47,11 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       if (data) {
-        console.log('Profile fetched successfully:', data);
+        console.log('Profile data:', data);
+        console.log('User role:', data.role);
         setProfile(data as UserProfile);
         return;
       }
 
+      console.log('No existing profile found. Creating default profile.');
       const role = 'user';
       
       const { error: createError } = await supabase.rpc('create_new_profile', {
@@ -60,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (createError) {
+        console.error('Error creating profile:', createError);
         throw createError;
       }
       
@@ -70,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updated_at: new Date().toISOString()
       });
     } catch (err) {
-      console.error('Error handling user profile:', err);
+      console.error('Complete error in fetchUserProfile:', err);
       setProfile({
         id: userId,
         role: 'user',
@@ -244,6 +247,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAdmin = !!profile && profile.role === 'admin';
+  console.log('Current isAdmin status:', isAdmin);
+  console.log('Current profile:', profile);
 
   return (
     <AuthContext.Provider
