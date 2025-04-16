@@ -150,21 +150,21 @@ export function Navbar({ className }: NavbarProps) {
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>بحث عن أدوات الذكاء الاصطناعي</DialogTitle>
+                  <DialogTitle>Search AI Tools</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSearch} className="flex items-center space-x-2 mt-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                     <Input
                       type="text"
-                      placeholder="بحث عن أدوات الذكاء الاصطناعي..."
+                      placeholder="Search AI Tools..."
                       className="pl-10"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       autoFocus
                     />
                   </div>
-                  <Button type="submit">بحث</Button>
+                  <Button type="submit">Search</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -193,25 +193,24 @@ export function Navbar({ className }: NavbarProps) {
                   className="bg-popover z-50 shadow-md dark:bg-gray-800"
                 >
                   <DropdownMenuLabel>
-                    {isAdmin ? 'حساب مشرف' : 'حساب مستخدم'}
+                    {isAdmin ? 'Admin Account' : 'User Account'}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/dashboard')}>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>لوحة المستخدم</span>
+                    <span>Dashboard</span>
                   </DropdownMenuItem>
                   
-                  {/* عرض خيار لوحة تحكم المشرف فقط للمشرفين */}
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       <Shield className="mr-2 h-4 w-4" />
-                      <span>لوحة المشرف</span>
+                      <span>Admin Panel</span>
                     </DropdownMenuItem>
                   )}
                   
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>تسجيل الخروج</span>
+                    <span>Sign Out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -220,7 +219,7 @@ export function Navbar({ className }: NavbarProps) {
                 to="/auth" 
                 className="px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                تسجيل الدخول
+                Sign In
               </Link>
             )}
           </div>
@@ -238,21 +237,21 @@ export function Navbar({ className }: NavbarProps) {
             </DialogTrigger>
             <DialogContent className="w-[95%] sm:max-w-md mx-auto">
               <DialogHeader>
-                <DialogTitle>بحث عن أدوات الذكاء الاصطناعي</DialogTitle>
+                <DialogTitle>Search AI Tools</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-4">
                 <div className="relative flex-1 w-full">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                   <Input
                     type="text"
-                    placeholder="بحث عن أدوات الذكاء الاصطناعي..."
+                    placeholder="Search AI Tools..."
                     className="pl-10 w-full"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     autoFocus
                   />
                 </div>
-                <Button type="submit" className="w-full sm:w-auto">بحث</Button>
+                <Button type="submit" className="w-full sm:w-auto">Search</Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -305,13 +304,12 @@ export function Navbar({ className }: NavbarProps) {
                             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
                           >
                             <LayoutDashboard className="h-5 w-5" />
-                            لوحة المستخدم
+                            <span>Dashboard</span>
                           </Link>
                         </SheetClose>
                       </li>
                     )}
                     
-                    {/* عرض خيار لوحة تحكم المشرف فقط للمشرفين */}
                     {user && isAdmin && (
                       <li>
                         <SheetClose asChild>
@@ -320,7 +318,7 @@ export function Navbar({ className }: NavbarProps) {
                             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors"
                           >
                             <Shield className="h-5 w-5" />
-                            لوحة المشرف
+                            <span>Admin Panel</span>
                           </Link>
                         </SheetClose>
                       </li>
@@ -337,7 +335,7 @@ export function Navbar({ className }: NavbarProps) {
                         onClick={handleSignOut}
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        تسجيل الخروج
+                        <span>Sign Out</span>
                       </Button>
                     </SheetClose>
                   ) : (
@@ -346,7 +344,7 @@ export function Navbar({ className }: NavbarProps) {
                         to="/auth"
                         className="flex justify-center items-center w-full py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                       >
-                        تسجيل الدخول
+                        Sign In
                       </Link>
                     </SheetClose>
                   )}
@@ -378,11 +376,10 @@ export function Navbar({ className }: NavbarProps) {
                     onClick={toggleMenu}
                   >
                     <LayoutDashboard className="h-5 w-5" />
-                    لوحة المستخدم
+                    <span>Dashboard</span>
                   </Link>
                 </li>
               )}
-              {/* عرض خيار لوحة تحكم المشرف فقط للمشرفين */}
               {user && isAdmin && (
                 <li>
                   <Link
@@ -391,7 +388,7 @@ export function Navbar({ className }: NavbarProps) {
                     onClick={toggleMenu}
                   >
                     <Shield className="h-5 w-5" />
-                    لوحة المشرف
+                    <span>Admin Panel</span>
                   </Link>
                 </li>
               )}
@@ -407,7 +404,7 @@ export function Navbar({ className }: NavbarProps) {
                   }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  تسجيل الخروج
+                  <span>Sign Out</span>
                 </Button>
               ) : (
                 <>
@@ -416,7 +413,7 @@ export function Navbar({ className }: NavbarProps) {
                     className="w-full py-3 text-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                     onClick={toggleMenu}
                   >
-                    تسجيل الدخول
+                    Sign In
                   </Link>
                 </>
               )}

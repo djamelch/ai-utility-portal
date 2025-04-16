@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Instagram, Linkedin, Github } from "lucide-react";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
@@ -58,7 +57,6 @@ export function Footer() {
       <div className="container-wide py-16">
         <MotionWrapper animation="fadeIn">
           <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-6">
-            {/* Brand & Newsletter */}
             <div className="lg:col-span-2">
               <Link to="/" className="inline-block">
                 <div className="flex items-center gap-2">
@@ -84,7 +82,6 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Links */}
             {footerLinks.map((group) => (
               <div key={group.title}>
                 <h3 className="font-medium text-foreground">{group.title}</h3>
@@ -105,7 +102,6 @@ export function Footer() {
           </div>
         </MotionWrapper>
 
-        {/* Social & Copyright */}
         <MotionWrapper animation="fadeIn" delay="delay-200">
           <div className="mt-16 flex flex-col items-center justify-between border-t border-border/40 pt-8 md:flex-row">
             <p className="text-center text-sm text-muted-foreground md:text-left">
