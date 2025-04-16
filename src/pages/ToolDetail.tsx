@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 interface Review {
   id: string;
@@ -466,6 +467,35 @@ export default function ToolDetail() {
     );
   };
   
+  const generateSchemaData = () => {
+    if (!tool) return null;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": tool.company_name,
+      "description": tool.short_description || tool.full_description,
+      "image": tool.logo_url || tool.featured_image_url,
+      "url": `https://your-domain.com/tool/${tool.slug || tool.id}`,
+      "applicationCategory": tool.primary_task || "Application",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/OnlineOnly",
+        "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
+      },
+      "aggregateRating": averageRating ? {
+        "@type": "AggregateRating",
+        "ratingValue": averageRating.toString(),
+        "ratingCount": reviews.length.toString(),
+        "bestRating": "5",
+        "worstRating": "1"
+      } : undefined
+    };
+  };
+  
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col">
@@ -505,6 +535,16 @@ export default function ToolDetail() {
   
   return (
     <div className="flex min-h-screen flex-col">
+      <SEOHead
+        title={tool ? `${tool.company_name} - AI Tool Details` : 'Tool Not Found'}
+        description={tool ? (tool.short_description || `Learn about ${tool.company_name}, its features, pricing, and user reviews.`) : 'Tool not found or has been removed.'}
+        keywords={tool ? `${tool.company_name}, AI tool, ${tool.primary_task || ''}, ${tool.pricing || ''}, AI software` : 'AI tool, not found'}
+        ogImage={tool?.featured_image_url || tool?.logo_url}
+        ogType="product"
+        canonicalUrl={`/tool/${slug}`}
+        schemaData={generateSchemaData()}
+      />
+      
       <Navbar />
       
       <main className="flex-1 py-24">

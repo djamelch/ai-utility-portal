@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
@@ -11,6 +10,21 @@ import { ArrowRight } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 
 const Index = () => {
+  const generateHomeSchema = () => {
+    return {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "AI Tools Directory",
+      "url": "https://your-domain.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://your-domain.com/tools?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      },
+      "description": "Discover and compare the best AI tools for all your needs. Our comprehensive directory helps you find the perfect AI solutions for productivity, creativity, and business."
+    };
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <SEOHead 
@@ -18,6 +32,7 @@ const Index = () => {
         description="Discover the best AI tools for productivity, creativity, and business. Our comprehensive directory helps you find and compare the perfect AI solutions for your needs."
         keywords="AI tools, artificial intelligence, machine learning tools, productivity tools, AI directory, top AI tools"
         canonicalUrl="/"
+        schemaData={generateHomeSchema()}
       />
       <Navbar />
       

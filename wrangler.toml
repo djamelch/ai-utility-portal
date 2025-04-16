@@ -1,7 +1,7 @@
 
 name = "ai-tools-directory"
 main = "./dist/index.js"
-compatibility_date = "2025-04-12"
+compatibility_date = "2025-04-16"
 account_id = "90fa152a04decb2d054f34c86911b267"
 workers_dev = true
 
@@ -24,3 +24,30 @@ NODE_OPTIONS = "--no-experimental-fetch"
 
 # Specify the build output directory for Cloudflare Pages
 pages_build_output_dir = "dist"
+
+# Custom headers
+[headers]
+  for = "/*"
+    [headers.values]
+    Cache-Control = "public, max-age=3600"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+  for = "/*.js"
+    [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+  for = "/*.css"
+    [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+  for = "/images/*"
+    [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirect rules
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

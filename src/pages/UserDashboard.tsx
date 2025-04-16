@@ -17,6 +17,22 @@ export default function UserDashboard() {
   const { isAdmin, isLoading, user } = useAuth();
   const navigate = useNavigate();
   
+  // Generate schema data for user profile
+  const generateUserSchema = () => {
+    if (!user) return null;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "mainEntity": {
+        "@type": "Person",
+        "name": user.email || "User",
+        "identifier": user.id,
+        "url": `https://your-domain.com/dashboard`
+      }
+    };
+  };
+  
   return (
     <RequireAuth>
       <SEOHead
@@ -25,6 +41,7 @@ export default function UserDashboard() {
         keywords="user dashboard, account management, saved tools, AI tools directory"
         canonicalUrl="/dashboard"
         ogType="profile"
+        schemaData={generateUserSchema()}
       />
       <PageLoadingWrapper isLoading={isLoading} loadingText="Loading dashboard...">
         <Navbar />

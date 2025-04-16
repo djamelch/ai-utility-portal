@@ -57,6 +57,21 @@ const Tools = () => {
     return "Browse our comprehensive directory of AI tools. Compare features, pricing, and reviews to find the perfect AI solutions for your needs.";
   };
 
+  const generateToolsSchema = () => {
+    return {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": generateSEOTitle(),
+      "description": generateSEODescription(),
+      "url": `https://your-domain.com/tools${window.location.search}`,
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "AI Tools Directory",
+        "url": "https://your-domain.com/"
+      }
+    };
+  };
+
   const { 
     data: categories = [], 
     isLoading: isCategoriesLoading, 
@@ -171,7 +186,8 @@ const Tools = () => {
         title={generateSEOTitle()}
         description={generateSEODescription()}
         keywords={`AI tools, artificial intelligence, ${category || 'machine learning'}, ${pricing || 'software tools'}, AI directory`}
-        canonicalUrl="/tools"
+        canonicalUrl={`/tools${window.location.search}`}
+        schemaData={generateToolsSchema()}
       />
       <div className="flex min-h-screen flex-col">
         <Navbar />

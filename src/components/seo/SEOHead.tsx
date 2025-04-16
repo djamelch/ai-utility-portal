@@ -11,6 +11,7 @@ interface SEOProps {
   canonicalUrl?: string;
   customLogo?: string;
   customFavicon?: string;
+  schemaData?: any;
   children?: React.ReactNode;
 }
 
@@ -23,6 +24,7 @@ export const SEOHead: React.FC<SEOProps> = ({
   canonicalUrl,
   customLogo,
   customFavicon,
+  schemaData,
   children
 }) => {
   const siteUrl = "https://your-domain.com";
@@ -55,6 +57,11 @@ export const SEOHead: React.FC<SEOProps> = ({
       <title>{title}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
+      <meta name="author" content="AI Tools Directory" />
+      <meta name="robots" content="index, follow" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta charSet="UTF-8" />
+      <html lang="en" />
       
       {/* Canonical URL */}
       <link rel="canonical" href={fullUrl} />
@@ -70,6 +77,9 @@ export const SEOHead: React.FC<SEOProps> = ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={finalLogo} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:site_name" content="AI Tools Directory" />
       
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -77,6 +87,18 @@ export const SEOHead: React.FC<SEOProps> = ({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={finalLogo} />
+      <meta name="twitter:site" content="@ai_tools_directory" />
+      <meta name="twitter:creator" content="@ai_tools_directory" />
+      
+      {/* Schema.org JSON-LD structured data */}
+      {schemaData && (
+        <script type="application/ld+json">
+          {JSON.stringify(schemaData)}
+        </script>
+      )}
+      
+      {/* Preload important assets */}
+      <link rel="preload" as="font" href="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" crossOrigin="anonymous" />
       
       {children}
     </Helmet>

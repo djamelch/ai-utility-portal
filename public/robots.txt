@@ -35,3 +35,8 @@ Allow: /
 
 User-agent: Twitterbot
 Allow: /
+
+# Disallow admin pages for all crawlers
+User-agent: *
+Disallow: /admin/
+Disallow: /auth/

@@ -1,9 +1,32 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Instagram, Linkedin, Github } from "lucide-react";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 export function Footer() {
   const year = new Date().getFullYear();
+  
+  // Generate organization schema
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "AI Any Tool",
+    "url": "https://your-domain.com/",
+    "logo": "https://your-domain.com/logo.png",
+    "sameAs": [
+      "https://twitter.com/ai_tools_directory",
+      "https://facebook.com/aitoolsdirectory",
+      "https://instagram.com/aitoolsdirectory",
+      "https://linkedin.com/company/aitoolsdirectory",
+      "https://github.com/aitoolsdirectory"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+1-123-456-7890",
+      "contactType": "customer service",
+      "availableLanguage": "English"
+    }
+  };
   
   const footerLinks = [
     {
@@ -53,75 +76,80 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-border/40 bg-secondary/30 dark:bg-transparent">
-      <div className="container-wide py-16">
-        <MotionWrapper animation="fadeIn">
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-6">
-            <div className="lg:col-span-2">
-              <Link to="/" className="inline-block">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-gradient">AI Any Tool</span>
-                </div>
-              </Link>
-              <p className="mt-4 max-w-md text-muted-foreground">
-                Discover the best AI-powered tools for every need. Our curated collection helps you find the perfect solution for your projects.
-              </p>
-              
-              <div className="mt-6">
-                <p className="font-medium mb-2">Join our newsletter</p>
-                <div className="flex gap-2 max-w-md">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 rounded-lg border border-input bg-background px-4 py-3 text-sm"
-                  />
-                  <button className="rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-                    Subscribe
-                  </button>
+    <>
+      <SEOHead
+        schemaData={organizationSchema}
+      />
+      <footer className="border-t border-border/40 bg-secondary/30 dark:bg-transparent">
+        <div className="container-wide py-16">
+          <MotionWrapper animation="fadeIn">
+            <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-6">
+              <div className="lg:col-span-2">
+                <Link to="/" className="inline-block">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-gradient">AI Any Tool</span>
+                  </div>
+                </Link>
+                <p className="mt-4 max-w-md text-muted-foreground">
+                  Discover the best AI-powered tools for every need. Our curated collection helps you find the perfect solution for your projects.
+                </p>
+                
+                <div className="mt-6">
+                  <p className="font-medium mb-2">Join our newsletter</p>
+                  <div className="flex gap-2 max-w-md">
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      className="flex-1 rounded-lg border border-input bg-background px-4 py-3 text-sm"
+                    />
+                    <button className="rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                      Subscribe
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {footerLinks.map((group) => (
-              <div key={group.title}>
-                <h3 className="font-medium text-foreground">{group.title}</h3>
-                <ul className="mt-4 space-y-3">
-                  {group.links.map((link) => (
-                    <li key={link.label}>
-                      <Link
-                        to={link.href}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </MotionWrapper>
-
-        <MotionWrapper animation="fadeIn" delay="delay-200">
-          <div className="mt-16 flex flex-col items-center justify-between border-t border-border/40 pt-8 md:flex-row">
-            <p className="text-center text-sm text-muted-foreground md:text-left">
-              © {year} AI Any Tool. All rights reserved.
-            </p>
-            <div className="mt-4 flex space-x-6 md:mt-0">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={social.label}
-                >
-                  <social.icon size={20} />
-                </a>
+              {footerLinks.map((group) => (
+                <div key={group.title}>
+                  <h3 className="font-medium text-foreground">{group.title}</h3>
+                  <ul className="mt-4 space-y-3">
+                    {group.links.map((link) => (
+                      <li key={link.label}>
+                        <Link
+                          to={link.href}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
             </div>
-          </div>
-        </MotionWrapper>
-      </div>
-    </footer>
+          </MotionWrapper>
+
+          <MotionWrapper animation="fadeIn" delay="delay-200">
+            <div className="mt-16 flex flex-col items-center justify-between border-t border-border/40 pt-8 md:flex-row">
+              <p className="text-center text-sm text-muted-foreground md:text-left">
+                © {year} AI Any Tool. All rights reserved.
+              </p>
+              <div className="mt-4 flex space-x-6 md:mt-0">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={social.label}
+                  >
+                    <social.icon size={20} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </MotionWrapper>
+        </div>
+      </footer>
+    </>
   );
 }
