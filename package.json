@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    
-    "build": "bun run vite build",
+    "fix-install": "rm -rf node_modules package-lock.json && npm install",
+    "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "bun run vite preview",
