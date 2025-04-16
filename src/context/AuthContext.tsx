@@ -1,10 +1,8 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-// Define the UserProfile type for our profiles table
 interface UserProfile {
   id: string;
   role: 'admin' | 'user';
@@ -39,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Fetching user profile for:', userId);
       
-      // Use RPC call instead of direct query to avoid infinite recursion
       const { data, error } = await supabase.rpc('get_profile_by_id', {
         user_id: userId
       });
@@ -50,15 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       if (data) {
+        console.log('Profile fetched successfully:', data);
         setProfile(data as UserProfile);
         return;
       }
 
-      // Profile doesn't exist, create one
-      // CHANGED: New users are always regular users (not admins)
-      const role = 'user'; // Changed to always be 'user'
+      const role = 'user';
       
-      // Create the user profile using RPC
       const { error: createError } = await supabase.rpc('create_new_profile', {
         user_id: userId,
         user_role: role
@@ -68,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw createError;
       }
       
-      // Set the profile in state
       setProfile({
         id: userId,
         role: role,
@@ -77,10 +71,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (err) {
       console.error('Error handling user profile:', err);
-      // Fallback to create a mock profile for authentication to continue working
       setProfile({
         id: userId,
-        role: 'user', // Changed from 'admin' to 'user' for fallback too
+        role: 'user',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -88,18 +81,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set loading state
     setIsLoading(true);
 
-    // First, set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Use setTimeout to defer profile fetching to avoid recursion
-          // This is important to prevent the infinite recursion issue
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
@@ -111,7 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Then check for existing session
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -131,7 +119,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth();
 
-    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };

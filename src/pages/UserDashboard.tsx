@@ -34,10 +34,10 @@ export default function UserDashboard() {
               <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold">
-                    User Dashboard
+                    لوحة المستخدم
                   </h1>
                   <p className="mt-2 text-muted-foreground">
-                    Manage your account, saved tools, and reviews
+                    إدارة حسابك، الأدوات المحفوظة، والتقييمات
                   </p>
                 </div>
                 

@@ -40,7 +40,7 @@ function App() {
         <ThemeProvider defaultTheme="system" storageKey="ui-theme">
           <Router>
             <Routes>
-              {/* Public routes */}
+              {/* مسارات عامة */}
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<About />} />
               <Route path="/tools" element={<Tools />} />
@@ -50,7 +50,7 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
 
-              {/* Protected routes */}
+              {/* مسارات محمية بتسجيل الدخول فقط */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -68,7 +68,7 @@ function App() {
                 } 
               />
 
-              {/* Admin routes - with requireAdmin=true */}
+              {/* مسارات المشرفين - مع requireAdmin=true */}
               <Route 
                 path="/admin" 
                 element={
@@ -166,7 +166,7 @@ function App() {
                 } 
               />
 
-              {/* Fallback route */}
+              {/* مسار احتياطي */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>

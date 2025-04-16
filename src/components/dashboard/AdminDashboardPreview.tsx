@@ -11,12 +11,12 @@ export function AdminDashboardPreview() {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   
-  // If user is already an admin, don't show the preview
+  // إذا كان المستخدم مشرفًا بالفعل، لا تعرض المعاينة
   if (isAdmin) {
     return null;
   }
   
-  // Direct navigation handlers for each admin section
+  // دوال التوجيه المباشر لكل قسم من أقسام الإدارة
   const navigateToAdminAnalytics = () => navigate('/admin');
   const navigateToAdminTools = () => navigate('/admin/tools');
   const navigateToAdminUsers = () => navigate('/admin/users');
@@ -28,10 +28,10 @@ export function AdminDashboardPreview() {
       <CardHeader className="bg-yellow-50 dark:bg-yellow-950/20">
         <CardTitle className="text-xl flex items-center gap-2">
           <Shield className="h-5 w-5 text-yellow-600" />
-          Admin Dashboard Preview
+          معاينة لوحة تحكم المشرف
         </CardTitle>
         <CardDescription>
-          This is a preview of what the admin dashboard looks like. You need admin privileges to access the full dashboard.
+          هذه معاينة لما تبدو عليه لوحة تحكم المشرف. تحتاج إلى امتيازات المشرف للوصول إلى اللوحة الكاملة.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
@@ -39,57 +39,53 @@ export function AdminDashboardPreview() {
           <TabsList className="mb-4">
             <TabsTrigger value="preview">
               <Shield className="h-4 w-4 mr-2" />
-              Dashboard Preview
+              معاينة اللوحة
             </TabsTrigger>
             <TabsTrigger value="promote">
               <Shield className="h-4 w-4 mr-2" />
-              Get Admin Access
+              الحصول على صلاحيات المشرف
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="preview" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card 
-                className="cursor-pointer hover:border-primary transition-colors" 
-                onClick={navigateToAdminAnalytics}
+                className="cursor-not-allowed opacity-70 hover:border-primary transition-colors" 
               >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <BarChart className="h-4 w-4 text-primary" />
-                    Analytics
+                    التحليلات
                   </CardTitle>
                 </CardHeader>
               </Card>
               <Card 
-                className="cursor-pointer hover:border-primary transition-colors" 
-                onClick={navigateToAdminTools}
+                className="cursor-not-allowed opacity-70 hover:border-primary transition-colors" 
               >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Database className="h-4 w-4 text-green-600" />
-                    Tools
+                    الأدوات
                   </CardTitle>
                 </CardHeader>
               </Card>
               <Card 
-                className="cursor-pointer hover:border-primary transition-colors" 
-                onClick={navigateToAdminUsers}
+                className="cursor-not-allowed opacity-70 hover:border-primary transition-colors" 
               >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Users className="h-4 w-4 text-blue-600" />
-                    Users
+                    المستخدمين
                   </CardTitle>
                 </CardHeader>
               </Card>
               <Card 
-                className="cursor-pointer hover:border-primary transition-colors" 
-                onClick={navigateToAdminSettings}
+                className="cursor-not-allowed opacity-70 hover:border-primary transition-colors" 
               >
                 <CardHeader className="p-4">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Settings className="h-4 w-4 text-purple-600" />
-                    Settings
+                    الإعدادات
                   </CardTitle>
                 </CardHeader>
               </Card>
@@ -97,12 +93,12 @@ export function AdminDashboardPreview() {
             
             <div className="flex justify-center mt-4">
               <Button 
-                onClick={navigateToFullAdmin} 
                 variant="outline"
-                className="gap-2"
+                className="gap-2 cursor-not-allowed opacity-70"
+                disabled
               >
                 <Shield className="h-4 w-4" />
-                Go to Admin Dashboard
+                يتطلب صلاحيات المشرف
               </Button>
             </div>
           </TabsContent>
@@ -111,9 +107,9 @@ export function AdminDashboardPreview() {
             <div className="max-w-md mx-auto">
               <Card>
                 <CardHeader>
-                  <CardTitle>Get Admin Access</CardTitle>
+                  <CardTitle>الحصول على صلاحيات المشرف</CardTitle>
                   <CardDescription>
-                    Promote your account to an administrator to access the full admin dashboard.
+                    قم بترقية حسابك إلى مشرف للوصول إلى لوحة تحكم المشرف الكاملة.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
