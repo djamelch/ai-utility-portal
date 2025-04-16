@@ -1,52 +1,69 @@
-
+# اسم المشروع لحساب Cloudflare الخاص بك
 name = "ai-tools-directory"
-main = "./dist/index.js"
+
+# تاريخ التوافق لتحديد سلوك الميزات في Wrangler/Workers
+# استخدم التاريخ الذي بدأت فيه المشروع أو تاريخًا حديثًا
 compatibility_date = "2025-04-16"
+
+# معرف حساب Cloudflare الخاص بك (يجب أن يبقى كما هو)
 account_id = "90fa152a04decb2d054f34c86911b267"
-workers_dev = true
 
-[site]
-bucket = "./dist"
+# === إعدادات خاصة بـ Cloudflare Pages ===
 
-[build]
-command = "NODE_OPTIONS='--no-experimental-fetch' ROLLUP_SKIP_NATIVE=true vite build"
-upload.format = "service-worker"
-
-[env.production]
-name = "ai-tools-directory-prod"
-workers_dev = false
-route = "*/*"
-
-# Environment variables for the build process
-[vars]
-ROLLUP_SKIP_NATIVE = "true"
-NODE_OPTIONS = "--no-experimental-fetch"
-
-# Specify the build output directory for Cloudflare Pages
+# حدد المجلد الذي يحتوي على ملفات الموقع النهائية بعد عملية البناء
 pages_build_output_dir = "dist"
 
-# Custom headers
-[headers]
-  for = "/*"
-    [headers.values]
+# أمر بناء المشروع (تأكد من أنه الأمر الصحيح لمشروعك)
+[build]
+  command = "NODE_OPTIONS='--no-experimental-fetch' ROLLUP_SKIP_NATIVE=true vite build"
+  # تم إزالة 'upload.format = "service-worker"' لأنها خاصة بالـ Workers
+
+# إعدادات بيئة الإنتاج (Production)
+[env.production]
+  # يمكنك إعطاء اسم مختلف لنشر الإنتاج إذا أردت
+  name = "ai-tools-directory-prod"
+  # تم إزالة 'workers_dev = false' من هنا لأنها ليست ضرورية عادة لـ Pages ويمكن التحكم بها من واجهة Cloudflare
+  # تم إزالة 'route = "*/*"' لأن Pages تستخدم النطاقات المخصصة أو الفرعية بدلاً من routes بهذا الشكل
+
+# متغيرات البيئة المستخدمة أثناء عملية البناء
+[vars]
+  ROLLUP_SKIP_NATIVE = "true"
+  NODE_OPTIONS = "--no-experimental-fetch"
+
+# === قواعد الهيدرز المخصصة (الصيغة الصحيحة لـ Pages) ===
+
+[[headers]]
+  for = "/*" # القاعدة تنطبق على كل المسارات
+  [values]
+    # التحكم بالكاش للملفات الرئيسية (مثل HTML) - ساعة واحدة
     Cache-Control = "public, max-age=3600"
+    # منع عرض الموقع داخل iframe
     X-Frame-Options = "DENY"
+    # منع المتصفح من تخمين نوع المحتوى
     X-Content-Type-Options = "nosniff"
+    # سياسة المُحيل (Referrer Policy)
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-  for = "/*.js"
-    [headers.values]
+[[headers]]
+  for = "/*.js" # القاعدة تنطبق على ملفات JavaScript
+  [values]
+    # التحكم بالكاش لملفات JS - سنة واحدة (تعتبر غير قابلة للتغيير)
     Cache-Control = "public, max-age=31536000, immutable"
 
-  for = "/*.css"
-    [headers.values]
+[[headers]]
+  for = "/*.css" # القاعدة تنطبق على ملفات CSS
+  [values]
+    # التحكم بالكاش لملفات CSS - سنة واحدة (تعتبر غير قابلة للتغيير)
     Cache-Control = "public, max-age=31536000, immutable"
 
-  for = "/images/*"
-    [headers.values]
+[[headers]]
+  for = "/images/*" # القاعدة تنطبق على الملفات داخل مجلد /images
+  [values]
+    # التحكم بالكاش للصور - سنة واحدة (تعتبر غير قابلة للتغيير)
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Redirect rules
+# === قواعد إعادة التوجيه (Redirects) ===
+# هذه القاعدة شائعة لتطبيقات الصفحة الواحدة (SPA) لإعادة توجيه كل الطلبات إلى index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
