@@ -12,15 +12,15 @@ main = "./src/index.js"
   API_VERSION = "1.0.0"
   ENVIRONMENT = "production"
 
-# Routes configuration (uncomment and customize if needed)
-# [triggers]
-# routes = [
-#   { pattern = "example.com/*", zone_name = "example.com" }
-# ]
+# Routes configuration
+[triggers]
+routes = [
+  { pattern = "*", zone_name = "ai-tools-directory1.workers.dev" }
+]
 
 # For production environment
 [env.production]
-  name = "ai-tools-directory-prod"
+  name = "ai-tools-directory1"
   
   # Production-specific variables
   [env.production.vars]
