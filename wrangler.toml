@@ -1,7 +1,7 @@
 
 # Cloudflare Worker configuration
-name = "ai-tools-directory1"
-compatibility_date = "2025-04-16"
+name = "ai-tools-directory"
+compatibility_date = "2025-04-17"
 account_id = "90fa152a04decb2d054f34c86911b267"
 
 # Main script that will be your worker entry point
@@ -9,7 +9,6 @@ main = "./src/index.js"
 
 # Environment variables for your worker
 [vars]
-  # Add your variables here, for example:
   API_VERSION = "1.0.0"
   ENVIRONMENT = "production"
 
@@ -19,21 +18,6 @@ main = "./src/index.js"
 #   { pattern = "example.com/*", zone_name = "example.com" }
 # ]
 
-# KV Namespace binding example (uncomment and customize if needed)
-# [[kv_namespaces]]
-# binding = "MY_KV_NAMESPACE"
-# id = "your-kv-namespace-id"
-
-# Durable Object binding example (uncomment and customize if needed)
-# [[durable_objects.bindings]]
-# name = "MY_DURABLE_OBJECT"
-# class_name = "MyDurableObject"
-
-# Custom headers for responses (uncomment and customize if needed)
-# [build.upload]
-# format = "modules" # For ES modules syntax
-# dir = "dist" # For compiled/bundled workers
-
 # For production environment
 [env.production]
   name = "ai-tools-directory-prod"
@@ -41,9 +25,3 @@ main = "./src/index.js"
   # Production-specific variables
   [env.production.vars]
     ENVIRONMENT = "production"
-
-# Cache configuration headers for production
-[[env.production.rules]]
-  type = "ESModule"
-  globs = ["**/*.js"]
-  fallthrough = true
