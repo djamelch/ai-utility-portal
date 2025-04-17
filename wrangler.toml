@@ -9,16 +9,9 @@ API_VERSION = "1.0.0"
 ENVIRONMENT = "production"
 SUPABASE_URL = "https://yilhwiqwoolmvmaasdra.supabase.co"
 
-# الطريقة الصحيحة لتحديد الروابط (اختر واحدة فقط):
-# الطريقة 1:
+# الطريقة الصحيحة لتحديد الروابط في Wrangler v4+
 route = "ai-tools-directory1.chalabidjameleddin93.workers.dev/*"
 
-# أو الطريقة 2:
-# [[routes]]
-# pattern = "*"
-# zone_name = "ai-tools-directory1.chalabidjameleddin93.workers.dev"
-
-# إعدادات البناء
 [build]
 command = "bun run build"
 watch_dir = "src"
