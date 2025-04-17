@@ -1,6 +1,6 @@
 
 # Cloudflare Worker configuration
-name = "ai-tools-directory"
+name = "ai-tools-directory1"
 compatibility_date = "2025-04-17"
 account_id = "90fa152a04decb2d054f34c86911b267"
 
