@@ -7,7 +7,7 @@
  */
 
 addEventListener('fetch', event => {
-  console.log('Fetch event received');
+  console.log('Fetch event received for URL:', event.request.url);
   try {
     event.respondWith(handleRequest(event.request));
   } catch (error) {
@@ -22,7 +22,7 @@ addEventListener('fetch', event => {
  * @returns {Response} - The enhanced response
  */
 async function handleRequest(request) {
-  console.log('handleRequest started');
+  console.log('handleRequest started for:', request.url);
   
   try {
     // Get the URL and user agent from the request
@@ -37,6 +37,33 @@ async function handleRequest(request) {
     
     // Log bot detection for monitoring
     console.log(`Is bot request: ${isBot}`);
+
+    // For the root path or empty path, serve the index.html
+    if (url.pathname === '/' || url.pathname === '') {
+      console.log('Handling root path request');
+      
+      // Create a simple response for the root path to ensure it works
+      const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>AI Tools Directory</title>
+          <meta name="description" content="Discover and compare the best AI tools">
+        </head>
+        <body>
+          <h1>AI Tools Directory</h1>
+          <p>Welcome to the AI Tools Directory! We're currently in maintenance mode.</p>
+          <p>Please check back soon for our full directory of AI tools.</p>
+        </body>
+      </html>`;
+      
+      return new Response(htmlContent, {
+        headers: {
+          'Content-Type': 'text/html;charset=UTF-8',
+          'Cache-Control': 'public, max-age=60'
+        }
+      });
+    }
     
     let response;
     
@@ -90,9 +117,23 @@ async function handleRequest(request) {
     return newResponse;
   } catch (error) {
     console.error('Error in handleRequest:', error);
-    return new Response('Error processing request', { 
+    // Return a more descriptive error page for debugging
+    const errorHTML = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Worker Error</title>
+      </head>
+      <body>
+        <h1>Worker Error</h1>
+        <p>Error processing request: ${error.message}</p>
+        <pre>${error.stack}</pre>
+      </body>
+    </html>`;
+    
+    return new Response(errorHTML, { 
       status: 500,
-      headers: { 'Content-Type': 'text/plain' }
+      headers: { 'Content-Type': 'text/html;charset=UTF-8' }
     });
   }
 }
