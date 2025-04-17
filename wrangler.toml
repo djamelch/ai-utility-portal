@@ -2,34 +2,24 @@
 name = "ai-tools-directory1"
 compatibility_date = "2025-04-17"
 account_id = "90fa152a04decb2d054f34c86911b267"
-main = "./dist/index.js"  # تم التصحيح ليشير إلى مجلد البناء dist
-format = "modules"  # إضافة مهمة إذا كنت تستخدم نظام ES Modules
+main = "./dist/index.js"
+format = "modules"
 
 # Environment variables
 [vars]
 API_VERSION = "1.0.0"
 ENVIRONMENT = "production"
-DATABASE_URL = "https://yilhwiqwoolmvmaasdra.supabase.co"
+SUPABASE_URL = "https://yilhwiqwoolmvmaasdra.supabase.co"
 
-# Deployment route (الطريقة الموصى بها في Wrangler v4+)
-route = "*"  # يمكن استبدالها بـ "ai-tools-directory1.chalabidjameleddin93.workers.dev/*"
-zone_name = "ai-tools-directory1.chalabidjameleddin93.workers.dev"
+# Routes configuration (الطريقة الصحيحة في Wrangler v4+)
+route = "ai-tools-directory1.chalabidjameleddin93.workers.dev/*"
 
-# Production environment (اختياري)
-[env.production]
-vars = { 
-  ENVIRONMENT = "production",
-  API_URL = "https://api.yourdomain.com"
-}
-
-# Development environment (اختياري)
-[env.development]
-vars = { 
-  ENVIRONMENT = "development",
-  API_URL = "https://dev.api.yourdomain.com"
-}
+# أو إذا كنت تريد استخدام zone_name:
+# [[routes]]
+# pattern = "*"
+# zone_name = "ai-tools-directory1.chalabidjameleddin93.workers.dev"
 
 # إعدادات إضافية موصى بها
 compatibility_flags = ["nodejs_compat"]
 usage_model = "bundled"
-node_compat = true  # إذا كنت تستخدم حزمة Node.js
+node_compat = true
