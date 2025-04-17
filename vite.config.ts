@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from '@vitejs/plugin-react';
 import path from "path";
@@ -6,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // إعدادات السيرفر لتطوير محلي فقط
   server: {
     host: "::",
     port: 8080,
@@ -42,6 +42,8 @@ export default defineConfig(({ mode }) => ({
     ],
   },
   build: {
+    // 🔧 مهم للنشر على Cloudflare Workers أو Pages
+    base: "./",
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
@@ -55,14 +57,13 @@ export default defineConfig(({ mode }) => ({
         '@rollup/rollup-linux-x64-musl',
       ],
       output: {
-        // Improve chunking to reduce main bundle size
+        // تحسين تقسيم الحزم
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover']
         }
       }
     },
-    // Increase the warning threshold for chunks
     chunkSizeWarningLimit: 1000
   }
 }));
