@@ -14,7 +14,7 @@ main = "./src/index.js"
 # Routes configuration
 [triggers]
 routes = [
-  { pattern = "*", zone_name = "ai-tools-directory1.workers.dev" }
+  { pattern = "*", zone_name = "ai-tools-directory1.chalabidjameleddin93.workers.dev" }
 ]
 
 # For production environment
@@ -25,4 +25,4 @@ routes = [
   [env.production.vars]
     ENVIRONMENT = "production"
     API_URL = "https://api.yourdomain.com"
-    DATABASE_URL = "your-database-url"
+    DATABASE_URL = "https://yilhwiqwoolmvmaasdra.supabase.co"
