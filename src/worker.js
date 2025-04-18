@@ -6,9 +6,8 @@ addEventListener('fetch', event => {
 
 async function handleRequest(request) {
   try {
-    // Get the URL and user agent from the request
+    // Get the URL from the request
     const url = new URL(request.url);
-    const userAgent = request.headers.get('User-Agent') || '';
     
     // Check if this is a request for static assets
     if (url.pathname.includes('/assets/') || 
@@ -21,7 +20,7 @@ async function handleRequest(request) {
       return fetch(request);
     }
     
-    // For HTML requests, serve the index.html file
+    // For all other requests, serve the index.html file to enable client-side routing
     return fetch(`${url.origin}/index.html`);
   } catch (error) {
     console.error('Error in handleRequest:', error);
