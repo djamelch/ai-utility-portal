@@ -82,6 +82,14 @@ export function ToolGrid({
       }
       
       try {
+        console.log("Fetching tools with params:", { 
+          queryType, 
+          searchTerm: effectiveSearchTerm, 
+          category: effectiveCategoryFilter,
+          pricing,
+          sortBy: effectiveSortBy
+        });
+        
         let query = supabase.from("tools").select("*");
         
         // Only apply the featured filter if queryType is explicitly "featured"
@@ -119,6 +127,35 @@ export function ToolGrid({
           });
         }
         
+        // Ordering based on sortBy value
+        switch (effectiveSortBy) {
+          case "recent":
+            query = query.order("created_at", { ascending: false });
+            break;
+          case "popular":
+            query = query.order("click_count", { ascending: false });
+            break;
+          case "top-rated":
+            // We don't have actual ratings yet, so fall back to featured and popularity
+            query = query.order("is_featured", { ascending: false })
+                        .order("click_count", { ascending: false });
+            break;
+          case "featured":
+            query = query.order("is_featured", { ascending: false })
+                        .order("is_verified", { ascending: false });
+            break;
+          default:
+            // Default sort: Featured > Verified > Popularity
+            query = query.order("is_featured", { ascending: false })
+                        .order("is_verified", { ascending: false })
+                        .order("click_count", { ascending: false });
+        }
+        
+        // Apply limit at the database level
+        if (limit) {
+          query = query.limit(limit);
+        }
+        
         const { data, error } = await query;
         
         if (error) {
@@ -126,6 +163,7 @@ export function ToolGrid({
           throw error;
         }
         
+        console.log(`Successfully fetched ${data?.length || 0} tools from Supabase`);
         return data || [];
       } catch (error) {
         console.error("Error in tools query:", error);
@@ -142,9 +180,12 @@ export function ToolGrid({
   // Use provided tools or database tools
   const toolsToProcess = providedTools || dbTools;
 
+  // Log tools for debugging
+  console.log("Tools to process:", toolsToProcess.length);
+
   // Prepare and map tools to ensure consistent format
   const tools = toolsToProcess.map(tool => {
-    return {
+    const mapped = {
       id: tool.id,
       name: tool.company_name || tool.name || "",
       company_name: tool.company_name || tool.name || "",
@@ -169,6 +210,14 @@ export function ToolGrid({
       click_count: tool.click_count || 0,
       ...tool
     };
+    console.log("Tool data:", { 
+      name: mapped.name, 
+      isFeatured: mapped.isFeatured, 
+      isVerified: mapped.isVerified,
+      is_featured: mapped.is_featured,
+      is_verified: mapped.is_verified
+    });
+    return mapped;
   });
 
   // Custom sort function that prioritizes Featured > Verified > Others

@@ -6,13 +6,28 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://yilhwiqwoolmvmaasdra.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpbGh3aXF3b29sbXZtYWFzZHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1Njg5MjUsImV4cCI6MjA1ODE0NDkyNX0.sHZ-68hI6IJf73VwuErDhN6VGcr2R5DpyZkeamODfDk";
 
+// Create browser compatible storage
+const createBrowserStorage = () => {
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    return localStorage;
+  }
+  // Return a no-op storage for non-browser environments
+  return {
+    getItem: () => null,
+    setItem: () => {},
+    removeItem: () => {},
+    clear: () => {},
+    length: 0,
+    key: () => null,
+  };
+};
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
-
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storage: localStorage
+    persistSession: typeof window !== 'undefined',
+    autoRefreshToken: typeof window !== 'undefined',
+    storage: createBrowserStorage()
   }
 });

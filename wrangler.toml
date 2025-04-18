@@ -10,7 +10,9 @@ ENVIRONMENT = "production"
 SUPABASE_URL = "https://yilhwiqwoolmvmaasdra.supabase.co"
 
 # The correct way to specify routes in Wrangler v4+
-route = "ai-tools-directory1.chalabidjameleddin93.workers.dev/*"
+routes = [
+  { pattern = "ai-tools-directory1.chalabidjameleddin93.workers.dev", custom_domain = false }
+]
 
 [build]
 command = "bun run build"
@@ -22,3 +24,4 @@ crons = []
 
 [site]
 bucket = "./dist"
+

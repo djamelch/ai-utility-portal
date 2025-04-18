@@ -26,11 +26,17 @@ export function MotionWrapper({
   once = true,
 }: MotionWrapperProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [isBrowser, setIsBrowser] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Check if we're in a browser environment
+  useEffect(() => {
+    setIsBrowser(true);
+  }, []);
 
   useEffect(() => {
     // Skip in non-browser environments
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
+    if (!isBrowser) {
       return;
     }
     
@@ -57,10 +63,15 @@ export function MotionWrapper({
         observer.unobserve(current);
       }
     };
-  }, [once, threshold]);
+  }, [once, threshold, isBrowser]);
 
   const animationClass = animation === "none" ? "" : `animate-${animation}`;
   const delayClass = delay === "none" ? "" : delay;
+
+  // If we're not in a browser, render without animation classes
+  if (!isBrowser) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
     <div

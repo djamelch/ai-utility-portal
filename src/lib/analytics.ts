@@ -7,9 +7,12 @@ type GTagEvent = {
   value?: number;
 };
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+
 // Initialize Google Analytics
 export const initGA = (id: string): void => {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
+  if (!isBrowser) {
     // Skip GA initialization in server environment
     return;
   }
@@ -35,7 +38,7 @@ export const initGA = (id: string): void => {
 
 // Track page views
 export const pageview = (url: string): void => {
-  if (typeof window === 'undefined' || !('gtag' in window)) {
+  if (!isBrowser || !('gtag' in window)) {
     // Skip in server environment or if gtag isn't initialized
     return;
   }
@@ -48,7 +51,7 @@ export const pageview = (url: string): void => {
 
 // Track events
 export const event = ({ action, category, label, value }: GTagEvent): void => {
-  if (typeof window === 'undefined' || !('gtag' in window)) {
+  if (!isBrowser || !('gtag' in window)) {
     // Skip in server environment or if gtag isn't initialized
     return;
   }
