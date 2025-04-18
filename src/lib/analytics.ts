@@ -9,7 +9,12 @@ type GTagEvent = {
 
 // Initialize Google Analytics
 export const initGA = (id: string): void => {
-  if (typeof window !== 'undefined' && !window.location.href.includes('localhost')) {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    // Skip GA initialization in server environment
+    return;
+  }
+
+  if (!window.location.href.includes('localhost')) {
     const script1 = document.createElement('script');
     script1.async = true;
     script1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
@@ -30,22 +35,28 @@ export const initGA = (id: string): void => {
 
 // Track page views
 export const pageview = (url: string): void => {
-  if (typeof window !== 'undefined' && 'gtag' in window) {
-    // @ts-ignore
-    window.gtag('config', 'G-XXXXXXXXXX', {
-      page_path: url,
-    });
+  if (typeof window === 'undefined' || !('gtag' in window)) {
+    // Skip in server environment or if gtag isn't initialized
+    return;
   }
+  
+  // @ts-ignore
+  window.gtag('config', 'G-XXXXXXXXXX', {
+    page_path: url,
+  });
 };
 
 // Track events
 export const event = ({ action, category, label, value }: GTagEvent): void => {
-  if (typeof window !== 'undefined' && 'gtag' in window) {
-    // @ts-ignore
-    window.gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-    });
+  if (typeof window === 'undefined' || !('gtag' in window)) {
+    // Skip in server environment or if gtag isn't initialized
+    return;
   }
+  
+  // @ts-ignore
+  window.gtag('event', action, {
+    event_category: category,
+    event_label: label,
+    value: value,
+  });
 };

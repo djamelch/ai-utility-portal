@@ -29,6 +29,11 @@ export function MotionWrapper({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Skip in non-browser environments
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+    
     const current = ref.current;
     
     if (!current) return;

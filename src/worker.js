@@ -5,7 +5,26 @@ addEventListener('fetch', event => {
 });
 
 async function handleRequest(request) {
-  // Handle the request, typically by fetching the appropriate asset
-  // For a static site, we'll just pass through to the asset
-  return fetch(request);
+  try {
+    // Get the URL and user agent from the request
+    const url = new URL(request.url);
+    const userAgent = request.headers.get('User-Agent') || '';
+    
+    // Check if this is a request for static assets
+    if (url.pathname.includes('/assets/') || 
+        url.pathname.endsWith('.ico') || 
+        url.pathname.endsWith('.svg') ||
+        url.pathname.endsWith('.txt') ||
+        url.pathname.endsWith('.xml') ||
+        url.pathname.endsWith('.webmanifest')) {
+      // For static assets, pass through to the asset
+      return fetch(request);
+    }
+    
+    // For HTML requests, serve the index.html file
+    return fetch(`${url.origin}/index.html`);
+  } catch (error) {
+    console.error('Error in handleRequest:', error);
+    return new Response('Server Error', { status: 500 });
+  }
 }
