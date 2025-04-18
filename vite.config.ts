@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from '@vitejs/plugin-react';
 import path from "path";
@@ -20,8 +21,8 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // تبسيط تعريفات rollup mock
-      /^@rollup\/rollup-.+$/: path.resolve(__dirname, "./rollup-mock.js"),
+      // Using a string key instead of RegExp for rollup mock
+      "@rollup/rollup-": path.resolve(__dirname, "./rollup-mock.js"),
     },
   },
 
@@ -34,7 +35,7 @@ export default defineConfig(({ mode }) => ({
     base: "./",
     outDir: 'dist',
     emptyOutDir: true,
-    sourcemap: mode === 'development', // تفعيل sourcemap فقط للتطوير
+    sourcemap: mode === 'development', // Source maps only for development
     
     rollupOptions: {
       external: Object.keys(require('./package.json').dependencies)
@@ -42,7 +43,7 @@ export default defineConfig(({ mode }) => ({
       
       output: {
         manualChunks: {
-          // تحسين تقسيم الحزم لتقليل حجم bundle
+          // Optimizing bundle chunks to reduce bundle size
           react: ['react', 'react-dom', 'react-router-dom'],
           radix: [/@radix-ui/],
           supabase: ['@supabase/supabase-js'],
@@ -55,7 +56,7 @@ export default defineConfig(({ mode }) => ({
       }
     },
     
-    // زيادة الحد المسموح به مع تحسين تقسيم الحزم
+    // Increased limit with optimized chunk splitting
     chunkSizeWarningLimit: 1500,
     minify: mode === 'production' ? 'terser' : false,
   }
