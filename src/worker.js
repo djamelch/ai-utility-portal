@@ -1,29 +1,36 @@
+import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
 
-// Worker script for Cloudflare
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
-});
+export default {
+  async fetch(request, env, ctx) {
+    try {
+      const url = new URL(request.url)
 
-async function handleRequest(request) {
-  try {
-    // Get the URL from the request
-    const url = new URL(request.url);
-    
-    // Check if this is a request for static assets
-    if (url.pathname.includes('/assets/') || 
-        url.pathname.endsWith('.ico') || 
-        url.pathname.endsWith('.svg') ||
-        url.pathname.endsWith('.txt') ||
-        url.pathname.endsWith('.xml') ||
-        url.pathname.endsWith('.webmanifest')) {
-      // For static assets, pass through to the asset
-      return fetch(request);
+      // نحاول إحضار ملف من ملفات static assets
+      return await getAssetFromKV(
+        {
+          request,
+          waitUntil: ctx.waitUntil.bind(ctx),
+        },
+        {
+          ASSET_NAMESPACE: env.__STATIC_CONTENT,
+        }
+      )
+    } catch (error) {
+      // إذا فشل (مثلاً في حال routes SPA)، نظهر index.html
+      try {
+        const indexAsset = new Request(`${new URL(request.url).origin}/index.html`, request)
+        return await getAssetFromKV(
+          {
+            request: indexAsset,
+            waitUntil: ctx.waitUntil.bind(ctx),
+          },
+          {
+            ASSET_NAMESPACE: env.__STATIC_CONTENT,
+          }
+        )
+      } catch (e) {
+        return new Response('Internal Error', { status: 500 })
+      }
     }
-    
-    // For all other requests, serve the index.html file to enable client-side routing
-    return fetch(`${url.origin}/index.html`);
-  } catch (error) {
-    console.error('Error in handleRequest:', error);
-    return new Response('Server Error', { status: 500 });
   }
 }
