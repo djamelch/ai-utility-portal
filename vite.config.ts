@@ -6,6 +6,7 @@ import { componentTagger } from "lovable-tagger";
 import type { ConfigEnv, UserConfig } from 'vite';
 
 export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
+  base: "./", // Move base to the top level of the configuration
   server: {
     host: "::",
     port: 8080,
@@ -69,3 +70,4 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
     minify: mode === 'production' ? 'terser' : false,
   }
 }));
+
