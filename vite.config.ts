@@ -38,6 +38,12 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
     emptyOutDir: true,
     sourcemap: mode === 'development', // Source maps only for development
     
+    // Using esbuild minifier instead of terser
+    minify: 'esbuild',
+    
+    // Configure esbuild minification options
+    target: 'es2015',
+    
     rollupOptions: {
       external: Object.keys(require('./package.json').dependencies)
         .filter(dep => dep.startsWith('@rollup/rollup-')),
@@ -67,7 +73,5 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
     
     // Increased limit with optimized chunk splitting
     chunkSizeWarningLimit: 1500,
-    minify: mode === 'production' ? 'terser' : false,
   }
 }));
-
