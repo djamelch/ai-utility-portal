@@ -33,7 +33,6 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   },
 
   build: {
-    base: "./",
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: mode === 'development', // Source maps only for development
