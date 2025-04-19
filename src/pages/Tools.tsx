@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
@@ -30,6 +31,7 @@ const Tools = () => {
   
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [loadMoreCount, setLoadMoreCount] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const initialLimit = 12;
   const loadMoreIncrement = 12;
 
@@ -155,20 +157,36 @@ const Tools = () => {
     setLoadMoreCount(1);
   };
 
-  const loadMore = () => {
-    console.log("Load more clicked. Current count:", loadMoreCount);
-    setLoadMoreCount(prevCount => {
-      const newCount = prevCount + 1;
-      console.log("New load more count:", newCount);
+  const loadMore = async () => {
+    try {
+      console.log("Load more clicked. Current count:", loadMoreCount);
+      setIsLoadingMore(true);
       
-      // Show toast for feedback
-      toast({
-        title: "Loading more tools",
-        description: `Loading ${loadMoreIncrement} more tools...`
+      // Simulate delay to ensure state updates correctly
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      setLoadMoreCount(prevCount => {
+        const newCount = prevCount + 1;
+        console.log("New load more count:", newCount);
+        
+        // Show toast for feedback
+        toast({
+          title: "Loading more tools",
+          description: `Loading ${loadMoreIncrement} more tools...`
+        });
+        
+        return newCount;
       });
-      
-      return newCount;
-    });
+    } catch (error) {
+      console.error("Error loading more tools:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load more tools. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
 
   const clearFilters = () => {
@@ -177,8 +195,10 @@ const Tools = () => {
     setLoadMoreCount(1);
   };
 
+  // Reset load more count when filters change
   useEffect(() => {
     setLoadMoreCount(1);
+    console.log("Filters changed, resetting load more count to 1");
   }, [searchQuery, category, pricing, sortBy, features]);
 
   const hasActiveFilters = searchQuery || category || pricing || sortBy !== "featured" || features.length > 0;
@@ -327,9 +347,9 @@ const Tools = () => {
                   size="lg" 
                   onClick={loadMore}
                   className="px-8 flex items-center gap-2"
-                  disabled={isLoading}
+                  disabled={isLoading || isLoadingMore}
                 >
-                  {isLoading ? (
+                  {isLoadingMore ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

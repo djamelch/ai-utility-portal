@@ -7,6 +7,7 @@ import { EnhancedLoadingIndicator } from "@/components/ui/EnhancedLoadingIndicat
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 
 export interface Tool {
   id: number | string;
@@ -69,6 +70,7 @@ export function ToolGrid({
   features = [],
   tools: providedTools
 }: ToolGridProps) {
+  const [loadedTools, setLoadedTools] = useState<Tool[]>([]);
   const effectiveSearchTerm = searchQuery || searchTerm || "";
   const effectiveCategoryFilter = category || categoryFilter || "";
   const effectiveSortBy = sortBy !== "featured" ? sortBy : queryType;
@@ -84,6 +86,7 @@ export function ToolGrid({
       try {
         console.log("Fetching tools with params:", { 
           queryType, 
+          limit,
           searchTerm: effectiveSearchTerm, 
           category: effectiveCategoryFilter,
           pricing,
@@ -151,10 +154,9 @@ export function ToolGrid({
                         .order("click_count", { ascending: false });
         }
         
-        // Apply limit at the database level
-        if (limit) {
-          query = query.limit(limit);
-        }
+        // Increase the query limit to ensure we get enough data
+        const queryLimit = Math.max(limit, 50); // Get at least 50 items or the requested limit
+        query = query.limit(queryLimit);
         
         const { data, error } = await query;
         
@@ -163,7 +165,7 @@ export function ToolGrid({
           throw error;
         }
         
-        console.log(`Successfully fetched ${data?.length || 0} tools from Supabase`);
+        console.log(`Successfully fetched ${data?.length || 0} tools from Supabase with limit ${queryLimit}`);
         return data || [];
       } catch (error) {
         console.error("Error in tools query:", error);
@@ -180,71 +182,75 @@ export function ToolGrid({
   // Use provided tools or database tools
   const toolsToProcess = providedTools || dbTools;
 
-  // Log tools for debugging
-  console.log("Tools to process:", toolsToProcess.length);
-
-  // Prepare and map tools to ensure consistent format
-  const tools = toolsToProcess.map(tool => {
-    const mapped = {
-      id: tool.id,
-      name: tool.company_name || tool.name || "",
-      company_name: tool.company_name || tool.name || "",
-      description: tool.short_description || tool.description || "",
-      short_description: tool.short_description || tool.description || "",
-      logo: tool.logo_url || tool.logo || "",
-      logo_url: tool.logo_url || tool.logo || "",
-      category: tool.primary_task || tool.category || "",
-      primary_task: tool.primary_task || tool.category || "",
-      rating: tool.rating || 4,
-      reviewCount: tool.reviewCount || 0,
-      pricing: tool.pricing || "",
-      url: tool.visit_website_url || tool.detail_url || tool.url || "#",
-      visit_website_url: tool.visit_website_url || "",
-      detail_url: tool.detail_url || "",
-      slug: tool.slug || "",
-      isFeatured: Boolean(tool.is_featured || tool.isFeatured),
-      isVerified: Boolean(tool.is_verified || tool.isVerified),
-      is_featured: tool.is_featured || tool.isFeatured,
-      is_verified: tool.is_verified || tool.isVerified,
-      isNew: new Date(tool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
-      click_count: tool.click_count || 0,
-      ...tool
-    };
-    console.log("Tool data:", { 
-      name: mapped.name, 
-      isFeatured: mapped.isFeatured, 
-      isVerified: mapped.isVerified,
-      is_featured: mapped.is_featured,
-      is_verified: mapped.is_verified
-    });
-    return mapped;
-  });
-
-  // Custom sort function that prioritizes Featured > Verified > Others
-  const sortedTools = [...tools].sort((a, b) => {
-    // First priority: Featured tools
-    if (Boolean(a.is_featured || a.isFeatured) && !Boolean(b.is_featured || b.isFeatured)) return -1;
-    if (!Boolean(a.is_featured || a.isFeatured) && Boolean(b.is_featured || b.isFeatured)) return 1;
-    
-    // Second priority: Verified tools
-    if (Boolean(a.is_verified || a.isVerified) && !Boolean(b.is_verified || b.isVerified)) return -1;
-    if (!Boolean(a.is_verified || a.isVerified) && Boolean(b.is_verified || b.isVerified)) return 1;
-    
-    // Third priority: Rating
-    if ((a.rating || 0) > (b.rating || 0)) return -1;
-    if ((a.rating || 0) < (b.rating || 0)) return 1;
-    
-    // Fourth priority: Category (if specified in filters)
-    if (effectiveCategoryFilter && a.primary_task === effectiveCategoryFilter && b.primary_task !== effectiveCategoryFilter) return -1;
-    if (effectiveCategoryFilter && a.primary_task !== effectiveCategoryFilter && b.primary_task === effectiveCategoryFilter) return 1;
-    
-    // Fifth priority: By click count (popularity)
-    return (b.click_count || 0) - (a.click_count || 0);
-  });
-
-  // Apply limit after sorting
-  const limitedTools = limit ? sortedTools.slice(0, limit) : sortedTools;
+  // Update the loadedTools state when toolsToProcess changes or the limit changes
+  useEffect(() => {
+    if (toolsToProcess && toolsToProcess.length > 0) {
+      console.log(`Processing ${toolsToProcess.length} tools with limit ${limit}`);
+      
+      // Prepare and map tools to ensure consistent format
+      const mappedTools = toolsToProcess.map(tool => {
+        return {
+          id: tool.id,
+          name: tool.company_name || tool.name || "",
+          company_name: tool.company_name || tool.name || "",
+          description: tool.short_description || tool.description || "",
+          short_description: tool.short_description || tool.description || "",
+          logo: tool.logo_url || tool.logo || "",
+          logo_url: tool.logo_url || tool.logo || "",
+          category: tool.primary_task || tool.category || "",
+          primary_task: tool.primary_task || tool.category || "",
+          rating: tool.rating || 4,
+          reviewCount: tool.reviewCount || 0,
+          pricing: tool.pricing || "",
+          url: tool.visit_website_url || tool.detail_url || tool.url || "#",
+          visit_website_url: tool.visit_website_url || "",
+          detail_url: tool.detail_url || "",
+          slug: tool.slug || "",
+          isFeatured: Boolean(tool.is_featured || tool.isFeatured),
+          isVerified: Boolean(tool.is_verified || tool.isVerified),
+          is_featured: tool.is_featured || tool.isFeatured,
+          is_verified: tool.is_verified || tool.isVerified,
+          isNew: new Date(tool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
+          click_count: tool.click_count || 0,
+          ...tool
+        };
+      });
+      
+      // Custom sort function that prioritizes Featured > Verified > Others
+      const sortedTools = [...mappedTools].sort((a, b) => {
+        // First priority: Featured tools
+        if (Boolean(a.is_featured || a.isFeatured) && !Boolean(b.is_featured || b.isFeatured)) return -1;
+        if (!Boolean(a.is_featured || a.isFeatured) && Boolean(b.is_featured || b.isFeatured)) return 1;
+        
+        // Second priority: Verified tools
+        if (Boolean(a.is_verified || a.isVerified) && !Boolean(b.is_verified || b.isVerified)) return -1;
+        if (!Boolean(a.is_verified || a.isVerified) && Boolean(b.is_verified || b.isVerified)) return 1;
+        
+        // Third priority: Rating
+        if ((a.rating || 0) > (b.rating || 0)) return -1;
+        if ((a.rating || 0) < (b.rating || 0)) return 1;
+        
+        // Fourth priority: Category (if specified in filters)
+        if (effectiveCategoryFilter && a.primary_task === effectiveCategoryFilter && b.primary_task !== effectiveCategoryFilter) return -1;
+        if (effectiveCategoryFilter && a.primary_task !== effectiveCategoryFilter && b.primary_task === effectiveCategoryFilter) return 1;
+        
+        // Fifth priority: By click count (popularity)
+        return (b.click_count || 0) - (a.click_count || 0);
+      });
+      
+      // Apply limit after sorting
+      const limitedTools = limit ? sortedTools.slice(0, limit) : sortedTools;
+      console.log(`Setting ${limitedTools.length} tools to be displayed (limit: ${limit})`);
+      setLoadedTools(limitedTools);
+    } else {
+      setLoadedTools([]);
+    }
+  }, [toolsToProcess, limit, effectiveCategoryFilter]);
   
+  // Log tools for debugging
+  console.log("Tools to process:", toolsToProcess?.length || 0);
+  console.log("Loaded tools to display:", loadedTools.length);
+
   if (isLoading && !providedTools) {
     return <ToolGridSkeleton count={limit || 8} columnsPerRow={columnsPerRow} />;
   }
@@ -269,7 +275,7 @@ export function ToolGrid({
     );
   }
   
-  if (!limitedTools.length) {
+  if (!loadedTools.length) {
     return <EmptyToolsMessage />;
   }
   
@@ -292,7 +298,7 @@ export function ToolGrid({
   
   return (
     <div className={`grid ${gridColsClasses} gap-4`}>
-      {limitedTools.map((tool, index) => (
+      {loadedTools.map((tool, index) => (
         <MotionWrapper 
           key={tool.id} 
           animation="fadeIn" 
