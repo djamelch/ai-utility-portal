@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
@@ -157,36 +156,24 @@ const Tools = () => {
     setLoadMoreCount(1);
   };
 
-  const loadMore = async () => {
-    try {
-      console.log("Load more clicked. Current count:", loadMoreCount);
-      setIsLoadingMore(true);
-      
-      // Simulate delay to ensure state updates correctly
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      setLoadMoreCount(prevCount => {
-        const newCount = prevCount + 1;
-        console.log("New load more count:", newCount);
-        
-        // Show toast for feedback
-        toast({
-          title: "Loading more tools",
-          description: `Loading ${loadMoreIncrement} more tools...`
-        });
-        
-        return newCount;
-      });
-    } catch (error) {
-      console.error("Error loading more tools:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load more tools. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
+  const loadMore = () => {
+    console.log("Load more button clicked");
+    setIsLoadingMore(true);
+    
+    toast({
+      title: "Loading more tools",
+      description: `Loading ${loadMoreIncrement} more tools...`
+    });
+    
+    setLoadMoreCount(prevCount => {
+      const newCount = prevCount + 1;
+      console.log(`Setting loadMoreCount from ${prevCount} to ${newCount}`);
+      return newCount;
+    });
+    
+    setTimeout(() => {
       setIsLoadingMore(false);
-    }
+    }, 500);
   };
 
   const clearFilters = () => {
@@ -195,7 +182,6 @@ const Tools = () => {
     setLoadMoreCount(1);
   };
 
-  // Reset load more count when filters change
   useEffect(() => {
     setLoadMoreCount(1);
     console.log("Filters changed, resetting load more count to 1");
@@ -209,7 +195,7 @@ const Tools = () => {
   };
 
   const currentLimit = initialLimit * loadMoreCount;
-  console.log("Current calculated limit:", currentLimit);
+  console.log("Current calculated limit for tools:", currentLimit);
 
   return (
     <PageLoadingWrapper 
@@ -346,19 +332,19 @@ const Tools = () => {
                   variant="outline" 
                   size="lg" 
                   onClick={loadMore}
-                  className="px-8 flex items-center gap-2"
+                  className="px-8 flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground hover:text-primary-foreground"
                   disabled={isLoading || isLoadingMore}
                 >
                   {isLoadingMore ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       Loading...
                     </>
                   ) : (
-                    `Load More Tools`
+                    <>Load More Tools ({loadMoreIncrement})</>
                   )}
                 </Button>
               </div>
