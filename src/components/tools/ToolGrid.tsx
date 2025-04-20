@@ -262,16 +262,16 @@ export function ToolGrid({
     return (
       <Alert variant="destructive" className="mb-6">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>خطأ في التحميل</AlertTitle>
+        <AlertTitle>Loading Error</AlertTitle>
         <AlertDescription className="flex flex-col gap-2">
-          <p>حدث خطأ أثناء تحميل الأدوات. يرجى المحاولة مرة أخرى لاحقًا.</p>
+          <p>There was an error loading the tools. Please try again later.</p>
           <Button 
             onClick={() => refetch()} 
             className="w-fit"
             variant="outline"
             size="sm"
           >
-            حاول مرة أخرى
+            Try Again
           </Button>
         </AlertDescription>
       </Alert>
@@ -336,7 +336,7 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
     <div className="flex flex-col items-center justify-center py-8">
       <EnhancedLoadingIndicator 
         variant="dots" 
-        text="جاري تحميل الأدوات..." 
+        text="Loading tools..." 
         size={30}
         className="text-primary"
       />
@@ -356,9 +356,9 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
 function EmptyToolsMessage() {
   return (
     <div className="text-center p-8">
-      <h3 className="text-xl font-medium">لم يتم العثور على أدوات</h3>
+      <h3 className="text-xl font-medium">No tools found</h3>
       <p className="text-muted-foreground mt-2">
-        حاول تعديل معايير البحث الخاصة بك
+        Try adjusting your search criteria
       </p>
     </div>
   );

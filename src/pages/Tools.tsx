@@ -22,7 +22,6 @@ const Tools = () => {
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   
-  // Set default values if no parameters exist
   const searchQuery = searchParams.get("search") || "";
   const category = searchParams.get("category") || "";
   const pricing = searchParams.get("pricing") || "";
@@ -30,7 +29,7 @@ const Tools = () => {
   const features = searchParams.get("features")?.split(",").filter(Boolean) || [];
   
   const [searchInput, setSearchInput] = useState(searchQuery);
-  const [loadMoreCount, setLoadMoreCount] = useState(1);
+  const [loadMoreCount, setLoadMoreCount] = useState(8);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [totalTools, setTotalTools] = useState(0);
   const initialLimit = 12;
@@ -141,13 +140,11 @@ const Tools = () => {
     staleTime: 1000 * 60 * 5
   });
 
-  // Get total count of tools for "load more" functionality
   useEffect(() => {
     const getToolsCount = async () => {
       try {
         let query = supabase.from('tools').select('id', { count: 'exact' });
         
-        // Apply filters only if they are set
         if (searchQuery) {
           query = query.or(`company_name.ilike.%${searchQuery}%,short_description.ilike.%${searchQuery}%,full_description.ilike.%${searchQuery}%`);
         }
@@ -202,7 +199,7 @@ const Tools = () => {
     }
     
     setSearchParams(params);
-    setLoadMoreCount(1);
+    setLoadMoreCount(8);
   };
 
   const loadMore = () => {
@@ -228,12 +225,12 @@ const Tools = () => {
   const clearFilters = () => {
     setSearchInput("");
     setSearchParams(new URLSearchParams());
-    setLoadMoreCount(1);
+    setLoadMoreCount(8);
   };
 
   useEffect(() => {
-    setLoadMoreCount(1);
-    console.log("Filters changed, resetting load more count to 1");
+    setLoadMoreCount(8);
+    console.log("Filters changed, resetting load more count to 8");
   }, [searchQuery, category, pricing, sortBy, features]);
 
   const hasActiveFilters = searchQuery || category || pricing || sortBy !== "featured" || features.length > 0;
@@ -360,7 +357,21 @@ const Tools = () => {
                     <div className="mb-6">
                       <h3 className="text-sm font-medium mb-2">Active Filters:</h3>
                       <div className="flex flex-wrap gap-2">
-                        {/* Active filters will be shown here */}
+                        {searchQuery && (
+                          <div className="px-3 py-1 bg-primary/10 text-sm rounded-full">
+                            Search: {searchQuery}
+                          </div>
+                        )}
+                        {category && (
+                          <div className="px-3 py-1 bg-primary/10 text-sm rounded-full">
+                            Category: {category.replace(/-/g, ' ')}
+                          </div>
+                        )}
+                        {pricing && (
+                          <div className="px-3 py-1 bg-primary/10 text-sm rounded-full">
+                            Pricing: {pricing}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
