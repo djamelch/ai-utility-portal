@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
@@ -23,7 +22,7 @@ const Tools = () => {
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   
-  // Get search parameters but default to empty strings if not present
+  // Set default values if no parameters exist
   const searchQuery = searchParams.get("search") || "";
   const category = searchParams.get("category") || "";
   const pricing = searchParams.get("pricing") || "";
@@ -148,6 +147,7 @@ const Tools = () => {
       try {
         let query = supabase.from('tools').select('id', { count: 'exact' });
         
+        // Apply filters only if they are set
         if (searchQuery) {
           query = query.or(`company_name.ilike.%${searchQuery}%,short_description.ilike.%${searchQuery}%,full_description.ilike.%${searchQuery}%`);
         }
@@ -210,8 +210,8 @@ const Tools = () => {
     setIsLoadingMore(true);
     
     toast({
-      title: "جاري تحميل المزيد",
-      description: `جاري تحميل ${loadMoreIncrement} أداة إضافية...`
+      title: "Loading More Tools",
+      description: `Loading ${loadMoreIncrement} additional tools...`
     });
     
     setLoadMoreCount(prevCount => {
@@ -270,10 +270,10 @@ const Tools = () => {
             <MotionWrapper animation="fadeIn">
               <div className="mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold">
-                  مكتبة أدوات الذكاء الاصطناعي
+                  AI Tools Directory
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                  اكتشف أفضل أدوات الذكاء الاصطناعي لجميع احتياجاتك
+                  Discover the best AI tools for your needs
                 </p>
               </div>
             </MotionWrapper>
@@ -281,16 +281,16 @@ const Tools = () => {
             {hasError ? (
               <Alert variant="destructive" className="mb-6">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>خطأ في التحميل</AlertTitle>
+                <AlertTitle>Loading Error</AlertTitle>
                 <AlertDescription>
-                  حدث خطأ أثناء تحميل بيانات الفلتر. يرجى المحاولة مرة أخرى لاحقًا.
+                  An error occurred while loading filter data. Please try again later.
                   <Button 
                     onClick={retryFetching} 
                     variant="outline" 
                     size="sm" 
                     className="mr-2 mt-2"
                   >
-                    حاول مرة أخرى
+                    Try again
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -302,7 +302,7 @@ const Tools = () => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                       <Input
                         type="text"
-                        placeholder="ابحث عن الأدوات..."
+                        placeholder="Search tools..."
                         className="w-full pl-10 pr-4"
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
@@ -318,7 +318,7 @@ const Tools = () => {
                       )}
                     >
                       <Filter size={18} />
-                      الفلاتر
+                      Filters
                       {hasActiveFilters && (
                         <span className="ml-1 h-5 w-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
                           !
@@ -327,7 +327,7 @@ const Tools = () => {
                     </Button>
                     
                     <Button type="submit">
-                      بحث
+                      Search
                     </Button>
                   </form>
                   
@@ -336,7 +336,7 @@ const Tools = () => {
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-semibold flex items-center gap-2">
                           <SlidersHorizontal size={18} />
-                          فلاتر متقدمة
+                          Advanced Filters
                         </h3>
                         {hasActiveFilters && (
                           <Button 
@@ -344,7 +344,7 @@ const Tools = () => {
                             size="sm"
                             onClick={clearFilters}
                           >
-                            إعادة تعيين الكل
+                            Reset All
                           </Button>
                         )}
                       </div>
@@ -358,7 +358,7 @@ const Tools = () => {
                   
                   {hasActiveFilters && (
                     <div className="mb-6">
-                      <h3 className="text-sm font-medium mb-2">الفلاتر النشطة:</h3>
+                      <h3 className="text-sm font-medium mb-2">Active Filters:</h3>
                       <div className="flex flex-wrap gap-2">
                         {/* Active filters will be shown here */}
                       </div>
@@ -385,20 +385,10 @@ const Tools = () => {
                     variant="outline" 
                     size="lg" 
                     onClick={loadMore}
-                    className="px-8 flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground hover:text-primary-foreground"
-                    disabled={isLoading || isLoadingMore}
+                    className="px-8 flex items-center gap-2"
+                    disabled={isLoadingMore}
                   >
-                    {isLoadingMore ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        جاري التحميل...
-                      </>
-                    ) : (
-                      <>تحميل المزيد من الأدوات ({loadMoreIncrement})</>
-                    )}
+                    {isLoadingMore ? "Loading..." : `Load More Tools (${loadMoreIncrement})`}
                   </Button>
                 </div>
               )}
