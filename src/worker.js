@@ -32,6 +32,11 @@ export default {
             },
             {
               ASSET_NAMESPACE: env.__STATIC_CONTENT,
+              cacheControl: {
+                browserTTL: 0, // Don't cache in browser for SPA routes
+                edgeTTL: 2 * 60 * 60, // Cache on edge for 2 hours
+                bypassCache: false,
+              },
             }
           )
         }
@@ -61,6 +66,11 @@ export default {
             },
             {
               ASSET_NAMESPACE: env.__STATIC_CONTENT,
+              cacheControl: {
+                browserTTL: 0, // Don't cache in browser for SPA routes
+                edgeTTL: 2 * 60 * 60, // Cache on edge for 2 hours
+                bypassCache: false,
+              },
             }
           )
         } catch (e) {

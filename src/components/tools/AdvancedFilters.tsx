@@ -45,17 +45,17 @@ export function AdvancedFilters({
     searchParams.get("sortBy") || "featured"
   );
   const [features, setFeatures] = useState<string[]>(
-    searchParams.get("features")?.split(",") || []
+    searchParams.get("features")?.split(",").filter(Boolean) || []
   );
   
   const featureOptions = [
-    { id: "api-access", label: "API Access" },
-    { id: "free-trial", label: "Free Trial" },
-    { id: "no-signup", label: "No Signup Required" },
-    { id: "mobile-friendly", label: "Mobile Friendly" },
-    { id: "browser-extension", label: "Browser Extension" },
-    { id: "offline-mode", label: "Offline Mode" },
-    { id: "team-collaboration", label: "Team Collaboration" },
+    { id: "api-access", label: "واجهة برمجة التطبيقات" },
+    { id: "free-trial", label: "تجربة مجانية" },
+    { id: "no-signup", label: "لا يتطلب تسجيل" },
+    { id: "mobile-friendly", label: "متوافق مع الجوال" },
+    { id: "browser-extension", label: "إضافة متصفح" },
+    { id: "offline-mode", label: "وضع عدم الاتصال" },
+    { id: "team-collaboration", label: "تعاون فريق" },
   ];
   
   const handleFeatureToggle = (feature: string) => {
@@ -146,7 +146,7 @@ export function AdvancedFilters({
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="h-8 gap-1 border-dashed">
-            Categories
+            الفئات
             {selectedCategory && (
               <Badge
                 variant="secondary"
@@ -176,7 +176,7 @@ export function AdvancedFilters({
               </div>
             ))}
             {categories.length === 0 && (
-              <div className="text-sm text-muted-foreground p-2">No categories available</div>
+              <div className="text-sm text-muted-foreground p-2">لا توجد فئات متاحة</div>
             )}
           </div>
         </PopoverContent>
@@ -185,7 +185,7 @@ export function AdvancedFilters({
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="h-8 gap-1 border-dashed">
-            Pricing
+            التسعير
             {selectedPricing && (
               <Badge
                 variant="secondary"
@@ -215,7 +215,7 @@ export function AdvancedFilters({
               </div>
             ))}
             {pricingOptions.length === 0 && (
-              <div className="text-sm text-muted-foreground p-2">No pricing options available</div>
+              <div className="text-sm text-muted-foreground p-2">لا توجد خيارات تسعير متاحة</div>
             )}
           </div>
         </PopoverContent>
@@ -224,7 +224,7 @@ export function AdvancedFilters({
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="h-8 gap-1 border-dashed">
-            Features
+            الميزات
             {features.length > 0 && (
               <Badge
                 variant="secondary"
@@ -259,20 +259,20 @@ export function AdvancedFilters({
       
       <Select value={sortBy} onValueChange={setSortBy}>
         <SelectTrigger className="h-8 w-[130px]">
-          <SelectValue placeholder="Sort by" />
+          <SelectValue placeholder="ترتيب حسب" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="featured">Featured</SelectItem>
-          <SelectItem value="newest">Newest</SelectItem>
-          <SelectItem value="popular">Most Popular</SelectItem>
-          <SelectItem value="top-rated">Top Rated</SelectItem>
+          <SelectItem value="featured">مميز</SelectItem>
+          <SelectItem value="newest">الأحدث</SelectItem>
+          <SelectItem value="popular">الأكثر شعبية</SelectItem>
+          <SelectItem value="top-rated">الأعلى تقييمًا</SelectItem>
         </SelectContent>
       </Select>
       
       <Separator orientation="vertical" className="h-8 hidden sm:block" />
       
       <Button size="sm" className="h-8" onClick={applyFilters}>
-        Apply Filters
+        تطبيق الفلاتر
       </Button>
       
       {activeFiltersCount > 0 && (
@@ -282,7 +282,7 @@ export function AdvancedFilters({
           className="h-8 px-2 lg:px-3"
           onClick={clearFilters}
         >
-          Clear Filters
+          مسح الفلاتر
         </Button>
       )}
     </div>

@@ -90,7 +90,8 @@ export function ToolGrid({
           searchTerm: effectiveSearchTerm, 
           category: effectiveCategoryFilter,
           pricing,
-          sortBy: effectiveSortBy
+          sortBy: effectiveSortBy,
+          features
         });
         
         let query = supabase.from("tools").select("*");
@@ -123,16 +124,18 @@ export function ToolGrid({
           query = query.eq("pricing", pricing);
         }
         
-        if (features.length > 0) {
+        if (features && features.length > 0) {
           features.forEach(feature => {
-            const keyword = feature.replace(/-/g, ' ');
-            query = query.or(`short_description.ilike.%${keyword}%,full_description.ilike.%${keyword}%`);
+            if (feature) {
+              const keyword = feature.replace(/-/g, ' ');
+              query = query.or(`short_description.ilike.%${keyword}%,full_description.ilike.%${keyword}%`);
+            }
           });
         }
         
         // Ordering based on sortBy value
         switch (effectiveSortBy) {
-          case "recent":
+          case "newest":
             query = query.order("created_at", { ascending: false });
             break;
           case "popular":
@@ -155,7 +158,7 @@ export function ToolGrid({
         }
         
         // Increase the query limit to ensure we get enough data
-        const queryLimit = Math.max(limit, 50); // Get at least 50 items or the requested limit
+        const queryLimit = Math.max(limit, 100); // Get at least 100 items or the requested limit
         query = query.limit(queryLimit);
         
         const { data, error } = await query;
@@ -259,16 +262,16 @@ export function ToolGrid({
     return (
       <Alert variant="destructive" className="mb-6">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Loading Error</AlertTitle>
+        <AlertTitle>خطأ في التحميل</AlertTitle>
         <AlertDescription className="flex flex-col gap-2">
-          <p>An error occurred while loading tools. Please try again later.</p>
+          <p>حدث خطأ أثناء تحميل الأدوات. يرجى المحاولة مرة أخرى لاحقًا.</p>
           <Button 
             onClick={() => refetch()} 
             className="w-fit"
             variant="outline"
             size="sm"
           >
-            Try Again
+            حاول مرة أخرى
           </Button>
         </AlertDescription>
       </Alert>
@@ -333,7 +336,7 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
     <div className="flex flex-col items-center justify-center py-8">
       <EnhancedLoadingIndicator 
         variant="dots" 
-        text="Loading tools..." 
+        text="جاري تحميل الأدوات..." 
         size={30}
         className="text-primary"
       />
@@ -353,9 +356,9 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
 function EmptyToolsMessage() {
   return (
     <div className="text-center p-8">
-      <h3 className="text-xl font-medium">No tools found</h3>
+      <h3 className="text-xl font-medium">لم يتم العثور على أدوات</h3>
       <p className="text-muted-foreground mt-2">
-        Try adjusting your search criteria
+        حاول تعديل معايير البحث الخاصة بك
       </p>
     </div>
   );

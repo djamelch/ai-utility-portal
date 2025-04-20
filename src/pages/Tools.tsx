@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
@@ -22,15 +23,17 @@ const Tools = () => {
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   
+  // Get search parameters but default to empty strings if not present
   const searchQuery = searchParams.get("search") || "";
   const category = searchParams.get("category") || "";
   const pricing = searchParams.get("pricing") || "";
   const sortBy = searchParams.get("sortBy") || "featured";
-  const features = searchParams.get("features")?.split(",") || [];
+  const features = searchParams.get("features")?.split(",").filter(Boolean) || [];
   
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [loadMoreCount, setLoadMoreCount] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [totalTools, setTotalTools] = useState(0);
   const initialLimit = 12;
   const loadMoreIncrement = 12;
 
@@ -139,6 +142,52 @@ const Tools = () => {
     staleTime: 1000 * 60 * 5
   });
 
+  // Get total count of tools for "load more" functionality
+  useEffect(() => {
+    const getToolsCount = async () => {
+      try {
+        let query = supabase.from('tools').select('id', { count: 'exact' });
+        
+        if (searchQuery) {
+          query = query.or(`company_name.ilike.%${searchQuery}%,short_description.ilike.%${searchQuery}%,full_description.ilike.%${searchQuery}%`);
+        }
+        
+        if (category) {
+          const isSlug = category.includes('-');
+          
+          if (isSlug) {
+            const formattedCategory = category
+              .split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+            
+            query = query.eq("primary_task", formattedCategory);
+          } else {
+            query = query.eq("primary_task", category);
+          }
+        }
+        
+        if (pricing) {
+          query = query.eq("pricing", pricing);
+        }
+        
+        const { count, error } = await query;
+        
+        if (error) {
+          console.error('Error getting tools count:', error);
+          return;
+        }
+        
+        setTotalTools(count || 0);
+        console.log(`Total tools count: ${count}`);
+      } catch (error) {
+        console.error('Error counting tools:', error);
+      }
+    };
+    
+    getToolsCount();
+  }, [searchQuery, category, pricing, features]);
+
   const isLoading = isCategoriesLoading || isPricingLoading;
   const hasError = categoriesError || pricingError;
 
@@ -161,8 +210,8 @@ const Tools = () => {
     setIsLoadingMore(true);
     
     toast({
-      title: "Loading more tools",
-      description: `Loading ${loadMoreIncrement} more tools...`
+      title: "جاري تحميل المزيد",
+      description: `جاري تحميل ${loadMoreIncrement} أداة إضافية...`
     });
     
     setLoadMoreCount(prevCount => {
@@ -196,6 +245,9 @@ const Tools = () => {
 
   const currentLimit = initialLimit * loadMoreCount;
   console.log("Current calculated limit for tools:", currentLimit);
+  
+  const hasMoreTools = totalTools > currentLimit;
+  console.log(`Has more tools: ${hasMoreTools} (Total: ${totalTools}, Current: ${currentLimit})`);
 
   return (
     <PageLoadingWrapper 
@@ -218,10 +270,10 @@ const Tools = () => {
             <MotionWrapper animation="fadeIn">
               <div className="mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold">
-                  AI Tools Directory
+                  مكتبة أدوات الذكاء الاصطناعي
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                  Discover the best AI tools for all your needs
+                  اكتشف أفضل أدوات الذكاء الاصطناعي لجميع احتياجاتك
                 </p>
               </div>
             </MotionWrapper>
@@ -229,16 +281,16 @@ const Tools = () => {
             {hasError ? (
               <Alert variant="destructive" className="mb-6">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Loading Error</AlertTitle>
+                <AlertTitle>خطأ في التحميل</AlertTitle>
                 <AlertDescription>
-                  An error occurred while loading filter data. Please try again later.
+                  حدث خطأ أثناء تحميل بيانات الفلتر. يرجى المحاولة مرة أخرى لاحقًا.
                   <Button 
                     onClick={retryFetching} 
                     variant="outline" 
                     size="sm" 
-                    className="ml-2 mt-2"
+                    className="mr-2 mt-2"
                   >
-                    Try Again
+                    حاول مرة أخرى
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -250,7 +302,7 @@ const Tools = () => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                       <Input
                         type="text"
-                        placeholder="Search for tools..."
+                        placeholder="ابحث عن الأدوات..."
                         className="w-full pl-10 pr-4"
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
@@ -266,7 +318,7 @@ const Tools = () => {
                       )}
                     >
                       <Filter size={18} />
-                      Filters
+                      الفلاتر
                       {hasActiveFilters && (
                         <span className="ml-1 h-5 w-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
                           !
@@ -275,7 +327,7 @@ const Tools = () => {
                     </Button>
                     
                     <Button type="submit">
-                      Search
+                      بحث
                     </Button>
                   </form>
                   
@@ -284,7 +336,7 @@ const Tools = () => {
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-semibold flex items-center gap-2">
                           <SlidersHorizontal size={18} />
-                          Advanced Filters
+                          فلاتر متقدمة
                         </h3>
                         {hasActiveFilters && (
                           <Button 
@@ -292,7 +344,7 @@ const Tools = () => {
                             size="sm"
                             onClick={clearFilters}
                           >
-                            Reset All
+                            إعادة تعيين الكل
                           </Button>
                         )}
                       </div>
@@ -306,7 +358,7 @@ const Tools = () => {
                   
                   {hasActiveFilters && (
                     <div className="mb-6">
-                      <h3 className="text-sm font-medium mb-2">Active Filters:</h3>
+                      <h3 className="text-sm font-medium mb-2">الفلاتر النشطة:</h3>
                       <div className="flex flex-wrap gap-2">
                         {/* Active filters will be shown here */}
                       </div>
@@ -327,27 +379,29 @@ const Tools = () => {
                 features={features}
               />
 
-              <div className="mt-10 flex justify-center">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  onClick={loadMore}
-                  className="px-8 flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground hover:text-primary-foreground"
-                  disabled={isLoading || isLoadingMore}
-                >
-                  {isLoadingMore ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Loading...
-                    </>
-                  ) : (
-                    <>Load More Tools ({loadMoreIncrement})</>
-                  )}
-                </Button>
-              </div>
+              {hasMoreTools && (
+                <div className="mt-10 flex justify-center">
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    onClick={loadMore}
+                    className="px-8 flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground hover:text-primary-foreground"
+                    disabled={isLoading || isLoadingMore}
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        جاري التحميل...
+                      </>
+                    ) : (
+                      <>تحميل المزيد من الأدوات ({loadMoreIncrement})</>
+                    )}
+                  </Button>
+                </div>
+              )}
             </MotionWrapper>
           </div>
         </main>
