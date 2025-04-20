@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
@@ -29,7 +30,8 @@ const Tools = () => {
   const features = searchParams.get("features")?.split(",").filter(Boolean) || [];
   
   const [searchInput, setSearchInput] = useState(searchQuery);
-  const [loadMoreCount, setLoadMoreCount] = useState(8);
+  // Start with a higher number to display more tools initially
+  const [loadMoreCount, setLoadMoreCount] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [totalTools, setTotalTools] = useState(0);
   const initialLimit = 12;
@@ -199,7 +201,9 @@ const Tools = () => {
     }
     
     setSearchParams(params);
-    setLoadMoreCount(8);
+    // Reset to 1 to start with the first batch when search changes
+    setLoadMoreCount(1);
+    console.log("Search submitted, loadMoreCount reset to 1");
   };
 
   const loadMore = () => {
@@ -225,12 +229,15 @@ const Tools = () => {
   const clearFilters = () => {
     setSearchInput("");
     setSearchParams(new URLSearchParams());
-    setLoadMoreCount(8);
+    // Reset to 1 when filters are cleared
+    setLoadMoreCount(1);
+    console.log("Filters cleared, loadMoreCount reset to 1");
   };
 
   useEffect(() => {
-    setLoadMoreCount(8);
-    console.log("Filters changed, resetting load more count to 8");
+    // Reset to 1 when filters change
+    setLoadMoreCount(1);
+    console.log("Filters changed, resetting load more count to 1");
   }, [searchQuery, category, pricing, sortBy, features]);
 
   const hasActiveFilters = searchQuery || category || pricing || sortBy !== "featured" || features.length > 0;

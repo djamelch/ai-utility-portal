@@ -80,6 +80,7 @@ export function ToolGrid({
     queryFn: async () => {
       // If tools are provided directly, skip the database query
       if (providedTools) {
+        console.log("Using provided tools, skipping database query");
         return [];
       }
       
@@ -189,6 +190,17 @@ export function ToolGrid({
   useEffect(() => {
     if (toolsToProcess && toolsToProcess.length > 0) {
       console.log(`Processing ${toolsToProcess.length} tools with limit ${limit}`);
+      
+      // Log raw data for debugging
+      toolsToProcess.slice(0, 5).forEach((tool, index) => {
+        console.log(`Tool ${index} data:`, {
+          name: tool.company_name || tool.name,
+          isFeatured: Boolean(tool.isFeatured),
+          isVerified: Boolean(tool.isVerified),
+          is_featured: Boolean(tool.is_featured),
+          is_verified: Boolean(tool.is_verified)
+        });
+      });
       
       // Prepare and map tools to ensure consistent format
       const mappedTools = toolsToProcess.map(tool => {
