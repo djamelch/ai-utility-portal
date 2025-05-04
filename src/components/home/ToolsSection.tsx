@@ -1,10 +1,10 @@
-
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { ToolGrid } from "@/components/tools/ToolGrid";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { EnhancedLoadingIndicator } from "@/components/ui/EnhancedLoadingIndicator";
+import { ModernLoadingIndicator } from "@/components/ui/ModernLoadingIndicator";
+import { GradientBackground } from "@/components/ui/GradientBackground";
 import { 
   Carousel, 
   CarouselContent, 
@@ -22,13 +22,15 @@ interface ToolsSectionProps {
   description: string;
   queryType: "featured" | "top-rated" | "recent" | "all";
   limit?: number;
+  variant?: "primary" | "secondary" | "accent" | "subtle" | "none";
 }
 
 export function ToolsSection({ 
   title, 
   description, 
   queryType,
-  limit = 6 
+  limit = 6,
+  variant = "none"
 }: ToolsSectionProps) {
   const isMobile = useIsMobile();
   
@@ -123,88 +125,100 @@ export function ToolsSection({
     refetchOnWindowFocus: false,
   });
 
-  return (
-    <section className="section-padding">
-      <div className="container-wide">
-        <MotionWrapper animation="fadeIn">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold">{title}</h2>
-              <p className="mt-2 text-muted-foreground">
-                {description}
-              </p>
-            </div>
-            <Link 
-              to="/tools" 
-              className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors"
-            >
-              View all
-              <ArrowRight size={16} />
-            </Link>
+  const sectionContent = (
+    <>
+      <MotionWrapper animation="fadeIn">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold">{title}</h2>
+            <p className="mt-2 text-muted-foreground">
+              {description}
+            </p>
           </div>
-        </MotionWrapper>
-        
-        {isMobile ? (
-          <div className="mt-4">
-            <Carousel className="w-full">
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {isLoading ? (
-                  <CarouselItem className="pl-2 md:pl-4 basis-full sm:basis-full">
-                    <div className="flex justify-center items-center h-64">
-                      <EnhancedLoadingIndicator variant="pulse" text="Loading tools..." />
-                    </div>
-                  </CarouselItem>
-                ) : tools.length === 0 ? (
-                  <CarouselItem className="pl-2 md:pl-4 basis-full sm:basis-full">
-                    <div className="text-center p-8">
-                      <h3 className="text-xl font-medium">No tools found</h3>
-                      <p className="text-muted-foreground mt-2">
-                        Try adjusting your search criteria
-                      </p>
-                    </div>
-                  </CarouselItem>
-                ) : (
-                  tools.map((tool, index) => (
-                    <CarouselItem key={tool.id} className="pl-2 md:pl-4 basis-full sm:basis-full">
-                      <MotionWrapper 
-                        animation="fadeIn" 
-                        delay={`delay-${Math.min(Math.floor(index * 100), 500)}` as "delay-100" | "delay-200" | "delay-300" | "delay-400" | "delay-500" | "none"}
-                      >
-                        <ToolCard tool={tool} />
-                      </MotionWrapper>
-                    </CarouselItem>
-                  ))
-                )}
-              </CarouselContent>
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <CarouselPrevious className="relative static transform-none h-8 w-8 rounded-full" />
-                <CarouselNext className="relative static transform-none h-8 w-8 rounded-full" />
-              </div>
-            </Carousel>
-          </div>
-        ) : (
-          isLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <EnhancedLoadingIndicator variant="pulse" text="Loading tools..." />
-            </div>
-          ) : (
-            <ToolGrid 
-              tools={tools}
-              columnsPerRow={3} 
-              limit={limit}
-            />
-          )
-        )}
-        
-        <div className="mt-6 text-center sm:hidden">
           <Link 
             to="/tools" 
-            className="inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors"
+            className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-input bg-background/80 backdrop-blur-sm px-4 py-2 text-sm font-medium hover:bg-secondary/50 hover:scale-105 transition-all"
           >
-            View all tools
-            <ArrowRight size={16} />
+            View all
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
+      </MotionWrapper>
+      
+      {isMobile ? (
+        <div className="mt-4">
+          <Carousel className="w-full">
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {isLoading ? (
+                <CarouselItem className="pl-2 md:pl-4 basis-full sm:basis-full">
+                  <div className="flex justify-center items-center h-64">
+                    <ModernLoadingIndicator variant="pulse" size="md" text="Loading tools..." />
+                  </div>
+                </CarouselItem>
+              ) : tools.length === 0 ? (
+                <CarouselItem className="pl-2 md:pl-4 basis-full sm:basis-full">
+                  <div className="text-center p-8">
+                    <h3 className="text-xl font-medium">No tools found</h3>
+                    <p className="text-muted-foreground mt-2">
+                      Try adjusting your search criteria
+                    </p>
+                  </div>
+                </CarouselItem>
+              ) : (
+                tools.map((tool, index) => (
+                  <CarouselItem key={tool.id} className="pl-2 md:pl-4 basis-full sm:basis-full">
+                    <MotionWrapper 
+                      animation="fadeIn" 
+                      delay={`delay-${Math.min(Math.floor(index * 100), 500)}` as "delay-100" | "delay-200" | "delay-300" | "delay-400" | "delay-500" | "none"}
+                    >
+                      <ToolCard tool={tool} />
+                    </MotionWrapper>
+                  </CarouselItem>
+                ))
+              )}
+            </CarouselContent>
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <CarouselPrevious className="relative static transform-none h-8 w-8 rounded-full opacity-70 hover:opacity-100 transition-opacity" />
+              <CarouselNext className="relative static transform-none h-8 w-8 rounded-full opacity-70 hover:opacity-100 transition-opacity" />
+            </div>
+          </Carousel>
+        </div>
+      ) : (
+        isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <ModernLoadingIndicator variant="dots" size="lg" text="Loading tools..." />
+          </div>
+        ) : (
+          <ToolGrid 
+            tools={tools}
+            columnsPerRow={3} 
+            limit={limit}
+          />
+        )
+      )}
+      
+      <div className="mt-6 text-center sm:hidden">
+        <Link 
+          to="/tools" 
+          className="inline-flex items-center gap-2 rounded-lg border border-input bg-background/80 backdrop-blur-sm px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors"
+        >
+          View all tools
+          <ArrowRight size={16} />
+        </Link>
+      </div>
+    </>
+  );
+  
+  return variant !== "none" ? (
+    <GradientBackground variant={variant} className="section-padding">
+      <div className="container-wide">
+        {sectionContent}
+      </div>
+    </GradientBackground>
+  ) : (
+    <section className="section-padding">
+      <div className="container-wide">
+        {sectionContent}
       </div>
     </section>
   );

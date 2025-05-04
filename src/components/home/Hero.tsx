@@ -16,6 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { AnimatedStat } from "@/components/ui/AnimatedStat";
+import { GradientBackground } from "@/components/ui/GradientBackground";
 
 interface Category {
   id: string;
@@ -157,17 +159,15 @@ export function Hero() {
   const popularCategories = categories.slice(0, 5);
   
   return (
-    <section className="relative overflow-hidden pt-32 pb-16 md:pt-40 md:pb-24">
-      <div className="absolute inset-0 hero-gradient"></div>
-      
+    <GradientBackground variant="primary" className="pt-32 pb-16 md:pt-40 md:pb-24">
       <div className="container-tight relative z-10">
         <MotionWrapper animation="fadeIn" className="text-center">
-          <span className="inline-block rounded-full bg-secondary/80 px-4 py-1.5 text-sm font-medium text-foreground/80">
+          <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
             Discover {statistics?.toolCount || "300+"}+ AI tools
           </span>
           
           <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-            Find the <span className="text-gradient">perfect AI tool</span> for your next project
+            Find the <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool</span> for your next project
           </h1>
           
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -177,12 +177,12 @@ export function Hero() {
         
         <MotionWrapper animation="fadeIn" delay="delay-200" className="mt-8 md:mt-12">
           <div className="flex flex-col md:flex-row gap-3 mx-auto max-w-xl">
-            <div className="relative flex-1 flex rounded-md border border-input bg-background shadow-sm">
+            <div className="relative flex-1 flex rounded-md border border-input bg-background/80 backdrop-blur-sm shadow-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
               <Input
                 type="text"
                 placeholder="Search for AI tools..."
-                className="flex-1 pl-10 rounded-l-md border-0 focus-visible:ring-0"
+                className="flex-1 pl-10 rounded-l-md border-0 focus-visible:ring-0 bg-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -190,7 +190,7 @@ export function Hero() {
               
               <div className="border-l border-input min-w-[140px]">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="border-0 focus:ring-0 rounded-l-none">
+                  <SelectTrigger className="border-0 focus:ring-0 rounded-l-none bg-transparent">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -205,8 +205,9 @@ export function Hero() {
               </div>
             </div>
             
-            <Button className="px-6" onClick={handleSearch}>
-              Search
+            <Button className="px-6 relative overflow-hidden group" onClick={handleSearch}>
+              <span className="relative z-10">Search</span>
+              <span className="absolute inset-0 bg-primary-foreground/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-200"></span>
             </Button>
           </div>
           
@@ -281,7 +282,7 @@ export function Hero() {
               <Link
                 key={category.id}
                 to={`/tools?category=${category.id}`}
-                className="rounded-full bg-secondary/50 px-3 py-1 text-sm text-foreground/70 hover:bg-secondary/80 hover:text-foreground transition-colors"
+                className="rounded-full bg-secondary/50 backdrop-blur-sm px-3 py-1 text-sm text-foreground/70 hover:bg-secondary/80 hover:text-foreground transition-colors hover:shadow-sm"
               >
                 {category.name} ({category.count})
               </Link>
@@ -291,20 +292,30 @@ export function Hero() {
         
         <MotionWrapper animation="fadeIn" delay="delay-400" className="mt-16">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {[
-              { value: statistics?.toolCount || "300+", label: "AI Tools" },
-              { value: statistics?.categoryCount || "18", label: "Categories" },
-              { value: statistics?.reviewCount || "1000+", label: "Reviews" },
-              { value: "Weekly", label: "Updates" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-3xl font-bold">{stat.value}</div>
-                <div className="text-muted-foreground">{stat.label}</div>
+            <AnimatedStat 
+              value={statistics?.toolCount || 300} 
+              label="AI Tools" 
+              suffix="+" 
+            />
+            <AnimatedStat 
+              value={statistics?.categoryCount || 18} 
+              label="Categories" 
+            />
+            <AnimatedStat 
+              value={statistics?.reviewCount || 1000} 
+              label="Reviews" 
+              suffix="+" 
+            />
+            <div className="text-center">
+              <div className="text-3xl font-bold flex items-center justify-center">
+                <span className="animate-pulse inline-block h-3 w-3 rounded-full bg-primary mr-2"></span>
+                Weekly
               </div>
-            ))}
+              <div className="text-muted-foreground">Updates</div>
+            </div>
           </div>
         </MotionWrapper>
       </div>
-    </section>
+    </GradientBackground>
   );
 }

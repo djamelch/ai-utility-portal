@@ -121,6 +121,23 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        // New animations
+        height: {
+          "0%, 100%": { height: "40%" },
+          "50%": { height: "100%" },
+        },
+        blink: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        ripple: {
+          "0%": { transform: "scale(0)", opacity: "1" },
+          "100%": { transform: "scale(4)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -133,6 +150,10 @@ export default {
         slideInRight: "slideInRight 0.4s ease-out forwards",
         pulse: "pulse 3s ease-in-out infinite",
         float: "float 3s ease-in-out infinite",
+        // New animations
+        blink: "blink 1.5s ease-in-out infinite",
+        shimmer: "shimmer 2s linear infinite",
+        ripple: "ripple 1s cubic-bezier(0.65, 0, 0.35, 1) forwards",
       },
       backdropFilter: {
         glass: "blur(16px)",
