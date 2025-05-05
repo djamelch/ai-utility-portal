@@ -151,6 +151,13 @@ export default {
           "80%, 96%": { transform: "translateY(-66.66%)" },
           "100%": { transform: "translateY(-83.33%)" },
         },
+        "text-cycle": {
+          "0%": { transform: "translateY(0)", opacity: "1" },
+          "20%": { transform: "translateY(-10px)", opacity: "0" },
+          "25%": { transform: "translateY(10px)", opacity: "0" },
+          "45%": { transform: "translateY(0)", opacity: "1" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
         "bg-pulse": {
           "0%, 100%": { backgroundColor: "rgba(var(--primary), 0.1)" },
           "50%": { backgroundColor: "rgba(var(--accent), 0.1)" },
@@ -172,6 +179,10 @@ export default {
           "40%": { transform: "translateY(-4px)" },
           "60%": { transform: "translateY(-2px)" },
         },
+        "scale-pulse": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.05)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -189,10 +200,12 @@ export default {
         ripple: "ripple 1s cubic-bezier(0.65, 0, 0.35, 1) forwards",
         "spin-slow": "spin-slow 3s linear infinite",
         "text-slide": "text-slide 12s cubic-bezier(0.83, 0, 0.17, 1) infinite",
+        "text-cycle": "text-cycle 5s ease-in-out infinite",
         "bg-pulse": "bg-pulse 3s ease-in-out infinite",
         "text-fade": "text-fade 1.5s ease-in-out infinite",
         "logo-glow": "logo-glow 2s ease-in-out infinite",
         "logo-bounce": "logo-bounce 2s ease-in-out infinite",
+        "scale-pulse": "scale-pulse 2s ease-in-out infinite",
       },
       backdropFilter: {
         glass: "blur(16px)",

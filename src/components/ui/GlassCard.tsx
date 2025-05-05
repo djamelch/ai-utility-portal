@@ -18,6 +18,7 @@ interface GlassCardProps {
   glowColor?: string;
   badge?: ReactNode;
   onClick?: () => void;
+  pulseBorder?: boolean;
 }
 
 export function GlassCard({ 
@@ -28,7 +29,8 @@ export function GlassCard({
   glowEffect = false,
   glowColor = "before:from-primary/40 before:to-accent/40",
   badge,
-  onClick
+  onClick,
+  pulseBorder = false
 }: GlassCardProps) {
   return (
     <MotionWrapper animation={animation}>
@@ -38,6 +40,7 @@ export function GlassCard({
           "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
           hoverEffect && "transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1",
           glowEffect && "before:absolute before:inset-0 before:opacity-0 before:rounded-xl before:transition-opacity before:duration-500 hover:before:opacity-100 before:bg-gradient-to-br before:-z-10 before:blur-xl before:scale-150",
+          pulseBorder && "border-primary/30 animate-[pulse_3s_ease-in-out_infinite]",
           glowColor,
           onClick && "cursor-pointer",
           className

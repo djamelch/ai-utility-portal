@@ -8,6 +8,7 @@ interface GradientBackgroundProps {
   variant?: "primary" | "secondary" | "accent" | "subtle" | "dynamic";
   interactive?: boolean;
   intensity?: "light" | "medium" | "strong";
+  followCursor?: boolean;
 }
 
 export function GradientBackground({ 
@@ -15,7 +16,8 @@ export function GradientBackground({
   className,
   variant = "primary",
   interactive = false,
-  intensity = "medium"
+  intensity = "medium",
+  followCursor = false
 }: GradientBackgroundProps) {
   const gradientStyles = {
     primary: "bg-gradient-to-br from-primary/5 via-accent/5 to-transparent",
@@ -47,7 +49,7 @@ export function GradientBackground({
   };
   
   const containerRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: 0.5, y: 0.5 });
   const [isHovering, setIsHovering] = useState(false);
   
   useEffect(() => {
@@ -64,20 +66,28 @@ export function GradientBackground({
     };
     
     const handleMouseEnter = () => setIsHovering(true);
-    const handleMouseLeave = () => setIsHovering(false);
+    const handleMouseLeave = () => {
+      setIsHovering(false);
+      // Reset to center when mouse leaves
+      setPosition({ x: 0.5, y: 0.5 });
+    };
     
     const element = containerRef.current;
     
-    element.addEventListener("mousemove", handleMouseMove);
-    element.addEventListener("mouseenter", handleMouseEnter);
-    element.addEventListener("mouseleave", handleMouseLeave);
+    if (followCursor) {
+      element.addEventListener("mousemove", handleMouseMove);
+      element.addEventListener("mouseenter", handleMouseEnter);
+      element.addEventListener("mouseleave", handleMouseLeave);
+    }
     
     return () => {
-      element.removeEventListener("mousemove", handleMouseMove);
-      element.removeEventListener("mouseenter", handleMouseEnter);
-      element.removeEventListener("mouseleave", handleMouseLeave);
+      if (followCursor) {
+        element.removeEventListener("mousemove", handleMouseMove);
+        element.removeEventListener("mouseenter", handleMouseEnter);
+        element.removeEventListener("mouseleave", handleMouseLeave);
+      }
     };
-  }, [interactive]);
+  }, [interactive, followCursor]);
   
   // Get the intensity class for the current variant
   const intensityClass = intensityClasses[intensity][variant === "dynamic" ? "primary" : variant];
@@ -96,7 +106,7 @@ export function GradientBackground({
           )}
           style={{
             background: `radial-gradient(circle at ${position.x * 100}% ${position.y * 100}%, var(--primary) 0%, transparent 60%)`,
-            opacity: isHovering ? 0.05 : 0
+            opacity: isHovering ? 0.1 : 0
           }}
         />
       ) : (
@@ -107,6 +117,12 @@ export function GradientBackground({
           variant === "dynamic" && "animate-pulse"
         )} />
       )}
+      
+      {/* Grid pattern for subtle texture */}
+      <div 
+        className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzQwNDA0MCIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')]"
+        style={{ opacity: 0.05 }}
+      />
       
       <div className="relative z-10">{children}</div>
     </div>
