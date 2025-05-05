@@ -25,10 +25,23 @@ export function FeatureCard({
   animation = "fadeIn",
   index = 0
 }: FeatureCardProps) {
+  // Convert the index to one of the supported delay values
+  const getDelay = (index: number) => {
+    const delayMap: Record<number, "delay-100" | "delay-200" | "delay-300" | "delay-400" | "delay-500" | "none"> = {
+      0: "delay-100",
+      1: "delay-200",
+      2: "delay-300",
+      3: "delay-400",
+      4: "delay-500"
+    };
+    
+    return delayMap[index % 5] || "none";
+  };
+  
   return (
     <MotionWrapper 
       animation={animation} 
-      delay={`delay-${(index % 5) * 100}`}
+      delay={getDelay(index)}
     >
       <div 
         className={cn(
