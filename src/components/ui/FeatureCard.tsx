@@ -12,6 +12,11 @@ interface FeatureCardProps {
   descriptionClassName?: string;
   animation?: "fadeIn" | "slideUp" | "slideDown" | "slideInRight" | "scaleIn" | "none";
   index?: number;
+  hoverEffect?: boolean;
+  glowEffect?: boolean;
+  glowColor?: string;
+  showBadge?: boolean;
+  badgeText?: string;
 }
 
 export function FeatureCard({
@@ -23,7 +28,12 @@ export function FeatureCard({
   titleClassName,
   descriptionClassName,
   animation = "fadeIn",
-  index = 0
+  index = 0,
+  hoverEffect = true,
+  glowEffect = false,
+  glowColor = "before:from-primary/40 before:to-accent/40",
+  showBadge = false,
+  badgeText = "Featured"
 }: FeatureCardProps) {
   // Convert the index to one of the supported delay values
   const getDelay = (index: number) => {
@@ -45,18 +55,40 @@ export function FeatureCard({
     >
       <div 
         className={cn(
-          "rounded-xl p-6 transition-all duration-300 bg-background/40 hover:bg-background/70 border border-border/30 hover:border-primary/20 shadow-sm hover:shadow-md hover:-translate-y-1",
+          "relative rounded-xl p-6 transition-all duration-300",
+          "bg-background/40 dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md",
+          "border border-border/30",
+          "shadow-sm",
+          hoverEffect && "hover:border-primary/20 hover:shadow-md hover:-translate-y-1",
+          glowEffect && "before:absolute before:inset-0 before:opacity-0 before:rounded-xl before:transition-opacity before:duration-500 hover:before:opacity-100 before:bg-gradient-to-br before:-z-10 before:blur-xl before:scale-150",
+          glowColor,
           className
         )}
       >
+        {/* Glass-like highlight effects */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
+        <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
+        
+        {showBadge && (
+          <div className="absolute -top-2 -right-2 bg-primary text-white text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
+            {badgeText}
+          </div>
+        )}
+        
         <div className={cn("flex flex-col space-y-4")}>
           <div 
             className={cn(
-              "w-12 h-12 rounded-full flex items-center justify-center bg-primary/10 text-primary",
+              "w-14 h-14 rounded-full flex items-center justify-center",
+              "bg-primary/10 text-primary shadow-sm",
+              "relative overflow-hidden group",
               iconClassName
             )}
           >
-            {icon}
+            {/* Icon glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
+            <div className="relative z-10 scale-100 group-hover:scale-110 transition-transform duration-300">
+              {icon}
+            </div>
           </div>
           
           <h3 
@@ -70,7 +102,7 @@ export function FeatureCard({
           
           <p 
             className={cn(
-              "text-muted-foreground text-sm",
+              "text-muted-foreground",
               descriptionClassName
             )}
           >
