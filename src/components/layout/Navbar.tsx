@@ -112,8 +112,15 @@ export function Navbar({ className }: NavbarProps) {
       )}
     >
       <nav className="container-wide flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-xl font-bold">
-          <span className="text-gradient">AI Any Tool</span>
+        <Link to="/" className="flex items-center gap-2 text-xl font-bold group">
+          <div className="flex items-center">
+            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:animate-logo-bounce">
+              A
+            </div>
+            <span className="ml-2 bg-gradient-to-r from-purple-600 via-pink-600 to-primary bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
+              AI Any<span className="font-extrabold">Tool</span>
+            </span>
+          </div>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -122,16 +129,18 @@ export function Navbar({ className }: NavbarProps) {
               <li key={link.title}>
                 {link.isButton ? (
                   <Link to={link.path}>
-                    <Button variant="default" size="sm" className="rounded-full">
-                      {link.title}
+                    <Button variant="default" size="sm" className="rounded-full group relative overflow-hidden">
+                      <span className="relative z-10">{link.title}</span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                     </Button>
                   </Link>
                 ) : (
                   <Link 
                     to={link.path} 
-                    className="font-medium text-foreground/80 hover:text-foreground transition-colors link-underline"
+                    className="font-medium text-foreground/80 hover:text-foreground transition-colors relative group"
                   >
                     {link.title}
+                    <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300 group-hover:w-full"></span>
                   </Link>
                 )}
               </li>
@@ -172,25 +181,30 @@ export function Navbar({ className }: NavbarProps) {
             <button
               aria-label="Toggle dark mode"
               onClick={toggleDarkMode}
-              className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors relative group"
             >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {isDarkMode ? 
+                <Sun size={20} className="group-hover:rotate-45 transition-transform duration-300" /> : 
+                <Moon size={20} className="group-hover:-rotate-45 transition-transform duration-300" />
+              }
+              <span className="absolute inset-0 rounded-full bg-foreground/5 scale-0 group-hover:scale-100 transition-transform duration-300"></span>
             </button>
             
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="rounded-full">
+                  <Button variant="outline" size="icon" className="rounded-full relative group overflow-hidden">
                     {isAdmin ? (
-                      <Shield size={20} className="text-primary" />
+                      <Shield size={20} className="text-primary z-10 relative group-hover:scale-110 transition-transform duration-300" />
                     ) : (
-                      <User size={20} />
+                      <User size={20} className="z-10 relative group-hover:scale-110 transition-transform duration-300" />
                     )}
+                    <span className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-pink-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 
                   align="end" 
-                  className="bg-popover z-50 shadow-md dark:bg-gray-800"
+                  className="bg-popover z-50 shadow-md dark:bg-gray-800 animate-in fade-in-80 slide-in-from-top-5"
                 >
                   <DropdownMenuLabel>
                     {isAdmin ? 'Admin Account' : 'User Account'}
@@ -217,7 +231,7 @@ export function Navbar({ className }: NavbarProps) {
             ) : (
               <Link 
                 to="/auth" 
-                className="px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
               >
                 Sign In
               </Link>
@@ -259,9 +273,13 @@ export function Navbar({ className }: NavbarProps) {
           <button
             aria-label="Toggle dark mode"
             onClick={toggleDarkMode}
-            className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors relative group"
           >
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            {isDarkMode ? 
+              <Sun size={20} className="group-hover:rotate-45 transition-transform duration-300" /> : 
+              <Moon size={20} className="group-hover:-rotate-45 transition-transform duration-300" />
+            }
+            <span className="absolute inset-0 rounded-full bg-foreground/5 scale-0 group-hover:scale-100 transition-transform duration-300"></span>
           </button>
           
           <Sheet>

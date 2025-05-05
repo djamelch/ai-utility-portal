@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -158,6 +159,19 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0" },
         },
+        "logo-glow": {
+          "0%, 100%": { 
+            filter: "drop-shadow(0 0 2px rgba(217, 70, 239, 0.3))" 
+          },
+          "50%": { 
+            filter: "drop-shadow(0 0 8px rgba(217, 70, 239, 0.6))" 
+          },
+        },
+        "logo-bounce": {
+          "0%, 20%, 50%, 80%, 100%": { transform: "translateY(0)" },
+          "40%": { transform: "translateY(-4px)" },
+          "60%": { transform: "translateY(-2px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -177,6 +191,8 @@ export default {
         "text-slide": "text-slide 12s cubic-bezier(0.83, 0, 0.17, 1) infinite",
         "bg-pulse": "bg-pulse 3s ease-in-out infinite",
         "text-fade": "text-fade 1.5s ease-in-out infinite",
+        "logo-glow": "logo-glow 2s ease-in-out infinite",
+        "logo-bounce": "logo-bounce 2s ease-in-out infinite",
       },
       backdropFilter: {
         glass: "blur(16px)",

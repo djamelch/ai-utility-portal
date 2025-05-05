@@ -43,8 +43,8 @@ export function TextCycler({
     <span className={cn("inline-block relative", className)}>
       <span 
         className={cn(
-          "inline-block transition-all duration-600",
-          isAnimating ? "opacity-0 -translate-y-2" : "opacity-100 translate-y-0"
+          "inline-block transition-all duration-300",
+          isAnimating ? "opacity-0 -translate-y-3" : "opacity-100 translate-y-0"
         )}
       >
         {texts[currentIndex]}
