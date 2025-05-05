@@ -19,15 +19,19 @@ export function TextCycler({
   useEffect(() => {
     if (texts.length <= 1) return;
     
+    // Initial setup to ensure component is visible immediately
+    setIsAnimating(false);
+    
     const timer = setInterval(() => {
       setIsAnimating(true);
       
       // Wait for exit animation to complete before changing text
-      setTimeout(() => {
+      const animationTimeout = setTimeout(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % texts.length);
         setIsAnimating(false);
       }, 300); // Half of the transition duration
       
+      return () => clearTimeout(animationTimeout);
     }, interval);
     
     return () => clearInterval(timer);
@@ -36,7 +40,7 @@ export function TextCycler({
   if (texts.length === 0) return null;
   
   return (
-    <span className={cn("inline-block min-w-24 transition-all duration-600", className)}>
+    <span className={cn("inline-block relative", className)}>
       <span 
         className={cn(
           "inline-block transition-all duration-600",

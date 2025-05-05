@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowRight, Search, Filter, Sparkles, Zap, Target, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -185,6 +186,7 @@ export function Hero() {
             <span className="relative inline-block">
               <TextCycler 
                 texts={projectTypes} 
+                interval={2500}
                 className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent" 
               />
             </span>

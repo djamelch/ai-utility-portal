@@ -154,6 +154,10 @@ export default {
           "0%, 100%": { backgroundColor: "rgba(var(--primary), 0.1)" },
           "50%": { backgroundColor: "rgba(var(--accent), 0.1)" },
         },
+        "text-fade": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -172,6 +176,7 @@ export default {
         "spin-slow": "spin-slow 3s linear infinite",
         "text-slide": "text-slide 12s cubic-bezier(0.83, 0, 0.17, 1) infinite",
         "bg-pulse": "bg-pulse 3s ease-in-out infinite",
+        "text-fade": "text-fade 1.5s ease-in-out infinite",
       },
       backdropFilter: {
         glass: "blur(16px)",
