@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ArrowRight, Search, Filter, Sparkles, Zap, Target, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -350,6 +349,8 @@ export function Hero() {
               valueClassName="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent"
               disableAnimation={false}
               duration={3000}
+              icon="zap"
+              iconColor="text-primary"
             />
             <AnimatedStat 
               value={statistics?.categoryCount || 18} 
@@ -357,6 +358,8 @@ export function Hero() {
               valueClassName="bg-gradient-to-br from-accent to-primary bg-clip-text text-transparent"
               disableAnimation={false}
               duration={2500}
+              icon="activity"
+              iconColor="text-accent"
             />
             <AnimatedStat 
               value={statistics?.reviewCount || 1000} 
@@ -365,6 +368,8 @@ export function Hero() {
               valueClassName="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent"
               disableAnimation={false}
               duration={2800}
+              icon="star"
+              iconColor="text-primary"
             />
             <div className="text-center">
               <div className="text-3xl md:text-4xl font-bold flex items-center justify-center bg-gradient-to-br from-accent to-primary bg-clip-text text-transparent">
