@@ -7,10 +7,11 @@ import { FeatureSection } from "@/components/home/FeatureSection";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles, Zap, Search, Star } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { GradientBackground } from "@/components/ui/GradientBackground";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/GlassCard";
 
 const Index = () => {
   const generateHomeSchema = () => {
@@ -77,10 +78,19 @@ const Index = () => {
         <CategorySection />
         
         {/* CTA Section - Enhanced with animation and modern styling */}
-        <GradientBackground variant="primary" className="section-padding">
+        <GradientBackground variant="primary" className="section-padding" interactive intensity="medium">
           <div className="container-tight">
             <MotionWrapper animation="fadeIn">
-              <div className="rounded-xl glass bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 p-8 md:p-12 text-center">
+              <GlassCard 
+                className="bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 p-8 md:p-12 text-center"
+                glowEffect
+                hoverEffect
+              >
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-primary via-accent to-primary rounded-full"></div>
+                  <Sparkles size={40} className="mx-auto text-primary" />
+                </div>
+                
                 <h2 className="text-2xl sm:text-3xl font-bold">
                   Ready to find your <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool?</span>
                 </h2>
@@ -90,10 +100,12 @@ const Index = () => {
                 <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                   <Button 
                     className="rounded-lg px-6 py-3 font-medium relative overflow-hidden group"
+                    variant="gradient"
                     asChild
                   >
                     <Link to="/tools">
                       <span className="relative z-10 flex items-center">
+                        <Search size={18} className="mr-2" />
                         Explore Tools
                         <ArrowRight size={18} className="ml-2 transition-transform group-hover:translate-x-1" />
                       </span>
@@ -101,15 +113,16 @@ const Index = () => {
                   </Button>
                   <Button 
                     variant="outline"
-                    className="rounded-lg border bg-background/50 backdrop-blur-sm px-6 py-3 font-medium hover:bg-secondary/50 transition-all hover:-translate-y-1"
+                    className="rounded-lg border bg-background/50 backdrop-blur-sm px-6 py-3 font-medium"
                     asChild
                   >
-                    <Link to="/blog">
+                    <Link to="/blog" className="flex items-center">
+                      <Star size={18} className="mr-2" />
                       Read Our Blog
                     </Link>
                   </Button>
                 </div>
-              </div>
+              </GlassCard>
             </MotionWrapper>
           </div>
         </GradientBackground>

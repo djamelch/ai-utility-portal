@@ -79,6 +79,8 @@ export default {
         glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
         card: "0 2px 10px rgba(0, 0, 0, 0.05)",
         "card-hover": "0 10px 30px rgba(0, 0, 0, 0.1)",
+        glow: "0 0 20px rgba(var(--primary), 0.4)",
+        "inner-glow": "inset 0 0 20px rgba(var(--primary), 0.2)"
       },
       keyframes: {
         "accordion-down": {
@@ -138,6 +140,22 @@ export default {
           "0%": { transform: "scale(0)", opacity: "1" },
           "100%": { transform: "scale(4)", opacity: "0" },
         },
+        "spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "text-slide": {
+          "0%, 16%": { transform: "translateY(0%)" },
+          "20%, 36%": { transform: "translateY(-16.66%)" },
+          "40%, 56%": { transform: "translateY(-33.33%)" },
+          "60%, 76%": { transform: "translateY(-50%)" },
+          "80%, 96%": { transform: "translateY(-66.66%)" },
+          "100%": { transform: "translateY(-83.33%)" },
+        },
+        "bg-pulse": {
+          "0%, 100%": { backgroundColor: "rgba(var(--primary), 0.1)" },
+          "50%": { backgroundColor: "rgba(var(--accent), 0.1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -154,6 +172,9 @@ export default {
         blink: "blink 1.5s ease-in-out infinite",
         shimmer: "shimmer 2s linear infinite",
         ripple: "ripple 1s cubic-bezier(0.65, 0, 0.35, 1) forwards",
+        "spin-slow": "spin-slow 3s linear infinite",
+        "text-slide": "text-slide 12s cubic-bezier(0.83, 0, 0.17, 1) infinite",
+        "bg-pulse": "bg-pulse 3s ease-in-out infinite",
       },
       backdropFilter: {
         glass: "blur(16px)",

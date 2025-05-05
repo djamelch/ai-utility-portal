@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { ArrowRight, Search, Filter } from "lucide-react";
+
+import { useState, useEffect } from "react";
+import { ArrowRight, Search, Filter, Sparkles, Zap, Target, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AnimatedStat } from "@/components/ui/AnimatedStat";
 import { GradientBackground } from "@/components/ui/GradientBackground";
+import { TextCycler } from "@/components/ui/TextCycler";
 
 interface Category {
   id: string;
@@ -158,16 +160,35 @@ export function Hero() {
   
   const popularCategories = categories.slice(0, 5);
   
+  // Project type options for the text cycler
+  const projectTypes = [
+    "business", 
+    "content creation", 
+    "marketing", 
+    "research", 
+    "design", 
+    "coding", 
+    "writing", 
+    "analysis"
+  ];
+  
   return (
     <GradientBackground variant="primary" className="pt-32 pb-16 md:pt-40 md:pb-24">
       <div className="container-tight relative z-10">
         <MotionWrapper animation="fadeIn" className="text-center">
           <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+            <Sparkles size={16} className="mr-1.5 inline-block animate-pulse" />
             Discover {statistics?.toolCount || "300+"}+ AI tools
           </span>
           
           <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-            Find the <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool</span> for your next project
+            Find the <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool</span> for{" "}
+            <span className="relative inline-block">
+              <TextCycler 
+                texts={projectTypes} 
+                className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent" 
+              />
+            </span>
           </h1>
           
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -177,7 +198,7 @@ export function Hero() {
         
         <MotionWrapper animation="fadeIn" delay="delay-200" className="mt-8 md:mt-12">
           <div className="flex flex-col md:flex-row gap-3 mx-auto max-w-xl">
-            <div className="relative flex-1 flex rounded-md border border-input bg-background/80 backdrop-blur-sm shadow-sm">
+            <div className="relative flex-1 flex rounded-md border border-input bg-background/80 backdrop-blur-sm shadow-sm overflow-hidden group transition-all duration-300 hover:border-primary/50 hover:shadow-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
               <Input
                 type="text"
@@ -205,8 +226,14 @@ export function Hero() {
               </div>
             </div>
             
-            <Button className="px-6 relative overflow-hidden group" onClick={handleSearch}>
-              <span className="relative z-10">Search</span>
+            <Button 
+              className="px-6 relative overflow-hidden group" 
+              onClick={handleSearch}
+            >
+              <span className="relative z-10 flex items-center">
+                Search
+                <Zap size={18} className="ml-2 transition-all group-hover:rotate-12" />
+              </span>
               <span className="absolute inset-0 bg-primary-foreground/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-200"></span>
             </Button>
           </div>
@@ -214,15 +241,19 @@ export function Hero() {
           <Collapsible 
             open={showAdvancedFilters} 
             onOpenChange={setShowAdvancedFilters}
-            className="mt-4 max-w-xl mx-auto"
+            className="mt-4 max-w-xl mx-auto transition-all duration-300 ease-in-out"
           >
             <CollapsibleTrigger asChild>
-              <Button variant="outline" size="sm" className="w-full">
-                <Filter size={16} className="mr-2" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full group hover:border-primary/50 transition-all duration-300"
+              >
+                <Filter size={16} className="mr-2 transition-transform group-hover:rotate-45 duration-300" />
                 {showAdvancedFilters ? "Hide Advanced Filters" : "Show Advanced Filters"}
               </Button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="mt-4 bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-input">
+            <CollapsibleContent className="mt-4 bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-input animate-in slide-in-from-top-2 duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Pricing</label>
@@ -258,18 +289,35 @@ export function Hero() {
               <div className="mb-4">
                 <label className="text-sm font-medium mb-2 block">Tool Features</label>
                 <ToggleGroup type="multiple" value={selectedFeatures} onValueChange={handleFeatureToggle} className="flex flex-wrap gap-2">
-                  <ToggleGroupItem value="api-access" className="text-xs">API Access</ToggleGroupItem>
-                  <ToggleGroupItem value="free-trial" className="text-xs">Free Trial</ToggleGroupItem>
-                  <ToggleGroupItem value="no-signup" className="text-xs">No Signup</ToggleGroupItem>
-                  <ToggleGroupItem value="mobile-friendly" className="text-xs">Mobile Friendly</ToggleGroupItem>
-                  <ToggleGroupItem value="browser-extension" className="text-xs">Browser Extension</ToggleGroupItem>
-                  <ToggleGroupItem value="offline-mode" className="text-xs">Offline Mode</ToggleGroupItem>
-                  <ToggleGroupItem value="team-collaboration" className="text-xs">Team Collaboration</ToggleGroupItem>
+                  <ToggleGroupItem value="api-access" className="text-xs group">
+                    <Zap size={12} className="mr-1 group-data-[state=on]:text-primary" /> API Access
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="free-trial" className="text-xs group">
+                    <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> Free Trial
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="no-signup" className="text-xs group">
+                    <ArrowRight size={12} className="mr-1 group-data-[state=on]:text-primary" /> No Signup
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="mobile-friendly" className="text-xs group">
+                    <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> Mobile Friendly
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="browser-extension" className="text-xs group">
+                    <Target size={12} className="mr-1 group-data-[state=on]:text-primary" /> Browser Extension
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="offline-mode" className="text-xs group">
+                    <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> Offline Mode
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="team-collaboration" className="text-xs group">
+                    <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> Team Collaboration
+                  </ToggleGroupItem>
                 </ToggleGroup>
               </div>
               
-              <Button size="sm" onClick={handleSearch} className="w-full">
-                Apply Filters
+              <Button size="sm" onClick={handleSearch} className="w-full group">
+                <span className="relative z-10 flex items-center">
+                  Apply Filters
+                  <Filter size={14} className="ml-2 transition-all group-hover:scale-110" />
+                </span>
               </Button>
             </CollapsibleContent>
           </Collapsible>
@@ -282,9 +330,12 @@ export function Hero() {
               <Link
                 key={category.id}
                 to={`/tools?category=${category.id}`}
-                className="rounded-full bg-secondary/50 backdrop-blur-sm px-3 py-1 text-sm text-foreground/70 hover:bg-secondary/80 hover:text-foreground transition-colors hover:shadow-sm"
+                className="rounded-full bg-secondary/50 backdrop-blur-sm px-3 py-1 text-sm text-foreground/70 hover:bg-secondary/80 hover:text-foreground transition-colors hover:shadow-sm group"
               >
-                {category.name} ({category.count})
+                <span className="relative">
+                  {category.name} ({category.count})
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </span>
               </Link>
             ))}
           </div>
@@ -296,22 +347,31 @@ export function Hero() {
               value={statistics?.toolCount || 300} 
               label="AI Tools" 
               suffix="+" 
+              valueClassName="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent"
+              disableAnimation={false}
+              duration={3000}
             />
             <AnimatedStat 
               value={statistics?.categoryCount || 18} 
               label="Categories" 
+              valueClassName="bg-gradient-to-br from-accent to-primary bg-clip-text text-transparent"
+              disableAnimation={false}
+              duration={2500}
             />
             <AnimatedStat 
               value={statistics?.reviewCount || 1000} 
               label="Reviews" 
               suffix="+" 
+              valueClassName="bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent"
+              disableAnimation={false}
+              duration={2800}
             />
             <div className="text-center">
-              <div className="text-3xl font-bold flex items-center justify-center">
+              <div className="text-3xl md:text-4xl font-bold flex items-center justify-center bg-gradient-to-br from-accent to-primary bg-clip-text text-transparent">
                 <span className="animate-pulse inline-block h-3 w-3 rounded-full bg-primary mr-2"></span>
                 Weekly
               </div>
-              <div className="text-muted-foreground">Updates</div>
+              <div className="text-muted-foreground mt-1">Updates</div>
             </div>
           </div>
         </MotionWrapper>

@@ -1,12 +1,14 @@
 
 import { cn } from "@/lib/utils";
+import { Sparkles, Loader2, RefreshCw, RotateCw } from "lucide-react";
 
 interface ModernLoadingIndicatorProps {
   size?: "sm" | "md" | "lg";
-  variant?: "dots" | "spinner" | "pulse" | "bars";
+  variant?: "dots" | "spinner" | "pulse" | "bars" | "sparkles";
   className?: string;
   textClassName?: string;
   text?: string;
+  color?: string;
 }
 
 export function ModernLoadingIndicator({
@@ -14,7 +16,8 @@ export function ModernLoadingIndicator({
   variant = "dots", 
   className,
   textClassName,
-  text
+  text,
+  color
 }: ModernLoadingIndicatorProps) {
   const sizeClasses = {
     sm: "h-8 w-8",
@@ -34,6 +37,8 @@ export function ModernLoadingIndicator({
     lg: "h-8 w-2"
   };
   
+  const colorClass = color || "bg-primary/80 text-primary";
+  
   const renderLoader = () => {
     switch (variant) {
       case "dots":
@@ -43,7 +48,9 @@ export function ModernLoadingIndicator({
               <div 
                 key={i} 
                 className={cn(
-                  "rounded-full bg-primary/80 animate-bounce", 
+                  "rounded-full", 
+                  colorClass.split(" ")[0],
+                  "animate-bounce", 
                   dotSizes[size]
                 )} 
                 style={{
@@ -56,12 +63,19 @@ export function ModernLoadingIndicator({
         );
       case "spinner":
         return (
-          <div
-            className={cn(
-              "rounded-full border-2 md:border-3 lg:border-4 border-primary/30 border-t-primary animate-spin",
-              sizeClasses[size]
+          <div className="relative">
+            <div
+              className={cn(
+                "rounded-full border-2 md:border-3 lg:border-4 border-background/30 border-t-primary animate-spin",
+                sizeClasses[size]
+              )}
+            />
+            {size === "lg" && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <RefreshCw size={20} className="text-primary/50 animate-spin-slow" />
+              </div>
             )}
-          />
+          </div>
         );
       case "pulse":
         return (
@@ -87,7 +101,8 @@ export function ModernLoadingIndicator({
               <div 
                 key={i} 
                 className={cn(
-                  "bg-primary/80 rounded-sm animate-[height_1s_ease-in-out_infinite]", 
+                  colorClass.split(" ")[0],
+                  "rounded-sm animate-[height_1s_ease-in-out_infinite]", 
                   barSizes[size]
                 )} 
                 style={{
@@ -98,8 +113,27 @@ export function ModernLoadingIndicator({
             ))}
           </div>
         );
+      case "sparkles":
+        return (
+          <div className="relative">
+            <Sparkles 
+              className={cn(
+                "animate-pulse text-primary",
+                size === "sm" ? "h-8 w-8" : size === "md" ? "h-12 w-12" : "h-16 w-16"
+              )} 
+            />
+            <div className="absolute inset-0 rounded-full bg-primary/10 animate-pulse filter blur-md -z-10"></div>
+          </div>
+        );
       default:
-        return null;
+        return (
+          <Loader2 
+            className={cn(
+              "animate-spin text-primary",
+              size === "sm" ? "h-8 w-8" : size === "md" ? "h-12 w-12" : "h-16 w-16"
+            )} 
+          />
+        );
     }
   };
   
@@ -107,7 +141,11 @@ export function ModernLoadingIndicator({
     <div className={cn("flex flex-col items-center", className)}>
       {renderLoader()}
       {text && (
-        <p className={cn("mt-4 text-sm text-muted-foreground", textClassName)}>
+        <p className={cn(
+          "mt-4 text-sm text-muted-foreground", 
+          variant === "sparkles" && "animate-pulse", 
+          textClassName
+        )}>
           {text}
         </p>
       )}
