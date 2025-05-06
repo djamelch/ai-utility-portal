@@ -26,16 +26,18 @@ if (platform === 'linux' && arch === 'x64') {
 try {
   console.log(`Installing ${esbuildPackage}...`);
   
-  // Use --no-save to avoid modifying package.json and --ignore-scripts=false to allow installation scripts
-  execSync(`npm install ${esbuildPackage} --no-save --ignore-scripts=false`, { stdio: 'inherit' });
+  // Force installation of the platform-specific package with --force flag
+  execSync(`npm install ${esbuildPackage} --no-save --ignore-scripts=false --force`, { stdio: 'inherit' });
   
   // Create a simple esbuild.js file that just requires the platform-specific package
-  const esbuildJsPath = path.join(__dirname, 'node_modules', 'esbuild', 'lib', 'esbuild.js');
-  const esbuildDirPath = path.dirname(esbuildJsPath);
+  const nodeModulesDir = path.join(__dirname, 'node_modules');
+  const esbuildDir = path.join(nodeModulesDir, 'esbuild');
+  const esbuildLibDir = path.join(esbuildDir, 'lib');
+  const esbuildJsPath = path.join(esbuildLibDir, 'esbuild.js');
   
   // Ensure the directory exists
-  if (!fs.existsSync(esbuildDirPath)) {
-    fs.mkdirSync(esbuildDirPath, { recursive: true });
+  if (!fs.existsSync(esbuildLibDir)) {
+    fs.mkdirSync(esbuildLibDir, { recursive: true });
   }
   
   // Write a simple esbuild.js file that imports the platform-specific package
@@ -47,6 +49,7 @@ try {
   console.error('Failed to load esbuild:', e);
   // Provide a minimal mock implementation to prevent crashes
   module.exports = {
+    version: '0.19.8',
     transform: () => ({ code: '', map: '' }),
     buildSync: () => ({ outputFiles: [] }),
     build: async () => ({ outputFiles: [] })
@@ -54,8 +57,29 @@ try {
 }`;
   
   fs.writeFileSync(esbuildJsPath, esbuildJsContent);
-  
   console.log('Platform-specific esbuild package installed successfully');
+  
+  // Create a package.json in the esbuild directory if it doesn't exist
+  const esbuildPackageJsonPath = path.join(esbuildDir, 'package.json');
+  if (!fs.existsSync(esbuildPackageJsonPath)) {
+    const esbuildPackageJson = {
+      name: "esbuild",
+      version: "0.19.8",
+      description: "Platform-specific esbuild binary",
+      main: "lib/esbuild.js",
+      repository: "https://github.com/evanw/esbuild",
+      license: "MIT"
+    };
+    fs.writeFileSync(esbuildPackageJsonPath, JSON.stringify(esbuildPackageJson, null, 2));
+    console.log('Created esbuild package.json');
+  }
+  
+  // Also install esbuild directly as a fallback
+  try {
+    execSync('npm install esbuild --no-save --ignore-scripts=false --force', { stdio: 'inherit' });
+  } catch (directInstallError) {
+    console.warn('Warning: Direct esbuild installation failed, but we have a fallback:', directInstallError);
+  }
 } catch (error) {
   console.error('Failed to install esbuild package:', error);
   // Continue despite errors

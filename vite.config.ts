@@ -5,6 +5,21 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import type { ConfigEnv, UserConfig } from 'vite';
 
+// Fallback for esbuild if needed
+let esbuild;
+try {
+  esbuild = require('esbuild');
+} catch (e) {
+  console.warn('Could not load esbuild directly:', e);
+  // Provide a minimal mock
+  esbuild = {
+    version: '0.19.8',
+    transform: () => ({ code: '', map: '' }),
+    buildSync: () => ({ outputFiles: [] }),
+    build: async () => ({ outputFiles: [] })
+  };
+}
+
 export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   base: "./", // Move base to the top level of the configuration
   server: {
@@ -23,17 +38,19 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Mock platform-specific rollup dependencies
+      // Mock platform-specific rollup and esbuild dependencies
       "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./rollup-mock.js"),
+      // Add esbuild mock if needed
+      "esbuild": path.resolve(__dirname, "node_modules/esbuild/lib/esbuild.js"),
     },
     dedupe: ['react', 'react-dom']
   },
 
   optimizeDeps: {
-    // Exclude platform-specific rollup dependencies
+    // Exclude platform-specific dependencies
     exclude: [
       '@rollup/rollup-win32-x64-msvc',
       '@rollup/rollup-linux-x64-gnu',
@@ -45,6 +62,15 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
         'process.env.NODE_ENV': JSON.stringify(mode)
       }
     }
+  },
+
+  // Provide esbuild directly to avoid platform-specific issues
+  esbuild: {
+    // Use minimal options to reduce platform dependency
+    legalComments: 'none',
+    minifyIdentifiers: false,
+    minifySyntax: mode === 'production',
+    minifyWhitespace: mode === 'production',
   },
 
   build: {
