@@ -184,12 +184,11 @@ export function Hero() {
           </span>
           
           <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-            Find the <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool</span> for{" "}
+            Find the <span className="text-gradient">perfect AI tool</span> for{" "}
             <span className="relative inline-block">
               <TextCycler 
                 texts={projectTypes} 
                 interval={2500}
-                className="text-foreground dark:text-white font-bold" 
               />
             </span>
           </h1>
