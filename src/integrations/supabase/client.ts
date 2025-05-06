@@ -5,8 +5,8 @@ import type { Database } from './types';
 
 // Use environment variables that will be set in Cloudflare Pages
 // These values will be replaced during build time
-const SUPABASE_URL = import.meta.env.SUPABASE_URL || "";
-const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || "";
+const SUPABASE_URL = import.meta.env.SUPABASE_URL || "https://yilhwiqwoolmvmaasdra.supabase.co";
+const SUPABASE_ANON_KEY = import.meta.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpbGh3aXF3b29sbXZtYWFzZHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1Njg5MjUsImV4cCI6MjA1ODE0NDkyNX0.sHZ-68hI6IJf73VwuErDhN6VGcr2R5DpyZkeamODfDk";
 
 // Create browser compatible storage
 const createBrowserStorage = () => {
