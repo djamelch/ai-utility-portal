@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowRight, Search, Filter, Sparkles, Zap, Target, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -184,6 +185,7 @@ export function Hero() {
               texts={projectTypes} 
               interval={2500}
             />
+            {" "}projects
           </h1>
           
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
