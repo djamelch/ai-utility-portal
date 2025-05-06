@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 
 interface Tool {
   id: string | number;
-  name: string;
-  description: string;
+  name?: string;
+  description?: string;
   logo?: string;
   rating?: number;
   category?: string;
@@ -35,7 +35,7 @@ export function ToolCarousel({
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(3);
   
-  // مراقبة عرض النافذة لتحديد عدد العناصر المرئية
+  // Monitor window width to determine visible items count
   useEffect(() => {
     const updateVisibleCount = () => {
       if (window.innerWidth < 640) {
@@ -47,10 +47,10 @@ export function ToolCarousel({
       }
     };
     
-    // تحديث عند التحميل
+    // Update on load
     updateVisibleCount();
     
-    // تحديث عند تغيير حجم النافذة
+    // Update on window resize
     window.addEventListener("resize", updateVisibleCount);
     return () => window.removeEventListener("resize", updateVisibleCount);
   }, []);
@@ -67,7 +67,7 @@ export function ToolCarousel({
     );
   };
   
-  // التمرير التلقائي
+  // Auto-scroll
   useEffect(() => {
     const interval = setInterval(next, 5000);
     return () => clearInterval(interval);
@@ -92,7 +92,7 @@ export function ToolCarousel({
           className="flex overflow-hidden px-4"
         >
           {tools.map((tool, index) => {
-            // حساب ما إذا كانت الأداة مرئية الآن
+            // Calculate if the tool is visible now
             const isVisible = index >= currentIndex && index < currentIndex + visibleCount;
             
             return (
@@ -165,7 +165,7 @@ export function ToolCarousel({
           })}
         </div>
         
-        {/* أزرار التنقل */}
+        {/* Navigation buttons */}
         <Button
           onClick={prev}
           variant="outline"
@@ -184,7 +184,7 @@ export function ToolCarousel({
           <ChevronRight size={20} />
         </Button>
         
-        {/* مؤشرات الشرائح */}
+        {/* Slide indicators */}
         <div className="flex justify-center gap-2 mt-6">
           {Array.from({ length: Math.ceil(tools.length / visibleCount) }).map((_, i) => (
             <button

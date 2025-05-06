@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Search, Filter, SlidersHorizontal } from "lucide-react";
+import { Search, Filter, SlidersHorizontal, Info, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ToolGrid } from "@/components/tools/ToolGrid";
@@ -17,6 +17,13 @@ import { useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const Tools = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -145,7 +152,7 @@ const Tools = () => {
   useEffect(() => {
     const getToolsCount = async () => {
       try {
-        let query = supabase.from('tools').select('id', { count: 'exact' });
+        let query = supabase.from('tools').select('id', { count: 'exact', head: true });
         
         if (searchQuery) {
           query = query.or(`company_name.ilike.%${searchQuery}%,short_description.ilike.%${searchQuery}%,full_description.ilike.%${searchQuery}%`);
@@ -273,12 +280,28 @@ const Tools = () => {
           <div className="container-wide">
             <MotionWrapper animation="fadeIn">
               <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold">
-                  AI Tools Directory
-                </h1>
-                <p className="mt-2 text-muted-foreground">
-                  Discover the best AI tools for your needs
-                </p>
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h1 className="text-3xl md:text-4xl font-bold text-gradient">
+                      AI Tools Directory
+                    </h1>
+                    <p className="mt-2 text-muted-foreground">
+                      Discover the best AI tools for your needs
+                    </p>
+                  </div>
+                  
+                  {hasActiveFilters && (
+                    <Button 
+                      onClick={clearFilters}
+                      variant="outline" 
+                      size="sm"
+                      className="mt-4 sm:mt-0 w-fit flex items-center gap-2"
+                    >
+                      <X size={16} />
+                      Clear All Filters
+                    </Button>
+                  )}
+                </div>
               </div>
             </MotionWrapper>
             
@@ -301,82 +324,147 @@ const Tools = () => {
             ) : (
               <MotionWrapper animation="fadeIn" delay="delay-200">
                 <div className="mb-8">
-                  <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 mb-6">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-                      <Input
-                        type="text"
-                        placeholder="Search tools..."
-                        className="w-full pl-10 pr-4"
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                      />
+                  <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+                      <div className="relative flex-1 search-bar">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" size={20} />
+                        <Input
+                          type="text"
+                          placeholder="Search tools..."
+                          className="w-full pl-10 pr-4 border-none bg-transparent"
+                          value={searchInput}
+                          onChange={(e) => setSearchInput(e.target.value)}
+                        />
+                      </div>
+                      
+                      <Button type="submit" className="bg-primary hover:bg-primary/90">
+                        Search
+                      </Button>
+                    </form>
+                    
+                    {/* Mobile filters sheet */}
+                    <div className="md:hidden">
+                      <Sheet>
+                        <SheetTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full flex items-center justify-center gap-2",
+                              hasActiveFilters && "border-primary text-primary"
+                            )}
+                          >
+                            <Filter size={18} />
+                            Filters
+                            {hasActiveFilters && (
+                              <span className="ml-1 h-5 w-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
+                                !
+                              </span>
+                            )}
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-t-xl">
+                          <SheetHeader>
+                            <SheetTitle className="flex items-center gap-2">
+                              <SlidersHorizontal size={18} />
+                              Filters
+                              {hasActiveFilters && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={clearFilters}
+                                  className="ml-auto"
+                                >
+                                  Reset All
+                                </Button>
+                              )}
+                            </SheetTitle>
+                          </SheetHeader>
+                          <div className="py-4">
+                            <AdvancedFilters 
+                              categories={categories} 
+                              pricingOptions={pricingOptions}
+                            />
+                          </div>
+                        </SheetContent>
+                      </Sheet>
                     </div>
                     
                     <Button
-                      type="button"
                       onClick={() => setShowFilters(!showFilters)}
                       className={cn(
-                        "md:hidden inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2",
-                        showFilters && "bg-accent"
+                        "hidden md:inline-flex items-center gap-2",
+                        showFilters ? "bg-accent text-white" : "bg-secondary"
                       )}
+                      variant="outline"
                     >
-                      <Filter size={18} />
-                      Filters
-                      {hasActiveFilters && (
-                        <span className="ml-1 h-5 w-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
+                      <SlidersHorizontal size={18} />
+                      {showFilters ? "Hide Filters" : "Show Filters"}
+                      {hasActiveFilters && !showFilters && (
+                        <span className="h-5 w-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
                           !
                         </span>
                       )}
                     </Button>
-                    
-                    <Button type="submit">
-                      Search
-                    </Button>
-                  </form>
+                  </div>
                   
-                  <div className={cn("mb-6", !showFilters && "hidden md:block")}>
-                    <div className="bg-secondary/10 p-4 rounded-lg">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold flex items-center gap-2">
-                          <SlidersHorizontal size={18} />
-                          Advanced Filters
-                        </h3>
-                        {hasActiveFilters && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={clearFilters}
-                          >
-                            Reset All
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <AdvancedFilters 
-                        categories={categories} 
-                        pricingOptions={pricingOptions}
-                      />
+                  <div className={cn("mb-6 filters-area", !showFilters && "hidden md:block")}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <SlidersHorizontal size={18} className="text-primary" />
+                        Advanced Filters
+                      </h3>
+                      {hasActiveFilters && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={clearFilters}
+                        >
+                          Reset All
+                        </Button>
+                      )}
                     </div>
+                    
+                    <AdvancedFilters 
+                      categories={categories} 
+                      pricingOptions={pricingOptions}
+                    />
                   </div>
                   
                   {hasActiveFilters && (
-                    <div className="mb-6">
-                      <h3 className="text-sm font-medium mb-2">Active Filters:</h3>
+                    <div className="mb-6 p-4 rounded-xl bg-background/70 backdrop-blur-sm border border-border/60 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info size={16} className="text-primary" />
+                        <h3 className="text-sm font-medium">Active Filters:</h3>
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {searchQuery && (
-                          <div className="px-3 py-1 bg-primary/10 text-sm rounded-full">
+                          <div className="filter-pill">
                             Search: {searchQuery}
+                            <X size={14} className="ml-1" onClick={() => {
+                              const params = new URLSearchParams(searchParams);
+                              params.delete("search");
+                              setSearchParams(params);
+                            }} />
                           </div>
                         )}
                         {category && (
-                          <div className="px-3 py-1 bg-primary/10 text-sm rounded-full">
+                          <div className="filter-pill">
                             Category: {category.replace(/-/g, ' ')}
+                            <X size={14} className="ml-1" onClick={() => {
+                              const params = new URLSearchParams(searchParams);
+                              params.delete("category");
+                              setSearchParams(params);
+                            }} />
                           </div>
                         )}
                         {pricing && (
-                          <div className="px-3 py-1 bg-primary/10 text-sm rounded-full">
+                          <div className="filter-pill">
                             Pricing: {pricing}
+                            <X size={14} className="ml-1" onClick={() => {
+                              const params = new URLSearchParams(searchParams);
+                              params.delete("pricing");
+                              setSearchParams(params);
+                            }} />
                           </div>
                         )}
                       </div>
@@ -403,7 +491,7 @@ const Tools = () => {
                     variant="outline" 
                     size="lg" 
                     onClick={loadMore}
-                    className="px-8 flex items-center gap-2"
+                    className="px-8 flex items-center gap-2 bg-background/80 backdrop-blur-sm hover:bg-background"
                     disabled={isLoadingMore}
                   >
                     {isLoadingMore ? "Loading..." : `Load More Tools (${loadMoreIncrement})`}

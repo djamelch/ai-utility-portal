@@ -191,17 +191,6 @@ export function ToolGrid({
     if (toolsToProcess && toolsToProcess.length > 0) {
       console.log(`Processing ${toolsToProcess.length} tools with limit ${limit}`);
       
-      // Log raw data for debugging
-      toolsToProcess.slice(0, 5).forEach((tool, index) => {
-        console.log(`Tool ${index} data:`, {
-          name: tool.company_name || tool.name,
-          isFeatured: Boolean(tool.isFeatured),
-          isVerified: Boolean(tool.isVerified),
-          is_featured: Boolean(tool.is_featured),
-          is_verified: Boolean(tool.is_verified)
-        });
-      });
-      
       // Prepare and map tools to ensure consistent format
       const mappedTools = toolsToProcess.map(tool => {
         return {
@@ -261,10 +250,6 @@ export function ToolGrid({
       setLoadedTools([]);
     }
   }, [toolsToProcess, limit, effectiveCategoryFilter]);
-  
-  // Log tools for debugging
-  console.log("Tools to process:", toolsToProcess?.length || 0);
-  console.log("Loaded tools to display:", loadedTools.length);
 
   if (isLoading && !providedTools) {
     return <ToolGridSkeleton count={limit || 8} columnsPerRow={columnsPerRow} />;
@@ -312,7 +297,7 @@ export function ToolGrid({
   }
   
   return (
-    <div className={`grid ${gridColsClasses} gap-4`}>
+    <div className={`grid ${gridColsClasses} gap-5`}>
       {loadedTools.map((tool, index) => (
         <MotionWrapper 
           key={tool.id} 
@@ -353,12 +338,30 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
         className="text-primary"
       />
       
-      <div className={`grid ${gridColsClasses} gap-4 mt-8 w-full opacity-60`}>
+      <div className={`grid ${gridColsClasses} gap-5 mt-8 w-full`}>
         {Array(count).fill(0).map((_, index) => (
           <div 
             key={index} 
-            className="h-[320px] rounded-xl bg-secondary/20 animate-pulse"
-          />
+            className="tool-card h-[300px] animate-pulse"
+          >
+            <div className="flex gap-3">
+              <div className="h-16 w-16 rounded-xl bg-secondary/50"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-5 bg-secondary/50 rounded w-3/4"></div>
+                <div className="h-4 bg-secondary/40 rounded w-1/2"></div>
+              </div>
+            </div>
+            <div className="space-y-2 mt-4">
+              <div className="h-3 bg-secondary/40 rounded w-full"></div>
+              <div className="h-3 bg-secondary/40 rounded w-full"></div>
+              <div className="h-3 bg-secondary/40 rounded w-3/4"></div>
+            </div>
+            <div className="mt-auto pt-4 flex gap-2">
+              <div className="flex-1 h-8 bg-secondary/50 rounded"></div>
+              <div className="h-8 w-8 bg-secondary/50 rounded"></div>
+              <div className="h-8 w-16 bg-primary/30 rounded"></div>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -367,10 +370,10 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
 
 function EmptyToolsMessage() {
   return (
-    <div className="text-center p-8">
-      <h3 className="text-xl font-medium">No tools found</h3>
-      <p className="text-muted-foreground mt-2">
-        Try adjusting your search criteria
+    <div className="text-center py-16 px-4 filters-area">
+      <h3 className="text-xl font-medium mb-2">No tools found</h3>
+      <p className="text-muted-foreground max-w-md mx-auto">
+        Try adjusting your search criteria or filters to find AI tools matching your requirements.
       </p>
     </div>
   );

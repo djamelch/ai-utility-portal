@@ -1,3 +1,4 @@
+
 import { Star, ExternalLink, Heart, Award, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -262,44 +263,32 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
   const placeholderImage = 'https://via.placeholder.com/80?text=AI+Tool';
 
   return (
-    <div 
-      className={cn(
-        "group relative h-full flex flex-col rounded-xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md p-4",
-        isFeatured 
-          ? "border-2 border-amber-400 dark:border-amber-500" 
-          : isVerified 
-            ? "border-2 border-blue-400 dark:border-blue-500" 
-            : "border border-border/60 dark:border-accent/10",
-        className
-      )}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-50 rounded-xl pointer-events-none" />
-      
-      <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
-      <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
+    <div className="tool-card p-4 h-full flex flex-col">
+      {/* Top decoration line with gradient */}
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary to-accent" />
       
       <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
         {isFeatured && (
-          <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white">
+          <Badge variant="featured" className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-sm">
             <Award className="h-3 w-3 text-white" />
             <span>Featured</span>
           </Badge>
         )}
         {isVerified && (
-          <Badge variant="verified" className="flex items-center gap-1.5 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+          <Badge variant="verified" className="flex items-center gap-1.5 bg-blue-500/10 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm">
             <ShieldCheck className="h-3 w-3" />
             <span>Verified</span>
           </Badge>
         )}
         {isNew && (
-          <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 shadow-sm">
+          <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400 shadow-sm">
             New
           </span>
         )}
       </div>
 
       <div className="flex items-start gap-3 relative">
-        <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-secondary/90 dark:bg-secondary/20 shadow-sm border border-border/50 dark:border-border/20">
+        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-secondary/30 dark:bg-secondary/10 shadow-sm border border-border/30">
           {!imgError ? (
             <img 
               src={logo || placeholderImage} 
@@ -309,16 +298,16 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
                 setImgError(true);
               }}
               loading="lazy"
-              width="56"
-              height="56"
+              width="64"
+              height="64"
             />
           ) : (
             <img 
               src={placeholderImage} 
               alt={`${name} logo placeholder`} 
               className="h-full w-full object-cover"
-              width="56"
-              height="56"
+              width="64"
+              height="64"
               loading="lazy"
             />
           )}
@@ -327,12 +316,6 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-lg truncate">
-              {isFeatured && (
-                <Award className="inline h-4 w-4 text-amber-500 mr-1 align-text-bottom" />
-              )}
-              {isVerified && (
-                <ShieldCheck className="inline h-4 w-4 text-blue-500 mr-1 align-text-bottom" />
-              )}
               <Link to={`/tool/${toolSlug}`} className="hover:text-primary transition-colors">
                 {name}
               </Link>
@@ -341,12 +324,12 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
           
           <div className="mt-1 flex items-center gap-2 flex-wrap min-h-[1.75rem]">
             {category && (
-              <span className="rounded-full bg-secondary/90 px-2.5 py-0.5 text-xs font-medium text-foreground/80 dark:bg-secondary/30 dark:text-foreground/90 border border-border/20">
+              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary dark:bg-primary/20">
                 {category}
               </span>
             )}
             {pricing && (
-              <span className="rounded-full bg-secondary/90 px-2.5 py-0.5 text-xs font-medium text-foreground/80 dark:bg-secondary/30 dark:text-foreground/90 border border-border/20">
+              <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent dark:bg-accent/20">
                 {pricing}
               </span>
             )}
@@ -354,7 +337,7 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
         </div>
       </div>
 
-      <p className="mt-3 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-2 min-h-[2.5rem] relative">
+      <p className="mt-4 text-sm text-foreground/80 dark:text-foreground/90 line-clamp-3 min-h-[3.75rem] leading-relaxed">
         {description}
       </p>
 
@@ -387,7 +370,7 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
                       : userRating && i < userRating 
                         ? "fill-yellow-400 text-yellow-400" 
                         : i < Math.round(rating) 
-                          ? "fill-brand-400 text-brand-400" 
+                          ? "fill-primary text-primary" 
                           : "text-muted-foreground/30",
                     "transition-colors"
                   )}
@@ -406,15 +389,15 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
       <div className="mt-auto pt-4 flex items-center gap-2 text-sm relative">
         <Link
           to={`/tool/${toolSlug}`}
-          className="flex-1 rounded-lg border border-border/80 dark:border-border/30 bg-background/80 dark:bg-background/20 px-3 py-2 text-center font-medium hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary transition-colors"
+          className="flex-1 rounded-lg border border-border/50 dark:border-border/20 bg-secondary/30 dark:bg-background/20 px-3 py-2 text-center font-medium hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary transition-all"
         >
           View Details
         </Link>
         
         <button 
           className={cn(
-            "rounded-lg border border-border/80 dark:border-border/30 bg-background/80 dark:bg-background/20 p-2 transition-colors hover:bg-background/100 dark:hover:bg-background/30",
-            isFavorite ? "text-red-500" : "text-muted-foreground"
+            "rounded-lg border border-border/50 dark:border-border/20 bg-secondary/30 dark:bg-background/20 p-2 transition-all hover:bg-background/100 dark:hover:bg-background/30",
+            isFavorite ? "text-red-500 border-red-200 bg-red-50 dark:bg-red-900/20" : "text-muted-foreground"
           )}
           aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
           onClick={handleFavoriteClick}
@@ -426,7 +409,7 @@ export const ToolCard = memo(({ tool, className }: ToolCardProps) => {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg bg-primary hover:bg-primary/90 px-3 py-2 font-medium text-primary-foreground transition-colors shadow-sm flex items-center gap-1.5"
+          className="rounded-lg bg-gradient-to-br from-primary to-accent hover:from-primary/90 hover:to-accent/90 px-3 py-2 font-medium text-white transition-all shadow-sm flex items-center gap-1.5"
           onClick={handleVisitClick}
         >
           Visit
