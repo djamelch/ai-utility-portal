@@ -17,6 +17,7 @@ import { Tool } from "@/components/tools/ToolGrid";
 import { ToolCard } from "@/components/tools/ToolCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 interface ToolsSectionProps {
   title: string;
@@ -30,16 +31,37 @@ export function ToolsSection({
   title, 
   description, 
   queryType,
-  limit = 8, // Increased default limit from 6 to 8
+  limit = 8, // Default limit
   variant = "none"
 }: ToolsSectionProps) {
   const isMobile = useIsMobile();
+  const [deviceLimit, setDeviceLimit] = useState(limit);
+  
+  // Adjust tools shown based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width >= 1536) { // 2xl breakpoint
+        setDeviceLimit(12); // Show 12 on extra large screens
+      } else if (width >= 1280) { // xl breakpoint
+        setDeviceLimit(8); // Show 8 on large screens
+      } else if (width >= 768) { // md breakpoint
+        setDeviceLimit(6); // Show 6 on medium screens
+      } else {
+        setDeviceLimit(4); // Show 4 on small screens
+      }
+    };
+    
+    handleResize(); // Run on initial render
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   const { data: tools = [], isLoading } = useQuery({
-    queryKey: ["tools", queryType, limit],
+    queryKey: ["tools", queryType, deviceLimit],
     queryFn: async () => {
       try {
-        console.log(`Fetching ${queryType} tools with limit ${limit}`);
+        console.log(`Fetching ${queryType} tools with limit ${deviceLimit}`);
         let query = supabase.from("tools").select("*");
         
         switch (queryType) {
@@ -61,7 +83,7 @@ export function ToolsSection({
         }
         
         // Apply limit for database query
-        query = query.limit(limit || 100);
+        query = query.limit(deviceLimit || 100);
         
         const { data, error } = await query;
         
@@ -148,41 +170,43 @@ export function ToolsSection({
       
       {isMobile ? (
         <div className="mt-3">
-          <Carousel className="w-full">
-            <CarouselContent className="-ml-2 md:-ml-4">
-              {isLoading ? (
-                <CarouselItem className="pl-2 md:pl-4 basis-full sm:basis-full">
-                  <div className="flex justify-center items-center h-44">
-                    <ModernLoadingIndicator variant="pulse" size="md" text="Loading tools..." />
-                  </div>
-                </CarouselItem>
-              ) : tools.length === 0 ? (
-                <CarouselItem className="pl-2 md:pl-4 basis-full sm:basis-full">
-                  <div className="text-center p-6">
-                    <h3 className="text-lg font-medium">No tools found</h3>
-                    <p className="text-muted-foreground mt-2 text-sm">
-                      Try adjusting your search criteria
-                    </p>
-                  </div>
-                </CarouselItem>
-              ) : (
-                tools.map((tool, index) => (
-                  <CarouselItem key={tool.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2">
-                    <MotionWrapper 
-                      animation="fadeIn" 
-                      delay={`delay-${Math.min(Math.floor(index * 100), 500)}` as "delay-100" | "delay-200" | "delay-300" | "delay-400" | "delay-500" | "none"}
-                    >
-                      <ToolCard tool={tool} />
-                    </MotionWrapper>
-                  </CarouselItem>
-                ))
-              )}
-            </CarouselContent>
-            <div className="flex items-center justify-center gap-2 mt-3">
-              <CarouselPrevious className="relative static transform-none h-7 w-7 rounded-full opacity-70 hover:opacity-100 transition-opacity" />
-              <CarouselNext className="relative static transform-none h-7 w-7 rounded-full opacity-70 hover:opacity-100 transition-opacity" />
+          {/* Enhanced mobile carousel with grid view for better UX */}
+          <div className="grid grid-cols-2 gap-2">
+            {isLoading ? (
+              <div className="col-span-2 flex justify-center items-center h-44">
+                <ModernLoadingIndicator variant="pulse" size="md" text="Loading tools..." />
+              </div>
+            ) : tools.length === 0 ? (
+              <div className="col-span-2 text-center p-6">
+                <h3 className="text-lg font-medium">No tools found</h3>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  Try adjusting your search criteria
+                </p>
+              </div>
+            ) : (
+              tools.slice(0, deviceLimit).map((tool, index) => (
+                <MotionWrapper 
+                  key={tool.id}
+                  animation="fadeIn" 
+                  delay={`delay-${Math.min(Math.floor(index * 100), 500)}` as "delay-100" | "delay-200" | "delay-300" | "delay-400" | "delay-500" | "none"}
+                >
+                  <ToolCard tool={tool} />
+                </MotionWrapper>
+              ))
+            )}
+          </div>
+          
+          {/* Pagination dots for mobile */}
+          {tools.length > 0 && (
+            <div className="flex justify-center gap-1 mt-3">
+              {Array.from({ length: Math.ceil(tools.length / 4) }).map((_, i) => (
+                <div 
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === 0 ? "bg-primary w-5" : "bg-primary/30 w-1.5"}`}
+                />
+              ))}
             </div>
-          </Carousel>
+          )}
         </div>
       ) : (
         isLoading ? (
@@ -192,8 +216,8 @@ export function ToolsSection({
         ) : (
           <ToolGrid 
             tools={tools}
-            columnsPerRow={4} // Increase from 3 to 4 columns
-            limit={limit}
+            columnsPerRow={4} // Use 4-column layout for desktop
+            limit={deviceLimit}
           />
         )
       )}

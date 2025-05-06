@@ -12,8 +12,51 @@ import { SEOHead } from "@/components/seo/SEOHead";
 import { GradientBackground } from "@/components/ui/GradientBackground";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { useEffect, useState } from "react";
 
 const Index = () => {
+  const [sectionLimits, setSectionLimits] = useState({
+    featured: 8,
+    topRated: 8,
+    recent: 8
+  });
+  
+  // Adjust section limits based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width >= 1536) { // 2xl breakpoint
+        setSectionLimits({
+          featured: 12,
+          topRated: 12,
+          recent: 12
+        });
+      } else if (width >= 1280) { // xl breakpoint
+        setSectionLimits({
+          featured: 8,
+          topRated: 8,
+          recent: 8
+        });
+      } else if (width >= 768) { // md breakpoint
+        setSectionLimits({
+          featured: 6,
+          topRated: 6,
+          recent: 6
+        });
+      } else {
+        setSectionLimits({
+          featured: 4,
+          topRated: 4,
+          recent: 4
+        });
+      }
+    };
+    
+    handleResize(); // Run on initial render
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const generateHomeSchema = () => {
     return {
       "@context": "https://schema.org",
@@ -49,7 +92,7 @@ const Index = () => {
           title="Featured Tools" 
           description="Discover our handpicked selection of the best AI tools"
           queryType="featured"
-          limit={8} // Increased from 6 to 8
+          limit={sectionLimits.featured}
           variant="primary"
         />
         
@@ -58,7 +101,7 @@ const Index = () => {
           title="Top Rated Tools" 
           description="Explore the highest rated AI tools by our community"
           queryType="top-rated"
-          limit={8} // Increased from 6 to 8
+          limit={sectionLimits.topRated}
           variant="accent"
         />
         
@@ -70,7 +113,7 @@ const Index = () => {
           title="Recently Added Tools" 
           description="Check out the latest AI tools added to our collection"
           queryType="recent"
-          limit={8} // Increased from 6 to 8
+          limit={sectionLimits.recent}
           variant="secondary"
         />
         
