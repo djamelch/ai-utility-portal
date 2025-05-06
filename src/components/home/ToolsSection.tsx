@@ -149,6 +149,14 @@ export function ToolsSection({
     refetchOnWindowFocus: false,
   });
 
+  const handleCarouselSelect = (api: any) => {
+    // Get the selected slide index from the carousel API
+    const selectedIndex = api?.selectedScrollSnap();
+    if (selectedIndex !== undefined) {
+      setCurrentSlide(selectedIndex);
+    }
+  };
+
   const sectionContent = (
     <>
       <MotionWrapper animation="fadeIn">
@@ -190,7 +198,10 @@ export function ToolsSection({
                   loop: true,
                 }}
                 className="w-full"
-                onSelect={(index) => setCurrentSlide(index)}
+                setApi={(api) => {
+                  // Listen for select event when the API is available
+                  api?.on("select", () => handleCarouselSelect(api));
+                }}
               >
                 <CarouselContent>
                   {tools.slice(0, deviceLimit).map((tool) => (
