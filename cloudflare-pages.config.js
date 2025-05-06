@@ -1,4 +1,5 @@
-// cloudflare-pages.config.js
+
+// Cloudflare Pages specific configuration
 export const config = {
-  nodeVersion: '20', // لتفادي مشاكل Node.js 22
+  nodeVersion: '20', // Avoid Node.js 22 issues by specifying Node.js 20
 };
