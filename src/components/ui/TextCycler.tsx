@@ -65,6 +65,7 @@ export function TextCycler({
             ? "opacity-0 transform translate-y-4" 
             : "opacity-100 transform translate-y-0"
         )}
+        style={{ color: 'currentColor' }} // Ensure text inherits the color from parent
         aria-live="polite"
       >
         {texts[currentIndex]}

@@ -185,11 +185,11 @@ export function Hero() {
           
           <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
             Find the <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool</span> for{" "}
-            <span className="inline-block">
+            <span className="relative">
               <TextCycler 
                 texts={projectTypes} 
                 interval={2500}
-                className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent" 
+                className="text-primary" 
               />
             </span>
           </h1>
