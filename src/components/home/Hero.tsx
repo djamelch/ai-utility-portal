@@ -159,7 +159,7 @@ export function Hero() {
   
   const popularCategories = categories.slice(0, 5);
   
-  // أنواع المشاريع للتدوير النصي
+  // Project types for text cycling - making sure this array has values
   const projectTypes = [
     "business", 
     "content creation", 
@@ -170,6 +170,9 @@ export function Hero() {
     "writing", 
     "analysis"
   ];
+  
+  // Log to verify projectTypes is correctly defined
+  console.log("Project types for TextCycler:", projectTypes);
   
   return (
     <GradientBackground variant="primary" className="pt-32 pb-16 md:pt-40 md:pb-24">

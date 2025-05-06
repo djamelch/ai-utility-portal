@@ -15,38 +15,45 @@ export function TextCycler({
 }: TextCyclerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const cycleTimer = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
-    // إذا كان هناك نص واحد فقط أو بدون نصوص، لا داعي لتطبيق أي تحريك
+    // Initial setup to show the first text right away
+    if (!isInitialized && texts.length > 0) {
+      setIsInitialized(true);
+    }
+    
+    // If there's only one text or no texts, no need to cycle
     if (texts.length <= 1) return;
     
-    // دالة تحديث النص
+    // Update text periodically
     const updateText = () => {
       setIsAnimating(true);
       
-      // انتظار انتهاء حركة الخروج قبل تغيير النص
+      // Wait for exit animation to complete before changing text
       setTimeout(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % texts.length);
-        setIsAnimating(false);
-      }, 500); // نصف مدة الانتقال الكلية
+        
+        // Short delay before starting the entrance animation
+        setTimeout(() => {
+          setIsAnimating(false);
+        }, 50);
+      }, 500);
     };
     
-    // البدء بالنص الأول بدون تأخير
-    setIsAnimating(false);
-    
-    // إعداد مؤقت للتحديثات اللاحقة
+    // Set up timer for subsequent updates
     cycleTimer.current = setInterval(updateText, interval);
     
-    // تنظيف المؤقت عند إزالة المكون
+    // Clean up timer when component is removed
     return () => {
       if (cycleTimer.current) {
         clearInterval(cycleTimer.current);
       }
     };
-  }, [texts, interval]);
+  }, [texts, interval, isInitialized]);
   
-  // لا تعرض أي شيء إذا لم تكن هناك نصوص
+  // Don't render anything if there are no texts
   if (texts.length === 0) return null;
   
   return (
