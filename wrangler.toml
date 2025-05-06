@@ -12,9 +12,10 @@ ENVIRONMENT = "production"
 command = "bun run build"
 watch_dir = "src"
 
-# This is the important property for Pages
+# Explicitly set the Pages build output directory
 [site]
 bucket = "./dist"
+pages_build_output_dir = "dist"
 
 # Observability configuration
 [observability.logs]

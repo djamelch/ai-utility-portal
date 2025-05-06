@@ -1,5 +1,7 @@
 
 // Cloudflare Pages specific configuration
 export const config = {
-  nodeVersion: '20', // Avoid Node.js 22 issues by specifying Node.js 20
+  nodeVersion: '20', // Specify Node.js 20
+  buildCommand: 'node cloud-deploy.js && npm run cloudflare-build',
+  buildOutputDirectory: './dist',
 };
