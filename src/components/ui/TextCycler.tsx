@@ -18,9 +18,10 @@ export function TextCycler({
   const cycleTimer = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
+    // إذا كان هناك نص واحد فقط أو بدون نصوص، لا داعي لتطبيق أي تحريك
     if (texts.length <= 1) return;
     
-    // تحديث النص بشكل دوري
+    // دالة تحديث النص
     const updateText = () => {
       setIsAnimating(true);
       
@@ -28,15 +29,16 @@ export function TextCycler({
       setTimeout(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % texts.length);
         setIsAnimating(false);
-      }, 500); // نصف وقت الانتقال
+      }, 500); // نصف مدة الانتقال الكلية
     };
     
-    // ابدأ بدون تأخير بالنص الأول
+    // البدء بالنص الأول بدون تأخير
     setIsAnimating(false);
     
-    // إعداد المؤقت للتحديثات اللاحقة
+    // إعداد مؤقت للتحديثات اللاحقة
     cycleTimer.current = setInterval(updateText, interval);
     
+    // تنظيف المؤقت عند إزالة المكون
     return () => {
       if (cycleTimer.current) {
         clearInterval(cycleTimer.current);
@@ -44,6 +46,7 @@ export function TextCycler({
     };
   }, [texts, interval]);
   
+  // لا تعرض أي شيء إذا لم تكن هناك نصوص
   if (texts.length === 0) return null;
   
   return (

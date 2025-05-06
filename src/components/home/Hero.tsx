@@ -159,7 +159,7 @@ export function Hero() {
   
   const popularCategories = categories.slice(0, 5);
   
-  // حددت أنواع المشاريع للمكون النصي المتحرك
+  // أنواع المشاريع للتدوير النصي
   const projectTypes = [
     "business", 
     "content creation", 
