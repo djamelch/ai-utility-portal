@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ArrowRight, Search, Filter, Sparkles, Zap, Target, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -160,7 +159,7 @@ export function Hero() {
   
   const popularCategories = categories.slice(0, 5);
   
-  // Project type options for the text cycler
+  // حددت أنواع المشاريع للمكون النصي المتحرك
   const projectTypes = [
     "business", 
     "content creation", 
@@ -183,7 +182,7 @@ export function Hero() {
           
           <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
             Find the <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool</span> for{" "}
-            <span className="relative inline-block">
+            <span className="inline-block">
               <TextCycler 
                 texts={projectTypes} 
                 interval={2500}
