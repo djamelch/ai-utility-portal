@@ -57,7 +57,7 @@ export function TextCycler({
   if (texts.length === 0) return null;
   
   return (
-    <span className={cn("inline-block relative", className)}>
+    <span className={cn("inline-block relative overflow-hidden", className)}>
       <span 
         className={cn(
           "inline-block transition-all duration-500",
@@ -65,11 +65,13 @@ export function TextCycler({
             ? "opacity-0 transform translate-y-4" 
             : "opacity-100 transform translate-y-0"
         )}
-        style={{ color: 'currentColor' }} // Ensure text inherits the color from parent
         aria-live="polite"
       >
         {texts[currentIndex]}
       </span>
+      
+      {/* Animated underline effect */}
+      <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-accent via-primary to-accent bg-[length:200%_auto] animate-shimmer"></span>
     </span>
   );
 }

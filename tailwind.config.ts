@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -72,8 +71,8 @@ export default {
         sm: "calc(var(--radius) - 4px)"
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        display: ["Manrope", "sans-serif"],
+        sans: ["Poppins", "sans-serif"],
+        display: ["Space Grotesk", "sans-serif"],
       },
       boxShadow: {
         glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
