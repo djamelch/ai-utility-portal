@@ -36,6 +36,7 @@ export function ToolsSection({
 }: ToolsSectionProps) {
   const isMobile = useIsMobile();
   const [deviceLimit, setDeviceLimit] = useState(limit);
+  const [currentSlide, setCurrentSlide] = useState(0);
   
   // Adjust tools shown based on screen size
   useEffect(() => {
@@ -170,42 +171,56 @@ export function ToolsSection({
       
       {isMobile ? (
         <div className="mt-3">
-          {/* Enhanced mobile carousel with grid view for better UX */}
-          <div className="grid grid-cols-2 gap-2">
-            {isLoading ? (
-              <div className="col-span-2 flex justify-center items-center h-44">
-                <ModernLoadingIndicator variant="pulse" size="md" text="Loading tools..." />
-              </div>
-            ) : tools.length === 0 ? (
-              <div className="col-span-2 text-center p-6">
-                <h3 className="text-lg font-medium">No tools found</h3>
-                <p className="text-muted-foreground mt-2 text-sm">
-                  Try adjusting your search criteria
-                </p>
-              </div>
-            ) : (
-              tools.slice(0, deviceLimit).map((tool, index) => (
-                <MotionWrapper 
-                  key={tool.id}
-                  animation="fadeIn" 
-                  delay={`delay-${Math.min(Math.floor(index * 100), 500)}` as "delay-100" | "delay-200" | "delay-300" | "delay-400" | "delay-500" | "none"}
-                >
-                  <ToolCard tool={tool} />
-                </MotionWrapper>
-              ))
-            )}
-          </div>
-          
-          {/* Pagination dots for mobile */}
-          {tools.length > 0 && (
-            <div className="flex justify-center gap-1 mt-3">
-              {Array.from({ length: Math.ceil(tools.length / 4) }).map((_, i) => (
-                <div 
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${i === 0 ? "bg-primary w-5" : "bg-primary/30 w-1.5"}`}
-                />
-              ))}
+          {isLoading ? (
+            <div className="col-span-2 flex justify-center items-center h-44">
+              <ModernLoadingIndicator variant="pulse" size="md" text="Loading tools..." />
             </div>
+          ) : tools.length === 0 ? (
+            <div className="text-center p-6">
+              <h3 className="text-lg font-medium">No tools found</h3>
+              <p className="text-muted-foreground mt-2 text-sm">
+                Try adjusting your search criteria
+              </p>
+            </div>
+          ) : (
+            <>
+              <Carousel 
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+                onSelect={(index) => setCurrentSlide(index)}
+              >
+                <CarouselContent>
+                  {tools.slice(0, deviceLimit).map((tool) => (
+                    <CarouselItem key={tool.id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                      <MotionWrapper animation="fadeIn">
+                        <div className="p-1">
+                          <ToolCard tool={tool} />
+                        </div>
+                      </MotionWrapper>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="flex items-center justify-center mt-2">
+                  <CarouselPrevious className="relative inset-0 translate-y-0 left-0 mr-2 h-8 w-8" />
+                  <CarouselNext className="relative inset-0 translate-y-0 right-0 ml-2 h-8 w-8" />
+                </div>
+              </Carousel>
+              
+              {/* Pagination dots */}
+              <div className="flex justify-center gap-1 mt-3">
+                {tools.slice(0, deviceLimit).map((_, i) => (
+                  <div 
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === currentSlide ? "bg-primary w-5" : "bg-primary/30 w-1.5"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       ) : (
