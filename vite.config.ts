@@ -29,6 +29,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
       "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./rollup-mock.js"),
     },
+    dedupe: ['react', 'react-dom']
   },
 
   optimizeDeps: {
@@ -39,8 +40,11 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
       '@rollup/rollup-darwin-x64',
       '@rollup/rollup-darwin-arm64'
     ],
-    // Force inclusion of esbuild
-    include: ['esbuild'],
+    esbuildOptions: {
+      define: {
+        'process.env.NODE_ENV': JSON.stringify(mode)
+      }
+    }
   },
 
   build: {
@@ -48,8 +52,8 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
     emptyOutDir: true,
     sourcemap: mode === 'development',
     
-    // Using esbuild minifier
-    minify: 'esbuild',
+    // Disable minification during build troubleshooting
+    minify: mode === 'production' ? 'esbuild' : false,
     
     // Configure esbuild minification options
     target: 'es2015',
@@ -67,18 +71,15 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
         manualChunks: {
           // Optimizing bundle chunks
           react: ['react', 'react-dom', 'react-router-dom'],
-          radix: ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-aspect-ratio',
-                 '@radix-ui/react-avatar', '@radix-ui/react-checkbox', '@radix-ui/react-collapsible'],
+          ui: ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-aspect-ratio'],
           supabase: ['@supabase/supabase-js'],
-          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          forms: ['react-hook-form', '@hookform/resolvers'],
           utils: ['date-fns', 'clsx', 'tailwind-merge'],
           vendor: ['@tanstack/react-query', 'sonner', 'lucide-react']
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
-    },
-    
-    chunkSizeWarningLimit: 1000,
+    }
   }
 }));

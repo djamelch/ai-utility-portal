@@ -9,12 +9,13 @@ API_VERSION = "1.0.0"
 ENVIRONMENT = "production"
 
 [build]
-command = "npm run build"
+command = "node cloud-deploy.js && npm run build"
 watch_dir = "src"
 
 # Explicitly set the Pages build output directory
 [site]
 bucket = "./dist"
+build_output_directory = "./dist"
 
 # Observability configuration
 [observability.logs]
