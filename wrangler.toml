@@ -9,13 +9,12 @@ API_VERSION = "1.0.0"
 ENVIRONMENT = "production"
 
 [build]
-command = "bun run build"
+command = "npm run build"
 watch_dir = "src"
 
 # Explicitly set the Pages build output directory
 [site]
 bucket = "./dist"
-pages_build_output_dir = "dist"
 
 # Observability configuration
 [observability.logs]

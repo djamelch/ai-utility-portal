@@ -23,21 +23,24 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Using a string key instead of RegExp for rollup mock
-      "@rollup/rollup-": path.resolve(__dirname, "./rollup-mock.js"),
+      // Mock platform-specific rollup dependencies
+      "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./rollup-mock.js"),
+      "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./rollup-mock.js"),
+      "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./rollup-mock.js"),
+      "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./rollup-mock.js"),
     },
   },
 
   optimizeDeps: {
-    // Exclude platform-specific dependencies to avoid installation errors
+    // Exclude platform-specific rollup dependencies
     exclude: [
       '@rollup/rollup-win32-x64-msvc',
       '@rollup/rollup-linux-x64-gnu',
       '@rollup/rollup-darwin-x64',
       '@rollup/rollup-darwin-arm64'
     ],
-    // Force inclusion of esbuild binaries
-    include: ['@esbuild/linux-x64'],
+    // Force inclusion of esbuild
+    include: ['esbuild'],
   },
 
   build: {
@@ -45,7 +48,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
     emptyOutDir: true,
     sourcemap: mode === 'development',
     
-    // Using esbuild minifier instead of terser
+    // Using esbuild minifier
     minify: 'esbuild',
     
     // Configure esbuild minification options
@@ -62,28 +65,20 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
       
       output: {
         manualChunks: {
-          // Optimizing bundle chunks to reduce bundle size
+          // Optimizing bundle chunks
           react: ['react', 'react-dom', 'react-router-dom'],
-          radix: ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-aspect-ratio', 
-                  '@radix-ui/react-avatar', '@radix-ui/react-checkbox', '@radix-ui/react-collapsible',
-                  '@radix-ui/react-context-menu', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu',
-                  '@radix-ui/react-hover-card', '@radix-ui/react-label', '@radix-ui/react-menubar',
-                  '@radix-ui/react-navigation-menu', '@radix-ui/react-popover', '@radix-ui/react-progress',
-                  '@radix-ui/react-radio-group', '@radix-ui/react-scroll-area', '@radix-ui/react-select',
-                  '@radix-ui/react-separator', '@radix-ui/react-slider', '@radix-ui/react-slot',
-                  '@radix-ui/react-switch', '@radix-ui/react-tabs', '@radix-ui/react-toast',
-                  '@radix-ui/react-toggle', '@radix-ui/react-toggle-group', '@radix-ui/react-tooltip'],
+          radix: ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-aspect-ratio',
+                 '@radix-ui/react-avatar', '@radix-ui/react-checkbox', '@radix-ui/react-collapsible'],
           supabase: ['@supabase/supabase-js'],
           forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
           utils: ['date-fns', 'clsx', 'tailwind-merge'],
           vendor: ['@tanstack/react-query', 'sonner', 'lucide-react']
         },
-        chunkFileNames: `assets/[name]-[hash].js`,
-        assetFileNames: `assets/[name]-[hash].[ext]`
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
     
-    // Increased limit with optimized chunk splitting
-    chunkSizeWarningLimit: 1500,
+    chunkSizeWarningLimit: 1000,
   }
 }));
