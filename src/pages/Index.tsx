@@ -105,9 +105,6 @@ const Index = () => {
           variant="accent"
         />
         
-        {/* Feature Section */}
-        <FeatureSection />
-        
         {/* Recently Added Tools Section - With secondary gradient */}
         <ToolsSection 
           title="Recently Added Tools" 
@@ -119,6 +116,9 @@ const Index = () => {
         
         {/* Categories Section */}
         <CategorySection />
+        
+        {/* Feature Section - Moved to bottom before CTA */}
+        <FeatureSection />
         
         {/* CTA Section */}
         <GradientBackground variant="primary" className="py-12 md:py-16" interactive intensity="medium">

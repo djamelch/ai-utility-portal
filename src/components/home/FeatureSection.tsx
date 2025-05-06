@@ -29,11 +29,12 @@ export function FeatureSection() {
   ];
 
   return (
-    <GradientBackground variant="secondary" className="section-padding">
+    <GradientBackground variant="accent" className="section-padding py-16">
       <div className="container-wide">
         <MotionWrapper animation="fadeIn">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold">
+            <span className="text-sm font-medium text-primary/80 uppercase tracking-wider mb-2 block">Our Promise</span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Why Choose
               </span> AI Any Tool
@@ -50,13 +51,15 @@ export function FeatureSection() {
               <GlassCard
                 key={index}
                 animation={index % 2 === 0 ? "slideUp" : "fadeIn"}
-                className="flex flex-col items-center text-center p-6"
+                className="flex flex-col items-center text-center p-6 hover:shadow-lg transition-all duration-300"
+                glowEffect
+                hoverEffect
               >
-                <div className="rounded-full p-3 bg-primary/10 text-primary">
+                <div className="rounded-full p-3 bg-primary/10 text-primary mb-4 shadow-inner">
                   <feature.icon size={24} className="animate-float" />
                 </div>
-                <h3 className="mt-4 text-xl font-medium">{feature.title}</h3>
-                <p className="mt-2 text-muted-foreground">{feature.description}</p>
+                <h3 className="text-xl font-medium mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
               </GlassCard>
             ))}
           </div>
