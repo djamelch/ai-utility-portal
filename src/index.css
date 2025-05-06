@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -110,7 +111,7 @@
   }
   
   .section-padding {
-    @apply py-16 md:py-24;
+    @apply py-12 md:py-16;
   }
   
   .container-tight {
@@ -237,4 +238,10 @@
   @apply relative overflow-hidden z-10 transition-all duration-300;
   @apply after:absolute after:inset-0 after:bg-primary after:opacity-0 after:transition-opacity after:duration-300 after:z-[-1];
   @apply hover:after:opacity-100 hover:text-white;
+}
+
+/* Add extra small text size */
+.text-2xs {
+  font-size: 0.625rem;
+  line-height: 0.75rem;
 }

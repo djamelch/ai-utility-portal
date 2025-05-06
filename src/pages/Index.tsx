@@ -7,7 +7,7 @@ import { FeatureSection } from "@/components/home/FeatureSection";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, Zap, Search, Star } from "lucide-react";
+import { ArrowRight, Sparkles, Search, Star } from "lucide-react";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { GradientBackground } from "@/components/ui/GradientBackground";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ const Index = () => {
           title="Featured Tools" 
           description="Discover our handpicked selection of the best AI tools"
           queryType="featured"
-          limit={6}
+          limit={8} // Increased from 6 to 8
           variant="primary"
         />
         
@@ -58,7 +58,7 @@ const Index = () => {
           title="Top Rated Tools" 
           description="Explore the highest rated AI tools by our community"
           queryType="top-rated"
-          limit={6}
+          limit={8} // Increased from 6 to 8
           variant="accent"
         />
         
@@ -70,7 +70,7 @@ const Index = () => {
           title="Recently Added Tools" 
           description="Check out the latest AI tools added to our collection"
           queryType="recent"
-          limit={6}
+          limit={8} // Increased from 6 to 8
           variant="secondary"
         />
         
@@ -78,46 +78,46 @@ const Index = () => {
         <CategorySection />
         
         {/* CTA Section - Enhanced with animation and modern styling */}
-        <GradientBackground variant="primary" className="section-padding" interactive intensity="medium">
+        <GradientBackground variant="primary" className="py-12 md:py-16" interactive intensity="medium">
           <div className="container-tight">
             <MotionWrapper animation="fadeIn">
               <GlassCard 
-                className="bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 p-8 md:p-12 text-center"
+                className="bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 p-6 md:p-10 text-center"
                 glowEffect
                 hoverEffect
               >
-                <div className="relative mb-6">
+                <div className="relative mb-5">
                   <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-primary via-accent to-primary rounded-full"></div>
-                  <Sparkles size={40} className="mx-auto text-primary" />
+                  <Sparkles size={36} className="mx-auto text-primary" />
                 </div>
                 
-                <h2 className="text-2xl sm:text-3xl font-bold">
+                <h2 className="text-xl sm:text-2xl font-bold">
                   Ready to find your <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool?</span>
                 </h2>
-                <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+                <p className="mt-3 text-muted-foreground max-w-2xl mx-auto text-sm">
                   Browse our curated collection of the best AI tools to enhance your productivity, creativity, and efficiency.
                 </p>
-                <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                   <Button 
-                    className="rounded-lg px-6 py-3 font-medium relative overflow-hidden group"
+                    className="rounded-lg px-5 py-2 font-medium relative overflow-hidden group"
                     variant="gradient"
                     asChild
                   >
                     <Link to="/tools">
                       <span className="relative z-10 flex items-center">
-                        <Search size={18} className="mr-2" />
+                        <Search size={16} className="mr-2" />
                         Explore Tools
-                        <ArrowRight size={18} className="ml-2 transition-transform group-hover:translate-x-1" />
+                        <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
                       </span>
                     </Link>
                   </Button>
                   <Button 
                     variant="outline"
-                    className="rounded-lg border bg-background/50 backdrop-blur-sm px-6 py-3 font-medium"
+                    className="rounded-lg border bg-background/50 backdrop-blur-sm px-5 py-2 font-medium"
                     asChild
                   >
                     <Link to="/blog" className="flex items-center">
-                      <Star size={18} className="mr-2" />
+                      <Star size={16} className="mr-2" />
                       Read Our Blog
                     </Link>
                   </Button>

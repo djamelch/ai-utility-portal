@@ -33,17 +33,19 @@ export function ToolCarousel({
 }: ToolCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [visibleCount, setVisibleCount] = useState(3);
+  const [visibleCount, setVisibleCount] = useState(4); // Increased from 3 to 4
   
   // Monitor window width to determine visible items count
   useEffect(() => {
     const updateVisibleCount = () => {
       if (window.innerWidth < 640) {
         setVisibleCount(1);
-      } else if (window.innerWidth < 1024) {
+      } else if (window.innerWidth < 768) {
         setVisibleCount(2);
-      } else {
+      } else if (window.innerWidth < 1280) {
         setVisibleCount(3);
+      } else {
+        setVisibleCount(4); // Show 4 items on larger screens
       }
     };
     
@@ -74,14 +76,14 @@ export function ToolCarousel({
   }, [currentIndex, visibleCount, tools.length]);
   
   return (
-    <div className={cn("w-full py-8", className)}>
+    <div className={cn("w-full py-6", className)}>
       {(title || description) && (
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           {title && (
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">{title}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-1">{title}</h2>
           )}
           {description && (
-            <p className="text-muted-foreground max-w-2xl mx-auto">{description}</p>
+            <p className="text-sm text-muted-foreground max-w-2xl mx-auto">{description}</p>
           )}
         </div>
       )}
@@ -89,7 +91,7 @@ export function ToolCarousel({
       <div className="relative">
         <div
           ref={containerRef}
-          className="flex overflow-hidden px-4"
+          className="flex overflow-hidden px-3"
         >
           {tools.map((tool, index) => {
             // Calculate if the tool is visible now
@@ -99,7 +101,7 @@ export function ToolCarousel({
               <div
                 key={tool.id}
                 className={cn(
-                  "transition-all duration-500 ease-in-out flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 p-4",
+                  "transition-all duration-500 ease-in-out flex-shrink-0 w-full sm:w-1/2 md:w-1/3 xl:w-1/4 p-2", // Updated for 4 columns
                   isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-full absolute"
                 )}
                 style={{
@@ -112,39 +114,40 @@ export function ToolCarousel({
                   glowEffect
                   badge={
                     tool.isNew ? (
-                      <span className="px-2 py-1 bg-primary text-white text-xs rounded-full font-medium">
+                      <span className="px-1.5 py-0.5 bg-primary text-white text-xs rounded-full font-medium">
                         جديد
                       </span>
                     ) : tool.isVerified ? (
-                      <span className="px-2 py-1 bg-primary/70 text-white text-xs rounded-full font-medium">
+                      <span className="px-1.5 py-0.5 bg-primary/70 text-white text-xs rounded-full font-medium">
                         موثق
                       </span>
                     ) : null
                   }
                 >
-                  <div className="flex flex-col h-full gap-4">
+                  <div className="flex flex-col h-full gap-3 p-2"> {/* Added padding and reduced gap */}
                     <div className="flex items-center justify-between">
                       <AnimatedLogo 
                         text={tool.name}
                         icon={tool.logo ? (
-                          <img src={tool.logo} alt={tool.name} className="w-10 h-10 rounded-md" />
+                          <img src={tool.logo} alt={tool.name} className="w-8 h-8 rounded-md" />
                         ) : null}
+                        className="text-sm" // Reduced text size
                       />
                       
                       {tool.rating && (
-                        <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-md">
-                          <Star size={16} className="text-primary fill-primary" />
-                          <span className="text-sm font-medium">{tool.rating}</span>
+                        <div className="flex items-center gap-0.5 bg-primary/10 px-1.5 py-0.5 rounded-md">
+                          <Star size={12} className="text-primary fill-primary" />
+                          <span className="text-xs font-medium">{tool.rating}</span>
                         </div>
                       )}
                     </div>
                     
-                    <p className="text-sm text-muted-foreground flex-grow">
+                    <p className="text-xs text-muted-foreground flex-grow line-clamp-2 leading-relaxed">
                       {tool.description}
                     </p>
                     
                     {tool.category && (
-                      <div className="text-xs px-2 py-1 rounded-full bg-secondary w-fit">
+                      <div className="text-2xs px-1.5 py-0.5 rounded-full bg-secondary w-fit">
                         {tool.category}
                       </div>
                     )}
@@ -153,7 +156,7 @@ export function ToolCarousel({
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="mt-auto w-full hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                        className="mt-auto w-full h-7 text-xs hover:bg-primary/10 hover:text-primary hover:border-primary/30"
                       >
                         عرض الأداة
                       </Button>
@@ -170,31 +173,31 @@ export function ToolCarousel({
           onClick={prev}
           variant="outline"
           size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+          className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 rounded-full w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary hover:border-primary/30"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={16} />
         </Button>
         
         <Button
           onClick={next}
           variant="outline"
           size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+          className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full w-7 h-7 bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary hover:border-primary/30"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={16} />
         </Button>
         
         {/* Slide indicators */}
-        <div className="flex justify-center gap-2 mt-6">
+        <div className="flex justify-center gap-1.5 mt-4">
           {Array.from({ length: Math.ceil(tools.length / visibleCount) }).map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentIndex(i * visibleCount)}
               className={cn(
-                "h-2 rounded-full transition-all duration-300",
+                "h-1.5 rounded-full transition-all duration-300",
                 Math.floor(currentIndex / visibleCount) === i
-                  ? "bg-primary w-6"
-                  : "bg-primary/30 w-2"
+                  ? "bg-primary w-5"
+                  : "bg-primary/30 w-1.5"
               )}
               aria-label={`Go to slide ${i + 1}`}
             />

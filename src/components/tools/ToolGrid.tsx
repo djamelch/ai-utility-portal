@@ -66,7 +66,7 @@ export function ToolGrid({
   category = "",
   pricing = "",
   sortBy = "featured",
-  columnsPerRow = 4,
+  columnsPerRow = 4, // Default to 4 columns
   features = [],
   tools: providedTools
 }: ToolGridProps) {
@@ -292,12 +292,15 @@ export function ToolGrid({
       break;
     case 4:
     default:
-      gridColsClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"; // Updated for better responsiveness
+      break;
+    case 5:
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
       break;
   }
   
   return (
-    <div className={`grid ${gridColsClasses} gap-5`}>
+    <div className={`grid ${gridColsClasses} gap-3`}> {/* Reduced gap from gap-5 to gap-3 */}
       {loadedTools.map((tool, index) => (
         <MotionWrapper 
           key={tool.id} 
@@ -325,12 +328,15 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
       break;
     case 4:
     default:
-      gridColsClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"; // Updated for better responsiveness
+      break;
+    case 5:
+      gridColsClasses = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
       break;
   }
   
   return (
-    <div className="flex flex-col items-center justify-center py-8">
+    <div className="flex flex-col items-center justify-center py-6">
       <EnhancedLoadingIndicator 
         variant="dots" 
         text="Loading tools..." 
@@ -338,28 +344,28 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
         className="text-primary"
       />
       
-      <div className={`grid ${gridColsClasses} gap-5 mt-8 w-full`}>
+      <div className={`grid ${gridColsClasses} gap-3 mt-6 w-full`}> {/* Reduced gap from gap-5 to gap-3 */}
         {Array(count).fill(0).map((_, index) => (
           <div 
             key={index} 
-            className="tool-card h-[300px] animate-pulse"
+            className="tool-card h-[220px] animate-pulse" // Reduced height from 300px to 220px
           >
             <div className="flex gap-3">
-              <div className="h-16 w-16 rounded-xl bg-secondary/50"></div>
+              <div className="h-12 w-12 rounded-lg bg-secondary/50"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-5 bg-secondary/50 rounded w-3/4"></div>
-                <div className="h-4 bg-secondary/40 rounded w-1/2"></div>
+                <div className="h-4 bg-secondary/50 rounded w-3/4"></div>
+                <div className="h-3 bg-secondary/40 rounded w-1/2"></div>
               </div>
             </div>
-            <div className="space-y-2 mt-4">
-              <div className="h-3 bg-secondary/40 rounded w-full"></div>
-              <div className="h-3 bg-secondary/40 rounded w-full"></div>
-              <div className="h-3 bg-secondary/40 rounded w-3/4"></div>
+            <div className="space-y-1.5 mt-3">
+              <div className="h-2.5 bg-secondary/40 rounded w-full"></div>
+              <div className="h-2.5 bg-secondary/40 rounded w-full"></div>
+              <div className="h-2.5 bg-secondary/40 rounded w-3/4"></div>
             </div>
-            <div className="mt-auto pt-4 flex gap-2">
-              <div className="flex-1 h-8 bg-secondary/50 rounded"></div>
-              <div className="h-8 w-8 bg-secondary/50 rounded"></div>
-              <div className="h-8 w-16 bg-primary/30 rounded"></div>
+            <div className="mt-auto pt-3 flex gap-1">
+              <div className="flex-1 h-7 bg-secondary/50 rounded"></div>
+              <div className="h-7 w-7 bg-secondary/50 rounded"></div>
+              <div className="h-7 w-14 bg-primary/30 rounded"></div>
             </div>
           </div>
         ))}
@@ -370,7 +376,7 @@ function ToolGridSkeleton({ count, columnsPerRow = 4 }: { count: number; columns
 
 function EmptyToolsMessage() {
   return (
-    <div className="text-center py-16 px-4 filters-area">
+    <div className="text-center py-12 px-4 filters-area">
       <h3 className="text-xl font-medium mb-2">No tools found</h3>
       <p className="text-muted-foreground max-w-md mx-auto">
         Try adjusting your search criteria or filters to find AI tools matching your requirements.
