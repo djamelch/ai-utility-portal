@@ -159,20 +159,15 @@ export function Hero() {
   
   const popularCategories = categories.slice(0, 5);
   
-  // Project types for text cycling - making sure this array has values
+  // Project types for text cycling
   const projectTypes = [
     "business", 
-    "content creation", 
+    "content", 
     "marketing", 
-    "research", 
     "design", 
     "coding", 
-    "writing", 
-    "analysis"
+    "writing"
   ];
-  
-  // Log to verify projectTypes is correctly defined
-  console.log("Project types for TextCycler:", projectTypes);
   
   return (
     <GradientBackground variant="primary" className="pt-32 pb-16 md:pt-40 md:pb-24">
@@ -180,21 +175,19 @@ export function Hero() {
         <MotionWrapper animation="fadeIn" className="text-center">
           <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
             <Sparkles size={16} className="mr-1.5 inline-block animate-pulse" />
-            Discover {statistics?.toolCount || "300+"}+ AI tools
+            {statistics?.toolCount || "300+"}+ AI tools
           </span>
           
           <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-            Find the <span className="text-gradient">perfect AI tool</span> for{" "}
-            <span className="relative inline-block">
-              <TextCycler 
-                texts={projectTypes} 
-                interval={2500}
-              />
-            </span>
+            <span className="text-gradient">AI tools</span> for{" "}
+            <TextCycler 
+              texts={projectTypes} 
+              interval={2500}
+            />
           </h1>
           
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            AI Any Tool helps you discover, compare, and choose the best AI-powered tools for your specific needs
+            Discover, compare, and choose the best AI-powered tools for your specific needs
           </p>
         </MotionWrapper>
         
