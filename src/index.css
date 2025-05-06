@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -16,7 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
 
-    --primary: 278 82% 62%;  /* #A252EC - Purple */
+    /* Updated primary color to teal/cyan */
+    --primary: 191 92% 48%;  /* #0DB6E4 - Vibrant Cyan */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 220 14% 96%;
@@ -25,7 +25,8 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 338 77% 48%;  /* #D8287C - Pink */
+    /* Updated accent color to coral */
+    --accent: 16 85% 61%;  /* #FF7857 - Coral */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -33,7 +34,7 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 278 82% 62%; /* Match primary */
+    --ring: 191 92% 48%; /* Match primary */
 
     --radius: 0.75rem;
   }
@@ -48,7 +49,8 @@
     --popover: 224 71% 4%;
     --popover-foreground: 213 31% 91%;
 
-    --primary: 278 82% 62%;  /* #A252EC - Purple */
+    /* Updated primary color to teal/cyan */
+    --primary: 191 92% 48%;  /* #0DB6E4 - Vibrant Cyan */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 222.2 47.4% 11.2%;
@@ -57,7 +59,8 @@
     --muted: 223 47% 11%;
     --muted-foreground: 215.4 16.3% 56.9%;
 
-    --accent: 338 77% 48%;  /* #D8287C - Pink */
+    /* Updated accent color to coral */
+    --accent: 16 85% 61%;  /* #FF7857 - Coral */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -65,7 +68,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 278 82% 62%; /* Match primary */
+    --ring: 191 92% 48%; /* Match primary */
   }
 }
 
@@ -104,7 +107,7 @@
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-[#A252EC] to-[#D8287C] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#0DB6E4] to-[#FF7857] bg-clip-text text-transparent;
   }
   
   .section-padding {
@@ -123,7 +126,7 @@
     @apply relative after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full;
   }
 
-  /* Modern tool card styling */
+  /* Modern tool card styling - Updated colors */
   .tool-card {
     @apply bg-gradient-to-br from-white to-white/90 dark:from-background/60 dark:to-background/40 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
     @apply backdrop-blur-md border border-white/10 dark:border-white/5;
@@ -137,20 +140,20 @@
     left: 0;
     right: 0;
     height: 4px;
-    @apply bg-gradient-to-r from-primary to-accent opacity-0 transition-opacity duration-300;
+    @apply bg-gradient-to-r from-[#0DB6E4] to-[#FF7857] opacity-0 transition-opacity duration-300;
   }
   
   .tool-card:hover::before {
     @apply opacity-100;
   }
   
-  /* Enhanced filters area */
+  /* Enhanced filters area - Updated styling */
   .filters-area {
     @apply rounded-xl bg-secondary/50 dark:bg-secondary/20 backdrop-blur-md border border-secondary p-4;
     @apply shadow-sm hover:shadow-md transition-all duration-300;
   }
   
-  /* Enhanced filter pills */
+  /* Enhanced filter pills - Updated colors */
   .filter-pill {
     @apply px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300;
     @apply bg-primary/10 text-primary hover:bg-primary/20;
@@ -209,3 +212,30 @@
   }
 }
 
+/* Add these new modern color utility classes */
+.bg-modern-gradient {
+  @apply bg-gradient-to-r from-[#0DB6E4] to-[#FF7857];
+}
+
+.bg-modern-gradient-subtle {
+  @apply bg-gradient-to-r from-[#0DB6E4]/10 to-[#FF7857]/10;
+}
+
+.border-modern-gradient {
+  border-image: linear-gradient(to right, #0DB6E4, #FF7857) 1;
+}
+
+.text-primary-accent {
+  @apply text-[#0DB6E4];
+}
+
+.text-secondary-accent {
+  @apply text-[#FF7857];
+}
+
+/* Enhanced button hover effects */
+.btn-modern-hover {
+  @apply relative overflow-hidden z-10 transition-all duration-300;
+  @apply after:absolute after:inset-0 after:bg-gradient-to-r after:from-[#0DB6E4] after:to-[#FF7857] after:opacity-0 after:transition-opacity after:duration-300 after:z-[-1];
+  @apply hover:after:opacity-100 hover:text-white;
+}

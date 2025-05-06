@@ -53,16 +53,28 @@ export default {
           foreground: "hsl(var(--card-foreground))"
         },
         brand: {
-          50: "#f0f7ff",
-          100: "#e0eefe",
-          200: "#c0ddfd",
-          300: "#90c2fb",
-          400: "#5c9ff7",
-          500: "#3b82f6",
-          600: "#2570ea",
-          700: "#1d58d8",
-          800: "#1e48af",
-          900: "#1e3e8a",
+          50: "#e0f7fc",
+          100: "#b3eaf9",
+          200: "#80dcf5",
+          300: "#4dcdf1",
+          400: "#26c1ee",
+          500: "#0DB6E4",
+          600: "#0a9fd3",
+          700: "#0782b8",
+          800: "#05669e",
+          900: "#034f78",
+        },
+        coral: {
+          50: "#fff2ee",
+          100: "#ffe1d5",
+          200: "#ffbfa7",
+          300: "#ff9c79",
+          400: "#ff7857", // Our accent color
+          500: "#ff5331",
+          600: "#ff3a13",
+          700: "#e52300",
+          800: "#c01d00",
+          900: "#9c1800",
         },
       },
       borderRadius: {
@@ -78,8 +90,8 @@ export default {
         glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
         card: "0 2px 10px rgba(0, 0, 0, 0.05)",
         "card-hover": "0 10px 30px rgba(0, 0, 0, 0.1)",
-        glow: "0 0 20px rgba(var(--primary), 0.4)",
-        "inner-glow": "inset 0 0 20px rgba(var(--primary), 0.2)"
+        glow: "0 0 20px rgba(13, 182, 228, 0.4)", // Updated to cyan
+        "inner-glow": "inset 0 0 20px rgba(13, 182, 228, 0.2)" // Updated to cyan
       },
       keyframes: {
         "accordion-down": {

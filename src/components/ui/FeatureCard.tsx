@@ -31,7 +31,7 @@ export function FeatureCard({
   index = 0,
   hoverEffect = true,
   glowEffect = false,
-  glowColor = "before:from-primary/40 before:to-accent/40",
+  glowColor = "before:from-[#0DB6E4]/40 before:to-[#FF7857]/40", // Updated colors
   showBadge = false,
   badgeText = "Featured"
 }: FeatureCardProps) {
@@ -59,7 +59,7 @@ export function FeatureCard({
           "bg-background/40 dark:bg-gradient-to-br dark:from-card/70 dark:to-card/40 backdrop-blur-md",
           "border border-border/30",
           "shadow-sm",
-          hoverEffect && "hover:border-primary/20 hover:shadow-md hover:-translate-y-1",
+          hoverEffect && "hover:border-[#0DB6E4]/20 hover:shadow-md hover:-translate-y-1", // Updated border color
           glowEffect && "before:absolute before:inset-0 before:opacity-0 before:rounded-xl before:transition-opacity before:duration-500 hover:before:opacity-100 before:bg-gradient-to-br before:-z-10 before:blur-xl before:scale-150",
           glowColor,
           className
@@ -70,7 +70,7 @@ export function FeatureCard({
         <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
         
         {showBadge && (
-          <div className="absolute -top-2 -right-2 bg-primary text-white text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
+          <div className="absolute -top-2 -right-2 bg-[#0DB6E4] text-white text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
             {badgeText}
           </div>
         )}
@@ -79,13 +79,13 @@ export function FeatureCard({
           <div 
             className={cn(
               "w-14 h-14 rounded-full flex items-center justify-center",
-              "bg-primary/10 text-primary shadow-sm",
+              "bg-[#0DB6E4]/10 text-[#0DB6E4] shadow-sm", // Updated colors
               "relative overflow-hidden group",
               iconClassName
             )}
           >
             {/* Icon glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0DB6E4]/30 to-[#FF7857]/30 opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
             <div className="relative z-10 scale-100 group-hover:scale-110 transition-transform duration-300">
               {icon}
             </div>

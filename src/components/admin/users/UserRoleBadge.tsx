@@ -37,12 +37,12 @@ export function UserRoleBadge({
   if (isAdmin) {
     return (
       <div className={cn(
-        "flex items-center rounded-full bg-purple-100 dark:bg-purple-900/30", 
+        "flex items-center rounded-full bg-[#0DB6E4]/10 dark:bg-[#0DB6E4]/20", // Updated from purple to cyan
         sizes.container,
         className
       )}>
-        <ShieldAlert className={cn("text-purple-600 dark:text-purple-400 mr-1", sizes.icon)} />
-        <span className={cn("font-medium text-purple-600 dark:text-purple-400", sizes.text)}>Admin</span>
+        <ShieldAlert className={cn("text-[#0DB6E4] dark:text-[#0DB6E4] mr-1", sizes.icon)} />
+        <span className={cn("font-medium text-[#0DB6E4] dark:text-[#0DB6E4]", sizes.text)}>Admin</span>
       </div>
     );
   }
