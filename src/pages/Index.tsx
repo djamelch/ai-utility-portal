@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
@@ -27,27 +26,27 @@ const Index = () => {
       const width = window.innerWidth;
       if (width >= 1536) { // 2xl breakpoint
         setSectionLimits({
+          featured: 20,
+          topRated: 20,
+          recent: 20
+        });
+      } else if (width >= 1280) { // xl breakpoint
+        setSectionLimits({
           featured: 16,
           topRated: 16,
           recent: 16
         });
-      } else if (width >= 1280) { // xl breakpoint
+      } else if (width >= 768) { // md breakpoint
         setSectionLimits({
           featured: 12,
           topRated: 12,
           recent: 12
         });
-      } else if (width >= 768) { // md breakpoint
-        setSectionLimits({
-          featured: 9,
-          topRated: 9,
-          recent: 9
-        });
       } else {
         setSectionLimits({
-          featured: 6,
-          topRated: 6,
-          recent: 6
+          featured: 9, // Increased from 6 to show more on mobile
+          topRated: 9,
+          recent: 9
         });
       }
     };

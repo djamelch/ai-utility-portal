@@ -31,7 +31,7 @@ export function ToolsSection({
   title, 
   description, 
   queryType,
-  limit = 12, // Increased default limit
+  limit = 12, 
   variant = "none"
 }: ToolsSectionProps) {
   const isMobile = useIsMobile();
@@ -44,20 +44,16 @@ export function ToolsSection({
     const handleResize = () => {
       const width = window.innerWidth;
       if (width >= 1536) { // 2xl breakpoint
-        setDeviceLimit(16); // Show more on extra large screens
+        setDeviceLimit(20); // Show even more on extra large screens
       } else if (width >= 1280) { // xl breakpoint
-        setDeviceLimit(12); // Show more on large screens
+        setDeviceLimit(16); // Show more on large screens
       } else if (width >= 768) { // md breakpoint
-        setDeviceLimit(9); // Show more on medium screens
+        setDeviceLimit(12); // Show more on medium screens
       } else {
-        setDeviceLimit(6); // Show more on small screens
+        setDeviceLimit(9); // Show more on small screens (increased from 6)
         
-        // Always use 3 cards for mobile unless it's an extremely small screen
-        if (width < 350) {
-          setVisibleCards(2); // Only for extremely small screens
-        } else {
-          setVisibleCards(3); // Standard for mobile
-        }
+        // Always use 3 cards for mobile as requested
+        setVisibleCards(3); 
       }
     };
     
@@ -204,7 +200,7 @@ export function ToolsSection({
             </div>
           ) : (
             <div className="relative px-1">
-              {/* Vertical stacked cards */}
+              {/* Always display 3 vertical cards per slide as requested */}
               <div className="space-y-4 mb-6">
                 {tools
                   .slice(
