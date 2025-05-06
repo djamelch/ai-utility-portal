@@ -57,7 +57,12 @@ export function TextCycler({
   if (texts.length === 0) return null;
   
   return (
-    <span className={cn("inline-block relative overflow-hidden", className)}>
+    <span 
+      className={cn(
+        "inline-block relative overflow-hidden",
+        className
+      )}
+    >
       <span 
         className={cn(
           "inline-block transition-all duration-500 font-bold bg-gradient-to-r from-[#A252EC] to-[#D8287C] bg-clip-text text-transparent",

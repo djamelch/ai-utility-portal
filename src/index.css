@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -138,4 +139,31 @@
 }
 .delay-500 {
   animation-delay: 0.5s;
+}
+
+/* Add enhanced animations */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+}
+
+/* Enhance dropdown styling for better visibility */
+[data-radix-popper-content-wrapper] {
+  @apply z-50;
+}
+
+.dropdown-content {
+  @apply bg-background/95 backdrop-blur-md border border-border shadow-md;
+}
+
+/* Fix responsive layout issues */
+@media (max-width: 640px) {
+  .container-tight,
+  .container-wide {
+    @apply px-4;
+  }
 }
