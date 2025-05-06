@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
@@ -21,6 +20,7 @@ serve(async (req) => {
 
   try {
     // Create a Supabase client with the service role key (has admin privileges)
+    // These environment variables are securely stored in Supabase
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
