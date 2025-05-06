@@ -18,6 +18,7 @@ import { ToolCard } from "@/components/tools/ToolCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ToolsSectionProps {
   title: string;
@@ -37,6 +38,7 @@ export function ToolsSection({
   const isMobile = useIsMobile();
   const [deviceLimit, setDeviceLimit] = useState(limit);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [visibleCards, setVisibleCards] = useState(3); // Number of visible cards in mobile view
   
   // Adjust tools shown based on screen size
   useEffect(() => {
@@ -50,6 +52,12 @@ export function ToolsSection({
         setDeviceLimit(6); // Show 6 on medium screens
       } else {
         setDeviceLimit(4); // Show 4 on small screens
+        // Set visible cards based on small screen sizes
+        if (width < 400) {
+          setVisibleCards(2); // Show 2 cards for very small screens
+        } else {
+          setVisibleCards(3); // Show 3 cards for regular mobile screens
+        }
       }
     };
     
@@ -157,6 +165,18 @@ export function ToolsSection({
     }
   };
 
+  // Calculate total number of pages for mobile view
+  const totalPages = Math.ceil(tools.length / visibleCards);
+
+  // Handle manual navigation for mobile cards
+  const goToNextPage = () => {
+    setCurrentSlide(prev => (prev + 1) % totalPages);
+  };
+
+  const goToPrevPage = () => {
+    setCurrentSlide(prev => (prev - 1 + totalPages) % totalPages);
+  };
+
   const sectionContent = (
     <>
       <MotionWrapper animation="fadeIn">
@@ -191,47 +211,59 @@ export function ToolsSection({
               </p>
             </div>
           ) : (
-            <>
-              <Carousel 
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-                className="w-full"
-                setApi={(api) => {
-                  // Listen for select event when the API is available
-                  api?.on("select", () => handleCarouselSelect(api));
-                }}
-              >
-                <CarouselContent>
-                  {tools.slice(0, deviceLimit).map((tool) => (
-                    <CarouselItem key={tool.id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                      <MotionWrapper animation="fadeIn">
-                        <div className="p-1">
-                          <ToolCard tool={tool} />
-                        </div>
-                      </MotionWrapper>
-                    </CarouselItem>
+            <div className="relative px-1">
+              {/* Vertical stacked cards */}
+              <div className="space-y-4 mb-6">
+                {tools
+                  .slice(
+                    currentSlide * visibleCards,
+                    currentSlide * visibleCards + visibleCards
+                  )
+                  .map((tool) => (
+                    <MotionWrapper key={tool.id} animation="fadeIn">
+                      <ToolCard tool={tool} />
+                    </MotionWrapper>
                   ))}
-                </CarouselContent>
-                <div className="flex items-center justify-center mt-2">
-                  <CarouselPrevious className="relative inset-0 translate-y-0 left-0 mr-2 h-8 w-8" />
-                  <CarouselNext className="relative inset-0 translate-y-0 right-0 ml-2 h-8 w-8" />
-                </div>
-              </Carousel>
-              
-              {/* Pagination dots */}
-              <div className="flex justify-center gap-1 mt-3">
-                {tools.slice(0, deviceLimit).map((_, i) => (
-                  <div 
-                    key={i}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === currentSlide ? "bg-primary w-5" : "bg-primary/30 w-1.5"
-                    }`}
-                  />
-                ))}
               </div>
-            </>
+              
+              {/* Modern navigation controls */}
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <Button
+                  onClick={goToPrevPage}
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-primary/30 shadow-sm hover:bg-primary/10 hover:shadow-md transition-all duration-300"
+                >
+                  <ArrowRight className="h-5 w-5 rotate-180 text-primary" />
+                </Button>
+                
+                {/* Pagination dots */}
+                <div className="flex justify-center gap-1.5">
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <Button
+                      key={i}
+                      onClick={() => setCurrentSlide(i)}
+                      variant="ghost"
+                      className={`w-2 h-2 p-0 rounded-full transition-all duration-300 ${
+                        i === currentSlide 
+                          ? "bg-primary scale-125" 
+                          : "bg-primary/30 scale-100"
+                      }`}
+                      aria-label={`Go to page ${i + 1}`}
+                    />
+                  ))}
+                </div>
+                
+                <Button
+                  onClick={goToNextPage}
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-primary/30 shadow-sm hover:bg-primary/10 hover:shadow-md transition-all duration-300"
+                >
+                  <ArrowRight className="h-5 w-5 text-primary" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       ) : (
