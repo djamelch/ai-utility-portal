@@ -29,8 +29,13 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   },
 
   optimizeDeps: {
-    exclude: Object.keys(require('./package.json').dependencies)
-      .filter(dep => dep.startsWith('@rollup/rollup-')),
+    // Exclude platform-specific dependencies to avoid installation errors
+    exclude: [
+      '@rollup/rollup-win32-x64-msvc',
+      '@rollup/rollup-linux-x64-gnu',
+      '@rollup/rollup-darwin-x64',
+      '@rollup/rollup-darwin-arm64'
+    ],
   },
 
   build: {
@@ -45,8 +50,13 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
     target: 'es2015',
     
     rollupOptions: {
-      external: Object.keys(require('./package.json').dependencies)
-        .filter(dep => dep.startsWith('@rollup/rollup-')),
+      // Explicitly exclude platform-specific rollup packages
+      external: [
+        '@rollup/rollup-win32-x64-msvc',
+        '@rollup/rollup-linux-x64-gnu',
+        '@rollup/rollup-darwin-x64',
+        '@rollup/rollup-darwin-arm64'
+      ],
       
       output: {
         manualChunks: {

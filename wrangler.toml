@@ -12,6 +12,7 @@ ENVIRONMENT = "production"
 command = "bun run build"
 watch_dir = "src"
 
+# This is the important property for Pages
 [site]
 bucket = "./dist"
 
