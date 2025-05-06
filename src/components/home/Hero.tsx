@@ -189,7 +189,7 @@ export function Hero() {
               <TextCycler 
                 texts={projectTypes} 
                 interval={2500}
-                className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent" 
+                className="text-foreground dark:text-white font-bold" 
               />
             </span>
           </h1>

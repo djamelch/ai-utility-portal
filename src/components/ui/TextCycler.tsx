@@ -60,7 +60,7 @@ export function TextCycler({
     <span className={cn("inline-block relative overflow-hidden", className)}>
       <span 
         className={cn(
-          "inline-block transition-all duration-500",
+          "inline-block transition-all duration-500 font-bold",
           isAnimating 
             ? "opacity-0 transform translate-y-4" 
             : "opacity-100 transform translate-y-0"
@@ -70,8 +70,8 @@ export function TextCycler({
         {texts[currentIndex]}
       </span>
       
-      {/* Animated underline effect */}
-      <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-accent via-primary to-accent bg-[length:200%_auto] animate-shimmer"></span>
+      {/* Animated underline effect with enhanced visibility */}
+      <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500 bg-[length:200%_auto] animate-shimmer"></span>
     </span>
   );
 }
