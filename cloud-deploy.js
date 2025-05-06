@@ -12,10 +12,11 @@ function updatePackageJson() {
     const packageJsonPath = path.join(__dirname, 'package.json');
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-    // Filter out platform-specific dependencies
+    // Filter out platform-specific dependencies except for esbuild
     const filteredDependencies = {};
     for (const [key, value] of Object.entries(packageJson.dependencies || {})) {
-      if (!key.includes('rollup-win') && !key.includes('rollup-linux') && !key.includes('rollup-darwin')) {
+      if ((!key.includes('rollup-win') && !key.includes('rollup-linux') && !key.includes('rollup-darwin')) || 
+          key.includes('esbuild')) {
         filteredDependencies[key] = value;
       }
     }

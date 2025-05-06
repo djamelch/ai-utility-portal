@@ -36,12 +36,14 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
       '@rollup/rollup-darwin-x64',
       '@rollup/rollup-darwin-arm64'
     ],
+    // Force inclusion of esbuild binaries
+    include: ['@esbuild/linux-x64'],
   },
 
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    sourcemap: mode === 'development', // Source maps only for development
+    sourcemap: mode === 'development',
     
     // Using esbuild minifier instead of terser
     minify: 'esbuild',
