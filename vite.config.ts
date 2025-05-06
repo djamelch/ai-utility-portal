@@ -1,17 +1,14 @@
-
 import { defineConfig } from "vite";
 import react from '@vitejs/plugin-react';
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 import type { ConfigEnv, UserConfig } from 'vite';
 
-// Fallback for esbuild if needed
+// Mock esbuild if it fails to load
 let esbuild;
 try {
   esbuild = require('esbuild');
 } catch (e) {
-  console.warn('Could not load esbuild directly:', e);
-  // Provide a minimal mock
+  console.warn('Could not load esbuild directly, using mock implementation');
   esbuild = {
     version: '0.19.8',
     transform: () => ({ code: '', map: '' }),
@@ -21,7 +18,7 @@ try {
 }
 
 export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
-  base: "./", // Move base to the top level of the configuration
+  base: "./",
   server: {
     host: "::",
     port: 8080,
@@ -38,19 +35,18 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Mock platform-specific rollup and esbuild dependencies
+      // Mock platform-specific rollup dependencies
       "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./rollup-mock.js"),
-      // Add esbuild mock if needed
+      // Alias for esbuild
       "esbuild": path.resolve(__dirname, "node_modules/esbuild/lib/esbuild.js"),
     },
     dedupe: ['react', 'react-dom']
   },
 
   optimizeDeps: {
-    // Exclude platform-specific dependencies
     exclude: [
       '@rollup/rollup-win32-x64-msvc',
       '@rollup/rollup-linux-x64-gnu',
@@ -64,9 +60,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
     }
   },
 
-  // Provide esbuild directly to avoid platform-specific issues
   esbuild: {
-    // Use minimal options to reduce platform dependency
     legalComments: 'none',
     minifyIdentifiers: false,
     minifySyntax: mode === 'production',
@@ -77,15 +71,10 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: mode === 'development',
-    
-    // Disable minification during build troubleshooting
     minify: mode === 'production' ? 'esbuild' : false,
-    
-    // Configure esbuild minification options
     target: 'es2015',
     
     rollupOptions: {
-      // Explicitly exclude platform-specific rollup packages
       external: [
         '@rollup/rollup-win32-x64-msvc',
         '@rollup/rollup-linux-x64-gnu',

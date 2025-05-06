@@ -1,9 +1,9 @@
 
 // Cloudflare Pages specific configuration
 export const config = {
-  nodeVersion: '20', // Specify Node.js 20
-  buildCommand: 'node install-esbuild.js && node cloud-deploy.js && npm run build',
-  buildOutputDirectory: './dist',
+  nodeVersion: '20',
+  buildCommand: 'npm install @esbuild/linux-x64 --no-save && npm run build',
+  buildOutputDirectory: 'dist',
   compatibility_flags: ["nodejs_compat"],
   skipInstall: false
 };

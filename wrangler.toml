@@ -9,15 +9,17 @@ API_VERSION = "1.0.0"
 ENVIRONMENT = "production"
 
 [build]
-command = "node install-esbuild.js && node cloud-deploy.js && npm run build"
+command = "npm run build"
 watch_dir = "src"
 
 # Explicitly set the Pages build output directory
 [site]
-bucket = "./dist"
+bucket = "dist"
 
-# Explicitly set build output directory for Pages
-pages_build_output_dir = "./dist"
+# Configure Pages build output directory
+[build.upload]
+format = "directory"
+dir = "dist"
 
 # Observability configuration
 [observability.logs]
