@@ -1,3 +1,4 @@
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
@@ -72,7 +73,7 @@ const Index = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <SEOHead 
         title="AI Tools Directory - Find and Compare the Best AI Tools"
         description="Discover the best AI tools for productivity, creativity, and business. Our comprehensive directory helps you find and compare the perfect AI solutions for your needs."
@@ -86,7 +87,7 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* Featured Tools Section - With primary gradient */}
+        {/* Featured Tools Section - With subtle gradient */}
         <ToolsSection 
           title="Featured Tools" 
           description="Discover our handpicked selection of the best AI tools"
@@ -95,32 +96,36 @@ const Index = () => {
           variant="primary"
         />
         
-        {/* Top Rated Tools Section - With accent gradient */}
+        {/* Categories Section with light background */}
+        <GradientBackground variant="subtle" className="py-12 md:py-16" intensity="light">
+          <CategorySection />
+        </GradientBackground>
+        
+        {/* Top Rated Tools Section */}
         <ToolsSection 
           title="Top Rated Tools" 
           description="Explore the highest rated AI tools by our community"
           queryType="top-rated"
           limit={sectionLimits.topRated}
-          variant="accent"
+          variant="secondary"
         />
         
-        {/* Recently Added Tools Section - With secondary gradient */}
+        {/* Recently Added Tools Section */}
         <ToolsSection 
           title="Recently Added Tools" 
           description="Check out the latest AI tools added to our collection"
           queryType="recent"
           limit={sectionLimits.recent}
-          variant="secondary"
+          variant="accent"
         />
         
-        {/* Categories Section */}
-        <CategorySection />
-        
         {/* Feature Section - Moved to bottom before CTA */}
-        <FeatureSection />
+        <GradientBackground variant="subtle" className="py-12 md:py-16" intensity="light">
+          <FeatureSection />
+        </GradientBackground>
         
         {/* CTA Section */}
-        <GradientBackground variant="primary" className="py-12 md:py-16" interactive intensity="medium">
+        <GradientBackground variant="primary" className="py-12 md:py-16" intensity="medium">
           <div className="container-tight">
             <MotionWrapper animation="fadeIn">
               <GlassCard 

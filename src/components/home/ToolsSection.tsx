@@ -281,7 +281,7 @@ export function ToolsSection({
   );
   
   return variant !== "none" ? (
-    <GradientBackground variant={variant} className="py-10 md:py-16">
+    <GradientBackground variant={variant} className="py-10 md:py-16" intensity="medium">
       <div className="container-wide">
         {sectionContent}
       </div>

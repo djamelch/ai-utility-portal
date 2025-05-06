@@ -28,7 +28,7 @@ export function GlassCard({
   animation = "fadeIn",
   hoverEffect = true,
   glowEffect = false,
-  glowColor = "before:from-primary/40 before:to-primary/20", // Simplified colors
+  glowColor = "before:from-primary/30 before:to-primary/10", // Softer glow effect
   badge,
   onClick,
   pulseBorder = false,
@@ -39,13 +39,13 @@ export function GlassCard({
       <div 
         className={cn(
           "rounded-xl backdrop-blur-sm relative overflow-hidden transition-all duration-300",
-          variant === 'default' && "bg-white/10 dark:bg-black/20 border border-white/20 dark:border-white/10",
-          variant === 'featured' && "bg-white/15 dark:bg-black/25 border-2 border-primary/50 dark:border-primary/30", // Simplified color
-          variant === 'elevated' && "bg-white/20 dark:bg-black/30 border border-white/30 dark:border-white/15 shadow-xl",
+          variant === 'default' && "bg-background/80 dark:bg-background/60 border border-white/10 dark:border-white/5",
+          variant === 'featured' && "bg-background/90 dark:bg-background/70 border border-primary/20 dark:border-primary/10", // Subtler borders
+          variant === 'elevated' && "bg-background/95 dark:bg-background/80 border border-white/15 dark:border-white/10 shadow-xl",
           "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
           hoverEffect && "hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1",
           glowEffect && "before:absolute before:inset-0 before:opacity-0 before:rounded-xl before:transition-opacity before:duration-500 hover:before:opacity-100 before:bg-gradient-to-br before:-z-10 before:blur-xl before:scale-150",
-          pulseBorder && "border-primary/30 animate-[pulse_3s_ease-in-out_infinite]", // Simplified color
+          pulseBorder && "border-primary/15 animate-[pulse_3s_ease-in-out_infinite]", // Subtler pulsing border
           glowColor,
           onClick && "cursor-pointer",
           "p-6", // Added default padding
@@ -53,9 +53,9 @@ export function GlassCard({
         )}
         onClick={onClick}
       >
-        {/* Glass-like highlight effects */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-white/20 dark:bg-white/10" />
-        <div className="absolute top-0 left-0 bottom-0 w-px bg-white/20 dark:bg-white/10 opacity-50" />
+        {/* Glass-like highlight effects - more subtle */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-white/10 dark:bg-white/5" />
+        <div className="absolute top-0 left-0 bottom-0 w-px bg-white/10 dark:bg-white/5 opacity-30" />
         
         {badge && (
           <div className="absolute -top-1 -right-1 z-10">
