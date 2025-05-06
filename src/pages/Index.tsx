@@ -16,9 +16,9 @@ import { useEffect, useState } from "react";
 
 const Index = () => {
   const [sectionLimits, setSectionLimits] = useState({
-    featured: 8,
-    topRated: 8,
-    recent: 8
+    featured: 12,
+    topRated: 12,
+    recent: 12
   });
   
   // Adjust section limits based on screen size
@@ -27,27 +27,27 @@ const Index = () => {
       const width = window.innerWidth;
       if (width >= 1536) { // 2xl breakpoint
         setSectionLimits({
+          featured: 16,
+          topRated: 16,
+          recent: 16
+        });
+      } else if (width >= 1280) { // xl breakpoint
+        setSectionLimits({
           featured: 12,
           topRated: 12,
           recent: 12
         });
-      } else if (width >= 1280) { // xl breakpoint
-        setSectionLimits({
-          featured: 8,
-          topRated: 8,
-          recent: 8
-        });
       } else if (width >= 768) { // md breakpoint
+        setSectionLimits({
+          featured: 9,
+          topRated: 9,
+          recent: 9
+        });
+      } else {
         setSectionLimits({
           featured: 6,
           topRated: 6,
           recent: 6
-        });
-      } else {
-        setSectionLimits({
-          featured: 4,
-          topRated: 4,
-          recent: 4
         });
       }
     };
@@ -120,7 +120,7 @@ const Index = () => {
         {/* Categories Section */}
         <CategorySection />
         
-        {/* CTA Section - Enhanced with animation and modern styling */}
+        {/* CTA Section */}
         <GradientBackground variant="primary" className="py-12 md:py-16" interactive intensity="medium">
           <div className="container-tight">
             <MotionWrapper animation="fadeIn">

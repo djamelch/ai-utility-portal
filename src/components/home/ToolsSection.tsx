@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
@@ -32,31 +31,32 @@ export function ToolsSection({
   title, 
   description, 
   queryType,
-  limit = 8, // Default limit
+  limit = 12, // Increased default limit
   variant = "none"
 }: ToolsSectionProps) {
   const isMobile = useIsMobile();
   const [deviceLimit, setDeviceLimit] = useState(limit);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [visibleCards, setVisibleCards] = useState(3); // Number of visible cards in mobile view
+  const [visibleCards, setVisibleCards] = useState(3); // Always show 3 cards by default in mobile view
   
   // Adjust tools shown based on screen size
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
       if (width >= 1536) { // 2xl breakpoint
-        setDeviceLimit(12); // Show 12 on extra large screens
+        setDeviceLimit(16); // Show more on extra large screens
       } else if (width >= 1280) { // xl breakpoint
-        setDeviceLimit(8); // Show 8 on large screens
+        setDeviceLimit(12); // Show more on large screens
       } else if (width >= 768) { // md breakpoint
-        setDeviceLimit(6); // Show 6 on medium screens
+        setDeviceLimit(9); // Show more on medium screens
       } else {
-        setDeviceLimit(4); // Show 4 on small screens
-        // Set visible cards based on small screen sizes
-        if (width < 400) {
-          setVisibleCards(2); // Show 2 cards for very small screens
+        setDeviceLimit(6); // Show more on small screens
+        
+        // Always use 3 cards for mobile unless it's an extremely small screen
+        if (width < 350) {
+          setVisibleCards(2); // Only for extremely small screens
         } else {
-          setVisibleCards(3); // Show 3 cards for regular mobile screens
+          setVisibleCards(3); // Standard for mobile
         }
       }
     };
@@ -157,14 +157,6 @@ export function ToolsSection({
     refetchOnWindowFocus: false,
   });
 
-  const handleCarouselSelect = (api: any) => {
-    // Get the selected slide index from the carousel API
-    const selectedIndex = api?.selectedScrollSnap();
-    if (selectedIndex !== undefined) {
-      setCurrentSlide(selectedIndex);
-    }
-  };
-
   // Calculate total number of pages for mobile view
   const totalPages = Math.ceil(tools.length / visibleCards);
 
@@ -226,28 +218,28 @@ export function ToolsSection({
                   ))}
               </div>
               
-              {/* Modern navigation controls */}
-              <div className="flex items-center justify-center gap-4 mt-6">
+              {/* Enhanced modern navigation controls */}
+              <div className="flex items-center justify-center gap-4 mt-8">
                 <Button
                   onClick={goToPrevPage}
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-primary/30 shadow-sm hover:bg-primary/10 hover:shadow-md transition-all duration-300"
+                  className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-primary/30 shadow-md hover:bg-primary/10 hover:shadow-lg transition-all duration-300"
                 >
                   <ArrowRight className="h-5 w-5 rotate-180 text-primary" />
                 </Button>
                 
-                {/* Pagination dots */}
-                <div className="flex justify-center gap-1.5">
+                {/* Pagination dots with improved styling */}
+                <div className="flex justify-center gap-2.5">
                   {Array.from({ length: totalPages }).map((_, i) => (
                     <Button
                       key={i}
                       onClick={() => setCurrentSlide(i)}
                       variant="ghost"
-                      className={`w-2 h-2 p-0 rounded-full transition-all duration-300 ${
+                      className={`w-3 h-3 p-0 rounded-full transition-all duration-300 ${
                         i === currentSlide 
-                          ? "bg-primary scale-125" 
-                          : "bg-primary/30 scale-100"
+                          ? "bg-primary scale-125 shadow-sm shadow-primary/20" 
+                          : "bg-primary/30 scale-100 hover:bg-primary/50"
                       }`}
                       aria-label={`Go to page ${i + 1}`}
                     />
@@ -258,7 +250,7 @@ export function ToolsSection({
                   onClick={goToNextPage}
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-primary/30 shadow-sm hover:bg-primary/10 hover:shadow-md transition-all duration-300"
+                  className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-primary/30 shadow-md hover:bg-primary/10 hover:shadow-lg transition-all duration-300"
                 >
                   <ArrowRight className="h-5 w-5 text-primary" />
                 </Button>
@@ -280,10 +272,10 @@ export function ToolsSection({
         )
       )}
       
-      <div className="mt-4 text-center sm:hidden">
+      <div className="mt-6 text-center sm:hidden">
         <Link 
           to="/tools" 
-          className="inline-flex items-center gap-2 rounded-lg border border-input bg-background/80 backdrop-blur-sm px-4 py-2 text-sm font-medium hover:bg-secondary/50 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg border border-input bg-background/80 backdrop-blur-sm px-5 py-2.5 text-sm font-medium hover:bg-secondary/50 transition-all shadow-sm"
         >
           View all tools
           <ArrowRight size={16} />
