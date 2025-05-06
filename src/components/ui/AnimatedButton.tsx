@@ -25,9 +25,9 @@ export function AnimatedButton({
     <Button
       className={cn(
         "relative overflow-hidden group",
-        glowEffect && "after:absolute after:inset-0 after:opacity-0 after:transition-opacity after:duration-300 hover:after:opacity-100 after:blur-xl after:bg-gradient-to-r after:from-[#0DB6E4]/40 after:to-[#FF7857]/40 after:-z-10",
-        rippleEffect && "active:before:absolute active:before:top-1/2 active:before:left-1/2 active:before:-translate-x-1/2 active:before:-translate-y-1/2 active:before:h-10 active:before:w-10 active:before:rounded-full active:before:bg-[#0DB6E4]/20 active:before:animate-ripple active:before:z-10",
-        gradientBorder && "border-2 border-transparent bg-clip-padding before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-gradient-to-r before:from-[#0DB6E4] before:to-[#FF7857]",
+        glowEffect && "after:absolute after:inset-0 after:opacity-0 after:transition-opacity after:duration-300 hover:after:opacity-100 after:blur-xl after:bg-primary/40 after:-z-10",
+        rippleEffect && "active:before:absolute active:before:top-1/2 active:before:left-1/2 active:before:-translate-x-1/2 active:before:-translate-y-1/2 active:before:h-10 active:before:w-10 active:before:rounded-full active:before:bg-primary/20 active:before:animate-ripple active:before:z-10",
+        gradientBorder && "border-2 border-transparent bg-clip-padding before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:bg-primary/70",
         className
       )}
       {...props}

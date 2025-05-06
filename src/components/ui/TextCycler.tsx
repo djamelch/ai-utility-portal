@@ -65,7 +65,7 @@ export function TextCycler({
     >
       <span 
         className={cn(
-          "inline-block transition-all duration-500 font-bold bg-gradient-to-r from-[#A252EC] to-[#D8287C] bg-clip-text text-transparent",
+          "inline-block transition-all duration-500 font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent",
           isAnimating 
             ? "opacity-0 transform translate-y-4" 
             : "opacity-100 transform translate-y-0"
@@ -75,8 +75,8 @@ export function TextCycler({
         {texts[currentIndex]}
       </span>
       
-      {/* Animated underline effect with custom colors */}
-      <span className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#A252EC] via-[#D8287C] to-[#A252EC] bg-[length:200%_auto] animate-shimmer"></span>
+      {/* Animated underline effect with simplified colors */}
+      <span className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-primary via-primary/80 to-primary bg-[length:200%_auto] animate-shimmer"></span>
     </span>
   );
 }

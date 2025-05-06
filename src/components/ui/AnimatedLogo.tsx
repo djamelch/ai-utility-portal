@@ -23,7 +23,7 @@ export function AnimatedLogo({
     <div 
       className={cn(
         "flex items-center gap-2 relative",
-        glowEffect && "after:absolute after:inset-0 after:opacity-20 after:blur-xl after:bg-gradient-to-r after:from-[#0DB6E4] after:to-[#FF7857] after:rounded-full after:-z-10",
+        glowEffect && "after:absolute after:inset-0 after:opacity-20 after:blur-xl after:bg-primary after:rounded-full after:-z-10",
         pulseEffect && "animate-scale-pulse",
         className
       )}
@@ -32,7 +32,7 @@ export function AnimatedLogo({
       <span 
         className={cn(
           "font-display font-bold text-lg md:text-xl",
-          textGradient && "bg-gradient-to-r from-[#0DB6E4] to-[#FF7857] bg-clip-text text-transparent"
+          textGradient && "text-gradient"
         )}
       >
         {text}

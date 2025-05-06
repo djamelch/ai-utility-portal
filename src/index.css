@@ -15,8 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
 
-    /* Updated primary color to teal/cyan */
-    --primary: 191 92% 48%;  /* #0DB6E4 - Vibrant Cyan */
+    /* Simplified to a single blue shade */
+    --primary: 210 100% 50%;  /* #0078FF - Clean Blue */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 220 14% 96%;
@@ -25,8 +25,8 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 8.9% 46.1%;
 
-    /* Updated accent color to coral */
-    --accent: 16 85% 61%;  /* #FF7857 - Coral */
+    /* Removed accent color */
+    --accent: 210 100% 50%;  /* Same as primary for simplicity */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,7 +34,7 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 191 92% 48%; /* Match primary */
+    --ring: 210 100% 50%; /* Match primary */
 
     --radius: 0.75rem;
   }
@@ -49,8 +49,8 @@
     --popover: 224 71% 4%;
     --popover-foreground: 213 31% 91%;
 
-    /* Updated primary color to teal/cyan */
-    --primary: 191 92% 48%;  /* #0DB6E4 - Vibrant Cyan */
+    /* Simplified to a single blue shade */
+    --primary: 210 100% 50%;  /* #0078FF - Clean Blue */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 222.2 47.4% 11.2%;
@@ -59,8 +59,8 @@
     --muted: 223 47% 11%;
     --muted-foreground: 215.4 16.3% 56.9%;
 
-    /* Updated accent color to coral */
-    --accent: 16 85% 61%;  /* #FF7857 - Coral */
+    /* Removed accent color */
+    --accent: 210 100% 50%;  /* Same as primary for simplicity */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -68,7 +68,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 191 92% 48%; /* Match primary */
+    --ring: 210 100% 50%; /* Match primary */
   }
 }
 
@@ -101,13 +101,12 @@
   }
   
   .hero-gradient {
-    background: radial-gradient(circle at top center, hsl(var(--accent)), transparent 70%),
-                radial-gradient(circle at bottom right, hsl(var(--primary)), transparent 70%);
+    background: radial-gradient(circle at top center, hsl(var(--primary)), transparent 70%);
     opacity: 0.1;
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-[#0DB6E4] to-[#FF7857] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent;
   }
   
   .section-padding {
@@ -126,7 +125,7 @@
     @apply relative after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full;
   }
 
-  /* Modern tool card styling - Updated colors */
+  /* Modern tool card styling - Simplified colors */
   .tool-card {
     @apply bg-gradient-to-br from-white to-white/90 dark:from-background/60 dark:to-background/40 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
     @apply backdrop-blur-md border border-white/10 dark:border-white/5;
@@ -140,14 +139,14 @@
     left: 0;
     right: 0;
     height: 4px;
-    @apply bg-gradient-to-r from-[#0DB6E4] to-[#FF7857] opacity-0 transition-opacity duration-300;
+    @apply bg-primary opacity-0 transition-opacity duration-300;
   }
   
   .tool-card:hover::before {
     @apply opacity-100;
   }
   
-  /* Enhanced filters area - Updated styling */
+  /* Enhanced filters area - Simplified styling */
   .filters-area {
     @apply rounded-xl bg-secondary/50 dark:bg-secondary/20 backdrop-blur-md border border-secondary p-4;
     @apply shadow-sm hover:shadow-md transition-all duration-300;
@@ -212,21 +211,21 @@
   }
 }
 
-/* Add these new modern color utility classes */
+/* Add these new modern color utility classes - Simplified */
 .bg-modern-gradient {
-  @apply bg-gradient-to-r from-[#0DB6E4] to-[#FF7857];
+  @apply bg-gradient-to-r from-primary to-primary/70;
 }
 
 .bg-modern-gradient-subtle {
-  @apply bg-gradient-to-r from-[#0DB6E4]/10 to-[#FF7857]/10;
+  @apply bg-gradient-to-r from-primary/10 to-primary/5;
 }
 
 .border-modern-gradient {
-  border-image: linear-gradient(to right, #0DB6E4, #FF7857) 1;
+  border-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary)/70%)) 1;
 }
 
 .text-primary-accent {
-  @apply text-[#0DB6E4];
+  @apply text-primary;
 }
 
 .text-secondary-accent {
@@ -236,6 +235,6 @@
 /* Enhanced button hover effects */
 .btn-modern-hover {
   @apply relative overflow-hidden z-10 transition-all duration-300;
-  @apply after:absolute after:inset-0 after:bg-gradient-to-r after:from-[#0DB6E4] after:to-[#FF7857] after:opacity-0 after:transition-opacity after:duration-300 after:z-[-1];
+  @apply after:absolute after:inset-0 after:bg-primary after:opacity-0 after:transition-opacity after:duration-300 after:z-[-1];
   @apply hover:after:opacity-100 hover:text-white;
 }

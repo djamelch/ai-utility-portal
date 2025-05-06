@@ -112,11 +112,11 @@ export function ToolCarousel({
                   glowEffect
                   badge={
                     tool.isNew ? (
-                      <span className="px-2 py-1 bg-[#FF7857] text-white text-xs rounded-full font-medium">
+                      <span className="px-2 py-1 bg-primary text-white text-xs rounded-full font-medium">
                         جديد
                       </span>
                     ) : tool.isVerified ? (
-                      <span className="px-2 py-1 bg-[#0DB6E4] text-white text-xs rounded-full font-medium">
+                      <span className="px-2 py-1 bg-primary/70 text-white text-xs rounded-full font-medium">
                         موثق
                       </span>
                     ) : null
@@ -132,8 +132,8 @@ export function ToolCarousel({
                       />
                       
                       {tool.rating && (
-                        <div className="flex items-center gap-1 bg-[#0DB6E4]/10 px-2 py-1 rounded-md">
-                          <Star size={16} className="text-[#0DB6E4] fill-[#0DB6E4]" />
+                        <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-md">
+                          <Star size={16} className="text-primary fill-primary" />
                           <span className="text-sm font-medium">{tool.rating}</span>
                         </div>
                       )}
@@ -153,7 +153,7 @@ export function ToolCarousel({
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="mt-auto w-full hover:bg-[#0DB6E4]/10 hover:text-[#0DB6E4] hover:border-[#0DB6E4]/30"
+                        className="mt-auto w-full hover:bg-primary/10 hover:text-primary hover:border-primary/30"
                       >
                         عرض الأداة
                       </Button>
@@ -170,7 +170,7 @@ export function ToolCarousel({
           onClick={prev}
           variant="outline"
           size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-[#0DB6E4]/10 hover:text-[#0DB6E4] hover:border-[#0DB6E4]/30"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary hover:border-primary/30"
         >
           <ChevronLeft size={20} />
         </Button>
@@ -179,7 +179,7 @@ export function ToolCarousel({
           onClick={next}
           variant="outline"
           size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-[#0DB6E4]/10 hover:text-[#0DB6E4] hover:border-[#0DB6E4]/30"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-primary/10 hover:text-primary hover:border-primary/30"
         >
           <ChevronRight size={20} />
         </Button>
@@ -193,8 +193,8 @@ export function ToolCarousel({
               className={cn(
                 "h-2 rounded-full transition-all duration-300",
                 Math.floor(currentIndex / visibleCount) === i
-                  ? "bg-[#0DB6E4] w-6"
-                  : "bg-[#0DB6E4]/30 w-2"
+                  ? "bg-primary w-6"
+                  : "bg-primary/30 w-2"
               )}
               aria-label={`Go to slide ${i + 1}`}
             />

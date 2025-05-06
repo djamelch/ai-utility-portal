@@ -53,16 +53,16 @@ export default {
           foreground: "hsl(var(--card-foreground))"
         },
         brand: {
-          50: "#e0f7fc",
-          100: "#b3eaf9",
-          200: "#80dcf5",
-          300: "#4dcdf1",
-          400: "#26c1ee",
-          500: "#0DB6E4",
-          600: "#0a9fd3",
-          700: "#0782b8",
-          800: "#05669e",
-          900: "#034f78",
+          50: "#e6f2ff",
+          100: "#cce5ff",
+          200: "#99cbff",
+          300: "#66b0ff",
+          400: "#3396ff",
+          500: "#0078FF", // New primary
+          600: "#0067db",
+          700: "#0056b7",
+          800: "#004593",
+          900: "#00346f",
         },
         coral: {
           50: "#fff2ee",
@@ -90,8 +90,8 @@ export default {
         glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
         card: "0 2px 10px rgba(0, 0, 0, 0.05)",
         "card-hover": "0 10px 30px rgba(0, 0, 0, 0.1)",
-        glow: "0 0 20px rgba(13, 182, 228, 0.4)", // Updated to cyan
-        "inner-glow": "inset 0 0 20px rgba(13, 182, 228, 0.2)" // Updated to cyan
+        glow: "0 0 20px rgba(0, 120, 255, 0.4)", // Updated to blue
+        "inner-glow": "inset 0 0 20px rgba(0, 120, 255, 0.2)" // Updated to blue
       },
       keyframes: {
         "accordion-down": {
