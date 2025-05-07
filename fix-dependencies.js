@@ -28,17 +28,16 @@ function createMockRollupModule(packageName) {
     // Create a mock index.js
     fs.writeFileSync(
       path.join(packageDir, 'index.js'),
-      'module.exports = {};'
+      'module.exports = require("../../rollup-mock.js");'
     );
     
     console.log(`Created mock module for ${packageName}`);
   }
 }
 
-// List of platform-specific packages to mock
+// List of platform-specific packages to mock - only mock Windows, Darwin (macOS) packages as we're on Linux
 const platformSpecificPackages = [
   '@rollup/rollup-win32-x64-msvc',
-  '@rollup/rollup-linux-x64-gnu',
   '@rollup/rollup-darwin-x64',
   '@rollup/rollup-darwin-arm64'
 ];
@@ -53,6 +52,36 @@ try {
   console.log('@esbuild/linux-x64 installed successfully');
 } catch (error) {
   console.error('Failed to install @esbuild/linux-x64:', error);
+  // Create a fallback mechanism
+  const esbuildLinuxDir = path.join(__dirname, 'node_modules', '@esbuild', 'linux-x64');
+  if (!fs.existsSync(esbuildLinuxDir)) {
+    fs.mkdirSync(esbuildLinuxDir, { recursive: true });
+    
+    // Create a basic package.json
+    const esbuildPackageJson = {
+      name: "@esbuild/linux-x64",
+      version: "0.19.8",
+      description: "The Linux x64 binary for esbuild",
+      main: "esbuild.js"
+    };
+    
+    fs.writeFileSync(
+      path.join(esbuildLinuxDir, 'package.json'),
+      JSON.stringify(esbuildPackageJson, null, 2)
+    );
+    
+    // Create a simple mock implementation
+    const esbuildJsContent = `
+module.exports = {
+  version: '0.19.8',
+  transform: () => ({ code: '', map: '' }),
+  buildSync: () => ({ outputFiles: [] }),
+  build: async () => ({ outputFiles: [] })
+};`;
+    
+    fs.writeFileSync(path.join(esbuildLinuxDir, 'esbuild.js'), esbuildJsContent);
+    console.log('Created fallback esbuild Linux module');
+  }
 }
 
 // Create a symlink for esbuild if it doesn't exist

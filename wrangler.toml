@@ -9,14 +9,14 @@ API_VERSION = "1.0.0"
 ENVIRONMENT = "production"
 
 [build]
-command = "npm run build"
+command = "node fix-dependencies.js && npm run build"
 watch_dir = "src"
 
 # Explicitly set the Pages build output directory
 [site]
 bucket = "dist"
 
-# Configure Pages build output directory
+# Pages configuration
 [build.upload]
 format = "directory"
 dir = "dist"
@@ -24,3 +24,7 @@ dir = "dist"
 # Observability configuration
 [observability.logs]
 enabled = true
+
+# Pages specific configuration
+[pages_build_output_dir]
+value = "dist"

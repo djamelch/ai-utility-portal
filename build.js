@@ -9,6 +9,10 @@ try {
   console.log('Fixing dependencies...');
   execSync('node fix-dependencies.js', { stdio: 'inherit' });
   
+  // Install esbuild for Linux directly
+  console.log('Installing esbuild for Linux...');
+  execSync('npm install @esbuild/linux-x64 --no-save --force', { stdio: 'inherit' });
+  
   // Then run the Vite build command
   console.log('Building the application...');
   execSync('npx vite build', { stdio: 'inherit' });

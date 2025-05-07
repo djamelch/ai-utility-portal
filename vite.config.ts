@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from '@vitejs/plugin-react';
 import path from "path";
@@ -29,7 +30,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
 
   plugins: [
     react(),
-    mode === 'development' && componentTagger(),
+    // Removed the undefined componentTagger function
   ].filter(Boolean),
 
   resolve: {
