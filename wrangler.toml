@@ -16,15 +16,9 @@ watch_dir = "src"
 [site]
 bucket = "dist"
 
-# Pages configuration
-[build.upload]
-format = "directory"
-dir = "dist"
-
 # Observability configuration
 [observability.logs]
 enabled = true
 
-# Pages specific configuration
-[pages_build_output_dir]
-value = "dist"
+# Pages specific configuration - fixing the structure
+pages_build_output_dir = "dist"
