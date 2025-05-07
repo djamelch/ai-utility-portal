@@ -2,8 +2,9 @@
 // Cloudflare Pages specific configuration
 export const config = {
   nodeVersion: '20',
-  buildCommand: 'node patch-rollup-native.js && node build.js',
+  buildCommand: 'node pre-install.js && node patch-rollup-native.js && node build.js',
   buildOutputDirectory: 'dist',
   compatibility_flags: ["nodejs_compat"],
-  skipInstall: false
+  skipInstall: false,
+  installCommand: 'node pre-install.js && npm install --no-optional'
 };

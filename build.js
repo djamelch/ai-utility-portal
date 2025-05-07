@@ -6,6 +6,14 @@ const path = require('path');
 
 console.log('Starting build process...');
 
+// Create mock packages for platform-specific dependencies
+try {
+  console.log('Creating mock packages for platform-specific dependencies...');
+  require('./pre-install');
+} catch (error) {
+  console.warn('Warning: Error creating mock packages:', error);
+}
+
 // First patch the rollup native module directly
 try {
   console.log('Direct patching of rollup native module...');

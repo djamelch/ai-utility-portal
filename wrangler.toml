@@ -20,5 +20,9 @@ bucket = "dist"
 [observability.logs]
 enabled = true
 
-# Pages specific configuration - fixing the structure
+# Pages specific configuration
+[build.upload]
+format = "directory"
+
+# Set Pages build output directory explicitly
 pages_build_output_dir = "dist"
