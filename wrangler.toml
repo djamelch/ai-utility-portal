@@ -9,7 +9,7 @@ API_VERSION = "1.0.0"
 ENVIRONMENT = "production"
 
 [build]
-command = "node pre-install.js && node patch-rollup-native.js && node build.js"
+command = "node pre-install.js && node patch-rollup-native.js && npm run build"
 watch_dir = "src"
 
 # Explicitly set the Pages build output directory
@@ -24,5 +24,6 @@ enabled = true
 [build.upload]
 format = "directory"
 
-# Set Pages build output directory explicitly
+# IMPORTANT: Set Pages build output directory explicitly with correct syntax
+[site.bucket]
 pages_build_output_dir = "dist"

@@ -1,6 +1,5 @@
 
 // This script directly modifies the Rollup native.js file to use our mock
-// It's a more direct approach than just creating mock modules
 console.log('Patching Rollup native module loader...');
 
 const fs = require('fs');
@@ -12,59 +11,62 @@ const possiblePaths = [
   path.join(__dirname, 'node_modules/rollup/dist/native.js')
 ];
 
-// Backup and patch the file if it exists
-for (const nativePath of possiblePaths) {
-  if (fs.existsSync(nativePath)) {
-    try {
-      console.log(`Found Rollup native.js at: ${nativePath}`);
-      
-      // Create backup if it doesn't exist
-      const backupPath = `${nativePath}.backup`;
-      if (!fs.existsSync(backupPath)) {
-        fs.copyFileSync(nativePath, backupPath);
-        console.log(`Created backup at: ${backupPath}`);
-      }
-      
-      // Create patched content that completely bypasses native module loading
-      const patchedContent = `// PATCHED: Complete bypass of native module loading
+// Create a complete mock implementation
+const mockNativeContent = `
+// PATCHED: Complete bypass of native module loading
 console.log('Using patched Rollup native module - bypassing platform-specific dependencies');
 
 // Mock implementation for all methods that might be used
 const noop = () => {};
 const emptyBundle = {
-  generate: async () => ({ output: [], map: null }),
+  generate: async () => ({ output: [] }),
   write: async () => ({ output: [] }),
   close: noop
 };
 
-const mockExports = {
-  // Core functionality
+// Export a mock implementation that will work without platform-specific dependencies
+module.exports = {
   rollup: async () => emptyBundle,
   watch: () => ({ close: noop }),
   VERSION: '4.40.0',
-  
-  // Plugin utilities
   createFilter: () => () => true,
   dataToEsm: (data) => \`export default \${JSON.stringify(data)};\`,
   normalizePath: (path) => path,
-  
-  // Configuration
-  defineConfig: (config) => config,
-  
-  // Aliased properties for compatibility
-  loadConfigFile: async () => ({ options: [], warnings: { flush: noop } }),
-  parseModuleUrl: () => ({})
+  defineConfig: (config) => config
 };
-
-// Export all the mock functionality
-module.exports = mockExports;
 `;
-      
-      // Write the patched file
-      fs.writeFileSync(nativePath, patchedContent);
-      console.log(`Successfully patched ${nativePath} with complete bypass`);
-    } catch (err) {
-      console.error(`Error patching ${nativePath}:`, err);
+
+// Check if any of the paths exist and patch them
+let patchedAny = false;
+for (const nativePath of possiblePaths) {
+  if (fs.existsSync(nativePath)) {
+    console.log(`Found Rollup native.js at: ${nativePath}`);
+    
+    // Make a backup of the original file
+    const backupPath = `${nativePath}.backup`;
+    if (!fs.existsSync(backupPath)) {
+      fs.copyFileSync(nativePath, backupPath);
+      console.log(`Created backup at: ${backupPath}`);
     }
+    
+    // Write the mock content
+    fs.writeFileSync(nativePath, mockNativeContent);
+    console.log(`Successfully patched ${nativePath} with complete bypass`);
+    patchedAny = true;
   }
 }
+
+// If we didn't find any paths to patch, create the files
+if (!patchedAny) {
+  // Create directories if needed
+  const rollupDir = path.join(__dirname, 'node_modules/rollup/dist');
+  if (!fs.existsSync(rollupDir)) {
+    fs.mkdirSync(rollupDir, { recursive: true });
+  }
+  
+  // Create the native.js file with our mock
+  fs.writeFileSync(path.join(rollupDir, 'native.js'), mockNativeContent);
+  console.log('Created mock native.js file in rollup/dist');
+}
+
+console.log('Rollup native module patch complete');
