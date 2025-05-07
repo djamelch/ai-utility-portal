@@ -6,6 +6,11 @@ const path = require('path');
 
 console.log('Starting build process...');
 
+// Set up environment variables to bypass platform checks
+process.env.npm_config_platform_check = 'false';
+process.env.npm_config_force = 'true';
+process.env.ROLLUP_SKIP_NATIVE = 'true';
+
 // Run pre-install to set up mock dependencies
 try {
   console.log('Running pre-install script...');
@@ -29,9 +34,15 @@ try {
   
   try {
     // Run the build command with increased memory limit
-    execSync('NODE_OPTIONS="--max-old-space-size=4096" npx vite build', { 
+    execSync('NODE_OPTIONS="--max-old-space-size=4096" ROLLUP_SKIP_NATIVE=true npm run build', { 
       stdio: 'inherit',
-      env: { ...process.env, NODE_ENV: 'production' }
+      env: { 
+        ...process.env, 
+        NODE_ENV: 'production',
+        ROLLUP_SKIP_NATIVE: 'true',
+        npm_config_platform_check: 'false',
+        npm_config_force: 'true'
+      }
     });
     console.log('Build completed successfully');
   } catch (buildError) {
@@ -78,6 +89,19 @@ try {
     
     if (!fs.existsSync(path.join(distDir, '_headers'))) {
       fs.writeFileSync(path.join(distDir, '_headers'), headersContent);
+    }
+    
+    // Copy any worker.js for Cloudflare if it exists
+    try {
+      const workerSourcePath = path.join(__dirname, 'src', 'worker.js');
+      const workerDestPath = path.join(distDir, 'worker.js');
+      
+      if (fs.existsSync(workerSourcePath)) {
+        fs.copyFileSync(workerSourcePath, workerDestPath);
+        console.log('Copied worker.js to dist');
+      }
+    } catch (err) {
+      console.warn('Could not copy worker.js:', err);
     }
     
     console.log('Fallback build created');

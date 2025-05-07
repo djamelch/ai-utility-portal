@@ -16,6 +16,9 @@ watch_dir = "src"
 [site]
 bucket = "dist"
 
+# IMPORTANT: Set Pages build output directory for Cloudflare Pages
+pages_build_output_dir = "dist"
+
 # Observability configuration
 [observability.logs]
 enabled = true
@@ -23,7 +26,3 @@ enabled = true
 # Pages specific configuration
 [build.upload]
 format = "directory"
-
-# IMPORTANT: Set Pages build output directory explicitly with correct syntax
-[site.bucket]
-pages_build_output_dir = "dist"

@@ -6,5 +6,5 @@ export const config = {
   buildOutputDirectory: 'dist',
   compatibility_flags: ["nodejs_compat"],
   skipInstall: false,
-  installCommand: 'node pre-install.js && npm install --no-optional --no-fund --ignore-scripts=false'
+  installCommand: 'node pre-install.js && npm install --no-optional --no-fund --ignore-scripts=false --force'
 };
