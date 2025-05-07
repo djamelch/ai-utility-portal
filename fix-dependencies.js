@@ -35,6 +35,45 @@ function createMockRollupModule(packageName) {
   }
 }
 
+// Create mock for lovable-tagger if it fails to install
+function createMockLovableTagger() {
+  const packageDir = path.join(__dirname, 'node_modules', 'lovable-tagger');
+  
+  if (!fs.existsSync(packageDir)) {
+    fs.mkdirSync(packageDir, { recursive: true });
+    
+    // Create a package.json
+    const packageJson = {
+      name: "lovable-tagger",
+      version: "0.1.0",
+      main: "index.js"
+    };
+    
+    fs.writeFileSync(
+      path.join(packageDir, 'package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
+    
+    // Create a mock index.js with componentTagger function
+    const indexContent = `
+module.exports = {
+  componentTagger: function() {
+    return {
+      name: 'lovable-tagger-mock',
+      transform: function(code) { return { code, map: null }; }
+    };
+  }
+};`;
+    
+    fs.writeFileSync(
+      path.join(packageDir, 'index.js'),
+      indexContent
+    );
+    
+    console.log('Created mock lovable-tagger module');
+  }
+}
+
 // List of platform-specific packages to mock - only mock Windows, Darwin (macOS) packages as we're on Linux
 const platformSpecificPackages = [
   '@rollup/rollup-win32-x64-msvc',
@@ -44,6 +83,9 @@ const platformSpecificPackages = [
 
 // Create mock modules for each platform-specific package
 platformSpecificPackages.forEach(createMockRollupModule);
+
+// Create mock for lovable-tagger
+createMockLovableTagger();
 
 // Install esbuild Linux x64 package directly
 try {

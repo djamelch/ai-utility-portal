@@ -18,6 +18,19 @@ try {
   };
 }
 
+// Try to load the componentTagger or use a no-op function
+let componentTagger;
+try {
+  const lovableTagger = require('lovable-tagger');
+  componentTagger = lovableTagger.componentTagger;
+} catch (e) {
+  console.warn('Could not load lovable-tagger, using no-op implementation');
+  componentTagger = () => ({
+    name: 'lovable-tagger-mock',
+    transform: (code) => ({ code, map: null })
+  });
+}
+
 export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   base: "./",
   server: {
@@ -30,7 +43,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
 
   plugins: [
     react(),
-    // Removed the undefined componentTagger function
+    componentTagger()
   ].filter(Boolean),
 
   resolve: {
