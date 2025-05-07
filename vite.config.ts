@@ -36,15 +36,12 @@ function mockRollupNativePlugin(): Plugin {
   return {
     name: 'mock-rollup-native',
     configResolved(config: any) {
-      // Run our fix-dependencies script early
+      // Run our patch script early
       try {
-        console.log('Running fix-dependencies script from vite config...');
-        require('./fix-dependencies');
-        
-        // Also try to patch the rollup native module directly
-        require('./install-rollup-patch');
+        console.log('Patching rollup native module from vite config...');
+        require('./patch-rollup-native');
       } catch (err) {
-        console.warn('Could not run dependency scripts:', err);
+        console.warn('Could not patch rollup native module:', err);
       }
     }
   };

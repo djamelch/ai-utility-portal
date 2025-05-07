@@ -18,6 +18,16 @@ const emptyOutput = {
   assetFileName: ''
 };
 
+// Create empty config object
+const emptyConfig = {
+  input: '',
+  output: {
+    file: '',
+    format: 'es'
+  },
+  plugins: []
+};
+
 // Mock object with all required methods
 const rollupMock = {
   // Core rollup methods
@@ -35,7 +45,7 @@ const rollupMock = {
   
   // Required by rollup internals
   loadAndParseConfigFile: async () => ({
-    options: [],
+    options: [emptyConfig],
     warnings: { flush: noop }
   }),
   
@@ -50,18 +60,18 @@ const rollupMock = {
     add: noop,
     remove: noop
   }),
-  defineConfig: config => config,
+  defineConfig: (config) => config,
   
   // Add more common rollup methods
-  normalizePath: path => path,
+  normalizePath: (path) => path,
   createFilter: () => () => true,
-  dataToEsm: data => `export default ${JSON.stringify(data)};`,
+  dataToEsm: (data) => `export default ${JSON.stringify(data)};`,
   
   // Plugin helpers
   pluginUtils: {
     createFilter: () => () => true,
-    normalizePath: path => path,
-    dataToEsm: data => `export default ${JSON.stringify(data)};`
+    normalizePath: (path) => path,
+    dataToEsm: (data) => `export default ${JSON.stringify(data)};`
   }
 };
 

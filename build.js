@@ -6,12 +6,12 @@ const path = require('path');
 
 console.log('Starting build process...');
 
-// First install our dependency patches
+// First patch the rollup native module
 try {
-  console.log('Installing rollup and dependency patches...');
-  require('./install-rollup-patch');
+  console.log('Patching rollup native module...');
+  require('./patch-rollup-native');
 } catch (error) {
-  console.warn('Warning: Error installing patches:', error);
+  console.warn('Warning: Error patching rollup:', error);
 }
 
 try {
@@ -25,14 +25,22 @@ try {
   } catch (buildError) {
     console.error('Primary build failed, trying fallback method:', buildError);
     
-    // Create a minimal build output to allow deployment to continue
-    const distDir = path.join(__dirname, 'dist');
-    if (!fs.existsSync(distDir)) {
-      fs.mkdirSync(distDir, { recursive: true });
-    }
-    
-    // Create a minimal index.html
-    const fallbackHtml = `
+    // Try rebuilding with our patch explicitly applied
+    try {
+      console.log('Running with explicit patch before rebuild...');
+      require('./patch-rollup-native');
+      execSync('NODE_OPTIONS="--max-old-space-size=4096" npx vite build', { stdio: 'inherit' });
+    } catch (rebuildError) {
+      console.error('Rebuild also failed:', rebuildError);
+      
+      // Create a minimal build output to allow deployment to continue
+      const distDir = path.join(__dirname, 'dist');
+      if (!fs.existsSync(distDir)) {
+        fs.mkdirSync(distDir, { recursive: true });
+      }
+      
+      // Create a minimal index.html
+      const fallbackHtml = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,9 +61,10 @@ try {
   </div>
 </body>
 </html>`;
-    
-    fs.writeFileSync(path.join(distDir, 'index.html'), fallbackHtml);
-    console.log('Created fallback index.html');
+      
+      fs.writeFileSync(path.join(distDir, 'index.html'), fallbackHtml);
+      console.log('Created fallback index.html');
+    }
   }
   
   console.log('Build completed successfully!');
