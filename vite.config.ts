@@ -2,7 +2,7 @@
 import { defineConfig } from "vite";
 import react from '@vitejs/plugin-react';
 import path from "path";
-import type { ConfigEnv, UserConfig } from 'vite';
+import type { ConfigEnv, UserConfig, Plugin } from 'vite';
 
 // Mock esbuild if it fails to load
 let esbuild;
@@ -32,16 +32,19 @@ try {
 }
 
 // Define a custom plugin to handle rollup native module failures
-function mockRollupNativePlugin() {
+function mockRollupNativePlugin(): Plugin {
   return {
     name: 'mock-rollup-native',
-    configResolved(config) {
+    configResolved(config: any) {
       // Run our fix-dependencies script early
       try {
         console.log('Running fix-dependencies script from vite config...');
         require('./fix-dependencies');
+        
+        // Also try to patch the rollup native module directly
+        require('./install-rollup-patch');
       } catch (err) {
-        console.warn('Could not run fix-dependencies script:', err);
+        console.warn('Could not run dependency scripts:', err);
       }
     }
   };
