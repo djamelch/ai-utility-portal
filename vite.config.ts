@@ -66,13 +66,11 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Mock platform-specific rollup dependencies with a single mock file
-      "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./rollup-mock.js"),
-      "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./rollup-mock.js"),
-      "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./rollup-mock.js"),
-      "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./rollup-mock.js"),
-      // Alias for esbuild
-      "esbuild": path.resolve(__dirname, "node_modules/esbuild/lib/esbuild.js"),
+      // Mock platform-specific rollup dependencies
+      "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./patch-rollup-native.js"),
+      "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./patch-rollup-native.js"),
+      "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./patch-rollup-native.js"),
+      "@rollup/rollup-darwin-arm64": path.resolve(__dirname, "./patch-rollup-native.js"),
     },
     dedupe: ['react', 'react-dom']
   },
