@@ -5,24 +5,41 @@ console.log('Using rollup mock for platform-specific dependencies');
 // Create a mock that provides the minimum functionality needed
 const noop = () => {};
 
+// Create minimal output objects
+const emptyOutput = { 
+  output: [],
+  code: '',
+  map: null,
+  content: null,
+  modules: {},
+  chunks: [],
+  assets: {}
+};
+
 // Mock object with all required methods
 const rollupMock = {
   createBundle: () => ({
-    generate: async () => ({ output: [] }),
-    write: async () => ({ output: [] }),
+    generate: async () => emptyOutput,
+    write: async () => emptyOutput,
     close: noop
   }),
   rollup: async () => ({
-    generate: async () => ({ output: [] }),
-    write: async () => ({ output: [] }),
+    generate: async () => emptyOutput,
+    write: async () => emptyOutput,
     close: noop
+  }),
+  // Required by rollup internals
+  loadAndParseConfigFile: async () => ({
+    options: [],
+    warnings: { flush: noop }
   }),
   parseModuleUrl: () => ({}),
   VERSION: '4.40.0',
   watch: () => ({ 
     close: noop,
     on: noop,
-    off: noop
+    off: noop,
+    emit: noop
   }),
   defineConfig: config => config,
   

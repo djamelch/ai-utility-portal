@@ -74,15 +74,49 @@ module.exports = {
   }
 }
 
-// List of platform-specific packages to mock - only mock Windows, Darwin (macOS) packages as we're on Linux
+// Handle rollup binary directly
+function createDirectRollupMock() {
+  // Create a direct mock for the rollup binary that's causing problems
+  const rollupDir = path.join(__dirname, 'node_modules', '@rollup', 'rollup-linux-x64-gnu');
+  
+  if (!fs.existsSync(rollupDir)) {
+    fs.mkdirSync(rollupDir, { recursive: true });
+    
+    // Create package.json
+    const packageJson = {
+      name: "@rollup/rollup-linux-x64-gnu",
+      version: "0.0.0",
+      main: "index.js"
+    };
+    
+    fs.writeFileSync(
+      path.join(rollupDir, 'package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
+    
+    // Create a direct mock implementation
+    fs.writeFileSync(
+      path.join(rollupDir, 'index.js'),
+      'module.exports = require("../../rollup-mock.js");'
+    );
+    
+    console.log('Created direct mock for @rollup/rollup-linux-x64-gnu');
+  }
+}
+
+// List of platform-specific packages to mock
 const platformSpecificPackages = [
   '@rollup/rollup-win32-x64-msvc',
+  '@rollup/rollup-linux-x64-gnu',
   '@rollup/rollup-darwin-x64',
   '@rollup/rollup-darwin-arm64'
 ];
 
 // Create mock modules for each platform-specific package
 platformSpecificPackages.forEach(createMockRollupModule);
+
+// Create direct rollup mock
+createDirectRollupMock();
 
 // Create mock for lovable-tagger
 createMockLovableTagger();

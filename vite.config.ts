@@ -27,7 +27,7 @@ try {
   console.warn('Could not load lovable-tagger, using no-op implementation');
   componentTagger = () => ({
     name: 'lovable-tagger-mock',
-    transform: (code) => ({ code, map: null })
+    transform: (code: string) => ({ code, map: null })
   });
 }
 
@@ -49,7 +49,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Mock platform-specific rollup dependencies
+      // Mock platform-specific rollup dependencies with a single mock file
       "@rollup/rollup-win32-x64-msvc": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-linux-x64-gnu": path.resolve(__dirname, "./rollup-mock.js"),
       "@rollup/rollup-darwin-x64": path.resolve(__dirname, "./rollup-mock.js"),
