@@ -9,7 +9,7 @@ API_VERSION = "1.0.0"
 ENVIRONMENT = "production"
 
 [build]
-command = "node patch-rollup-native.js && node build.js"
+command = "node pre-install.js && node patch-rollup-native.js && node build.js"
 watch_dir = "src"
 
 # Explicitly set the Pages build output directory
