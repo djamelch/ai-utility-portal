@@ -31,6 +31,22 @@ try {
   });
 }
 
+// Define a custom plugin to handle rollup native module failures
+function mockRollupNativePlugin() {
+  return {
+    name: 'mock-rollup-native',
+    configResolved(config) {
+      // Run our fix-dependencies script early
+      try {
+        console.log('Running fix-dependencies script from vite config...');
+        require('./fix-dependencies');
+      } catch (err) {
+        console.warn('Could not run fix-dependencies script:', err);
+      }
+    }
+  };
+}
+
 export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   base: "./",
   server: {
@@ -42,6 +58,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   },
 
   plugins: [
+    mockRollupNativePlugin(),
     react(),
     componentTagger()
   ].filter(Boolean),

@@ -74,33 +74,63 @@ module.exports = {
   }
 }
 
-// Handle rollup binary directly
-function createDirectRollupMock() {
-  // Create a direct mock for the rollup binary that's causing problems
-  const rollupDir = path.join(__dirname, 'node_modules', '@rollup', 'rollup-linux-x64-gnu');
+// Create a more direct, reliable mock for the Linux rollup binary
+function createDirectLinuxRollupMock() {
+  // Create paths for both potential locations
+  const paths = [
+    // Direct path for the module
+    path.join(__dirname, 'node_modules', '@rollup', 'rollup-linux-x64-gnu'),
+    // Path that might be used inside vite's node_modules
+    path.join(__dirname, 'node_modules', 'vite', 'node_modules', '@rollup', 'rollup-linux-x64-gnu')
+  ];
   
-  if (!fs.existsSync(rollupDir)) {
-    fs.mkdirSync(rollupDir, { recursive: true });
+  // Create the mock in both possible locations for maximum compatibility
+  paths.forEach(rollupDir => {
+    if (!fs.existsSync(rollupDir)) {
+      fs.mkdirSync(rollupDir, { recursive: true });
+      
+      // Create package.json
+      const packageJson = {
+        name: "@rollup/rollup-linux-x64-gnu",
+        version: "4.40.0",  // Match rollup's version
+        main: "index.js"
+      };
+      
+      fs.writeFileSync(
+        path.join(rollupDir, 'package.json'),
+        JSON.stringify(packageJson, null, 2)
+      );
+      
+      // Create the index.js that points to our mock
+      const indexContent = `
+// Mock implementation for @rollup/rollup-linux-x64-gnu
+try {
+  module.exports = require("${path.relative(rollupDir, path.join(__dirname, 'rollup-mock.js'))}");
+} catch (e) {
+  // Fallback to absolute path if relative path fails
+  module.exports = require("${path.join(__dirname, 'rollup-mock.js')}");
+}
+`;
+      
+      fs.writeFileSync(path.join(rollupDir, 'index.js'), indexContent);
+      console.log(`Created direct rollup mock at ${rollupDir}`);
+    }
+  });
+  
+  // Also try to hook into Node's require system by creating a symbolic link in node_modules
+  try {
+    const nodeModulesDir = path.join(__dirname, 'node_modules');
+    const rollupModuleDir = path.join(nodeModulesDir, '@rollup', 'rollup-linux-x64-gnu');
     
-    // Create package.json
-    const packageJson = {
-      name: "@rollup/rollup-linux-x64-gnu",
-      version: "0.0.0",
-      main: "index.js"
-    };
-    
-    fs.writeFileSync(
-      path.join(rollupDir, 'package.json'),
-      JSON.stringify(packageJson, null, 2)
-    );
-    
-    // Create a direct mock implementation
-    fs.writeFileSync(
-      path.join(rollupDir, 'index.js'),
-      'module.exports = require("../../rollup-mock.js");'
-    );
-    
-    console.log('Created direct mock for @rollup/rollup-linux-x64-gnu');
+    // Create .node file to match Node's binary expectations
+    const nodeFilePath = path.join(rollupModuleDir, 'rollup.node');
+    if (!fs.existsSync(nodeFilePath)) {
+      // Create an empty binary file as a placeholder
+      fs.writeFileSync(nodeFilePath, '');
+      console.log('Created placeholder rollup.node file');
+    }
+  } catch (error) {
+    console.warn('Warning: Could not create .node file:', error.message);
   }
 }
 
@@ -115,8 +145,8 @@ const platformSpecificPackages = [
 // Create mock modules for each platform-specific package
 platformSpecificPackages.forEach(createMockRollupModule);
 
-// Create direct rollup mock
-createDirectRollupMock();
+// Create more direct mock for Linux Rollup
+createDirectLinuxRollupMock();
 
 // Create mock for lovable-tagger
 createMockLovableTagger();
