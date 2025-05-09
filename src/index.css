@@ -16,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
 
-    /* Simplified to a single blue shade */
-    --primary: 210 100% 50%;  /* #0078FF - Clean Blue */
+    /* Hostinger blue */
+    --primary: 233 93% 57%;  /* #2F5FEC - Hostinger blue */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 220 14% 96%;
@@ -26,8 +26,8 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 8.9% 46.1%;
 
-    /* Removed accent color */
-    --accent: 210 100% 50%;  /* Same as primary for simplicity */
+    /* Hostinger purple accent */
+    --accent: 250 95% 76%;  /* #9D8DF9 - Hostinger purple */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -35,7 +35,7 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 210 100% 50%; /* Match primary */
+    --ring: 233 93% 57%; /* Match primary */
 
     --radius: 0.75rem;
   }
@@ -50,8 +50,8 @@
     --popover: 224 71% 4%;
     --popover-foreground: 213 31% 91%;
 
-    /* Simplified to a single blue shade */
-    --primary: 210 100% 50%;  /* #0078FF - Clean Blue */
+    /* Hostinger blue in dark mode */
+    --primary: 233 93% 66%;  /* #4D74F1 - Brighter for dark mode */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 222.2 47.4% 11.2%;
@@ -60,8 +60,8 @@
     --muted: 223 47% 11%;
     --muted-foreground: 215.4 16.3% 56.9%;
 
-    /* Removed accent color */
-    --accent: 210 100% 50%;  /* Same as primary for simplicity */
+    /* Hostinger purple accent in dark mode */
+    --accent: 250 95% 80%;  /* #AEA2FA - Brighter for dark mode */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -69,7 +69,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 210 100% 50%; /* Match primary */
+    --ring: 233 93% 66%; /* Match primary */
   }
 }
 
@@ -107,7 +107,7 @@
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
   
   .section-padding {
@@ -126,7 +126,7 @@
     @apply relative after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full;
   }
 
-  /* Modern tool card styling - Simplified colors */
+  /* Modern tool card styling - Updated for Hostinger colors */
   .tool-card {
     @apply bg-gradient-to-br from-white to-white/90 dark:from-background/60 dark:to-background/40 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
     @apply backdrop-blur-md border border-white/10 dark:border-white/5;
@@ -147,13 +147,13 @@
     @apply opacity-100;
   }
   
-  /* Enhanced filters area - Simplified styling */
+  /* Enhanced filters area - Updated colors */
   .filters-area {
     @apply rounded-xl bg-secondary/50 dark:bg-secondary/20 backdrop-blur-md border border-secondary p-4;
     @apply shadow-sm hover:shadow-md transition-all duration-300;
   }
   
-  /* Enhanced filter pills - Updated colors */
+  /* Enhanced filter pills - Updated Hostinger colors */
   .filter-pill {
     @apply px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300;
     @apply bg-primary/10 text-primary hover:bg-primary/20;
@@ -165,6 +165,34 @@
     @apply rounded-lg border border-border/60 bg-background/80 backdrop-blur-sm;
     @apply focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/40;
     @apply transition-all duration-300;
+  }
+
+  /* Section dividers inspired by Hostinger */
+  .wave-divider {
+    @apply w-full h-24 md:h-32 bg-cover bg-center bg-no-repeat overflow-hidden pointer-events-none;
+    mask-image: url("data:image/svg+xml,%3Csvg width='1200' height='120' viewBox='0 0 1200 120' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 120L50 103.3C100 86.7 200 53.3 300 46.7C400 40 500 60 600 66.7C700 73.3 800 66.7 900 53.3C1000 40 1100 20 1150 10L1200 0V120H1150C1100 120 1000 120 900 120C800 120 700 120 600 120C500 120 400 120 300 120C200 120 100 120 50 120H0Z' fill='black'/%3E%3C/svg%3E");
+  }
+  
+  .wave-divider-down {
+    @apply w-full h-24 md:h-32 bg-cover bg-center bg-no-repeat overflow-hidden pointer-events-none;
+    mask-image: url("data:image/svg+xml,%3Csvg width='1200' height='120' viewBox='0 0 1200 120' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0L50 16.7C100 33.3 200 66.7 300 73.3C400 80 500 60 600 53.3C700 46.7 800 53.3 900 66.7C1000 80 1100 100 1150 110L1200 120V0H1150C1100 0 1000 0 900 0C800 0 700 0 600 0C500 0 400 0 300 0C200 0 100 0 50 0H0Z' fill='black'/%3E%3C/svg%3E");
+  }
+  
+  .curved-divider {
+    @apply w-full h-16 md:h-24 bg-cover bg-center bg-no-repeat overflow-hidden pointer-events-none;
+    mask-image: url("data:image/svg+xml,%3Csvg width='1440' height='74' viewBox='0 0 1440 74' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 74L60 66.3C120 58.7 240 43.3 360 38.7C480 34 600 40 720 48.3C840 56.7 960 67.3 1080 67.3C1200 67.3 1320 56.7 1380 51.3L1440 46V0H1380C1320 0 1200 0 1080 0C960 0 840 0 720 0C600 0 480 0 360 0C240 0 120 0 60 0H0V74Z' fill='%23000000'/%3E%3C/svg%3E");
+  }
+
+  /* Hostinger-inspired section backgrounds */
+  .hostinger-bg-gradient {
+    @apply bg-gradient-to-br from-primary/5 to-accent/5;
+  }
+  
+  .hostinger-pattern {
+    background-color: hsla(0, 0%, 100%, 1);
+    background-image: 
+      radial-gradient(at 76% 0%, hsla(var(--primary), 0.05) 0px, transparent 50%),
+      radial-gradient(at 1% 100%, hsla(var(--accent), 0.05) 0px, transparent 50%);
   }
 }
 
@@ -212,17 +240,17 @@
   }
 }
 
-/* Add these new modern color utility classes - Simplified */
+/* Add these new modern color utility classes - Updated for Hostinger */
 .bg-modern-gradient {
-  @apply bg-gradient-to-r from-primary to-primary/70;
+  @apply bg-gradient-to-r from-primary to-accent;
 }
 
 .bg-modern-gradient-subtle {
-  @apply bg-gradient-to-r from-primary/10 to-primary/5;
+  @apply bg-gradient-to-r from-primary/10 to-accent/5;
 }
 
 .border-modern-gradient {
-  border-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary)/70%)) 1;
+  border-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent))) 1;
 }
 
 .text-primary-accent {
@@ -230,7 +258,7 @@
 }
 
 .text-secondary-accent {
-  @apply text-[#FF7857];
+  @apply text-accent;
 }
 
 /* Enhanced button hover effects */

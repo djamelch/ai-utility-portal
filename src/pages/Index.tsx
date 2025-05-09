@@ -74,9 +74,9 @@ const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SEOHead 
-        title="AI Tools Directory - Find and Compare the Best AI Tools"
-        description="Discover the best AI tools for productivity, creativity, and business. Our comprehensive directory helps you find and compare the perfect AI solutions for your needs."
-        keywords="AI tools, artificial intelligence, machine learning tools, productivity tools, AI directory, top AI tools"
+        title="دليل أدوات الذكاء الاصطناعي - اكتشف وقارن بين أفضل أدوات الذكاء الاصطناعي"
+        description="اكتشف أفضل أدوات الذكاء الاصطناعي للإنتاجية والإبداع والأعمال. يساعدك دليلنا الشامل في العثور ومقارنة حلول الذكاء الاصطناعي المثالية لاحتياجاتك."
+        keywords="أدوات الذكاء الاصطناعي، الذكاء الاصطناعي، أدوات التعلم الآلي، أدوات الإنتاجية، دليل الذكاء الاصطناعي، أفضل أدوات الذكاء الاصطناعي"
         canonicalUrl="/"
         schemaData={generateHomeSchema()}
       />
@@ -86,87 +86,102 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* Featured Tools Section - With subtle gradient */}
-        <ToolsSection 
-          title="Featured Tools" 
-          description="Discover our handpicked selection of the best AI tools"
-          queryType="featured"
-          limit={sectionLimits.featured}
-          variant="primary"
-        />
+        {/* Featured Tools Section - With Hostinger style divider */}
+        <div className="relative">
+          <div className="wave-divider-down hostinger-bg-gradient absolute top-0 left-0 right-0 z-10"></div>
+          <div className="pt-16 hostinger-pattern">
+            <ToolsSection 
+              title="أدوات مميزة" 
+              description="اكتشف مجموعتنا المختارة بعناية من أفضل أدوات الذكاء الاصطناعي"
+              queryType="featured"
+              limit={sectionLimits.featured}
+              variant="primary"
+            />
+          </div>
+        </div>
         
         {/* Top Rated Tools Section */}
-        <ToolsSection 
-          title="Top Rated Tools" 
-          description="Explore the highest rated AI tools by our community"
-          queryType="top-rated"
-          limit={sectionLimits.topRated}
-          variant="secondary"
-        />
+        <div className="relative">
+          <div className="curved-divider bg-white dark:bg-background absolute top-0 left-0 right-0 z-10"></div>
+          <div className="pt-12 bg-modern-gradient-subtle">
+            <ToolsSection 
+              title="الأدوات الأعلى تقييماً" 
+              description="استكشف أدوات الذكاء الاصطناعي الأعلى تقييماً من قبل مجتمعنا"
+              queryType="top-rated"
+              limit={sectionLimits.topRated}
+              variant="secondary"
+            />
+          </div>
+        </div>
         
         {/* Recently Added Tools Section */}
-        <ToolsSection 
-          title="Recently Added Tools" 
-          description="Check out the latest AI tools added to our collection"
-          queryType="recent"
-          limit={sectionLimits.recent}
-          variant="accent"
-        />
-        
-        {/* Feature Section - Moved to bottom before CTA */}
-        <GradientBackground variant="subtle" className="py-12 md:py-16" intensity="light">
-          <FeatureSection />
-        </GradientBackground>
-        
-        {/* CTA Section */}
-        <GradientBackground variant="primary" className="py-12 md:py-16" intensity="medium">
-          <div className="container-tight">
-            <MotionWrapper animation="fadeIn">
-              <GlassCard 
-                className="bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 p-6 md:p-10 text-center"
-                glowEffect
-                hoverEffect
-              >
-                <div className="relative mb-5">
-                  <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-primary via-accent to-primary rounded-full"></div>
-                  <Sparkles size={36} className="mx-auto text-primary" />
-                </div>
-                
-                <h2 className="text-xl sm:text-2xl font-bold">
-                  Ready to find your <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool?</span>
-                </h2>
-                <p className="mt-3 text-muted-foreground max-w-2xl mx-auto text-sm">
-                  Browse our curated collection of the best AI tools to enhance your productivity, creativity, and efficiency.
-                </p>
-                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button 
-                    className="rounded-lg px-5 py-2 font-medium relative overflow-hidden group"
-                    variant="gradient"
-                    asChild
-                  >
-                    <Link to="/tools">
-                      <span className="relative z-10 flex items-center">
-                        <Search size={16} className="mr-2" />
-                        Explore Tools
-                        <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
-                      </span>
-                    </Link>
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    className="rounded-lg border bg-background/50 backdrop-blur-sm px-5 py-2 font-medium"
-                    asChild
-                  >
-                    <Link to="/blog" className="flex items-center">
-                      <Star size={16} className="mr-2" />
-                      Read Our Blog
-                    </Link>
-                  </Button>
-                </div>
-              </GlassCard>
-            </MotionWrapper>
+        <div className="relative">
+          <div className="wave-divider bg-white dark:bg-background absolute top-0 left-0 right-0 z-10"></div>
+          <div className="pt-16 hostinger-pattern">
+            <ToolsSection 
+              title="أدوات مضافة حديثاً" 
+              description="تحقق من أحدث أدوات الذكاء الاصطناعي المضافة إلى مجموعتنا"
+              queryType="recent"
+              limit={sectionLimits.recent}
+              variant="accent"
+            />
           </div>
-        </GradientBackground>
+        </div>
+        
+        {/* Feature Section - With wave dividers */}
+        <FeatureSection />
+        
+        {/* CTA Section - With wave divider at top */}
+        <div className="relative">
+          <GradientBackground variant="primary" className="py-12 md:py-16" intensity="medium">
+            <div className="container-tight">
+              <MotionWrapper animation="fadeIn">
+                <GlassCard 
+                  className="bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 p-6 md:p-10 text-center"
+                  glowEffect
+                  hoverEffect
+                >
+                  <div className="relative mb-5">
+                    <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-primary via-accent to-primary rounded-full"></div>
+                    <Sparkles size={36} className="mx-auto text-primary" />
+                  </div>
+                  
+                  <h2 className="text-xl sm:text-2xl font-bold">
+                    هل أنت مستعد للعثور على <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">أداة الذكاء الاصطناعي المثالية؟</span>
+                  </h2>
+                  <p className="mt-3 text-muted-foreground max-w-2xl mx-auto text-sm">
+                    تصفح مجموعتنا المختارة من أفضل أدوات الذكاء الاصطناعي لتعزيز إنتاجيتك وإبداعك وكفاءتك.
+                  </p>
+                  <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button 
+                      className="rounded-lg px-5 py-2 font-medium relative overflow-hidden group"
+                      variant="gradient"
+                      asChild
+                    >
+                      <Link to="/tools">
+                        <span className="relative z-10 flex items-center">
+                          <Search size={16} className="mr-2" />
+                          استكشاف الأدوات
+                          <ArrowRight size={16} className="mr-2 transition-transform group-hover:translate-x-1" />
+                        </span>
+                      </Link>
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="rounded-lg border bg-background/50 backdrop-blur-sm px-5 py-2 font-medium"
+                      asChild
+                    >
+                      <Link to="/blog" className="flex items-center">
+                        <Star size={16} className="mr-2" />
+                        قراءة مدونتنا
+                      </Link>
+                    </Button>
+                  </div>
+                </GlassCard>
+              </MotionWrapper>
+            </div>
+          </GradientBackground>
+        </div>
       </main>
       
       <Footer />

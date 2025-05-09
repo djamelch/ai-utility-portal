@@ -52,30 +52,33 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))"
         },
-        brand: {
-          50: "#e6f2ff",
-          100: "#cce5ff",
-          200: "#99cbff",
-          300: "#66b0ff",
-          400: "#3396ff",
-          500: "#0078FF", // New primary
-          600: "#0067db",
-          700: "#0056b7",
-          800: "#004593",
-          900: "#00346f",
-        },
-        coral: {
-          50: "#fff2ee",
-          100: "#ffe1d5",
-          200: "#ffbfa7",
-          300: "#ff9c79",
-          400: "#ff7857", // Our accent color
-          500: "#ff5331",
-          600: "#ff3a13",
-          700: "#e52300",
-          800: "#c01d00",
-          900: "#9c1800",
-        },
+        // Hostinger colors palette
+        hostinger: {
+          blue: {
+            50: "#eef3fe",
+            100: "#dee7fd",
+            200: "#c3d4fb",
+            300: "#9bb8f8",
+            400: "#7094f3",
+            500: "#4d74f1", // Main blue
+            600: "#2f5fec", // Primary
+            700: "#1941cc",
+            800: "#1c37a5",
+            900: "#1d3283",
+          },
+          purple: {
+            50: "#f5f2ff",
+            100: "#ede8ff",
+            200: "#ded5ff",
+            300: "#c9b7ff",
+            400: "#b29afc",
+            500: "#9d8df9", // Main purple
+            600: "#8a6cf6",
+            700: "#7c58e7",
+            800: "#6647cf",
+            900: "#593ea9",
+          }
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -90,8 +93,8 @@ export default {
         glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
         card: "0 2px 10px rgba(0, 0, 0, 0.05)",
         "card-hover": "0 10px 30px rgba(0, 0, 0, 0.1)",
-        glow: "0 0 20px rgba(0, 120, 255, 0.4)", // Updated to blue
-        "inner-glow": "inset 0 0 20px rgba(0, 120, 255, 0.2)" // Updated to blue
+        glow: "0 0 20px rgba(47, 95, 236, 0.4)", // Updated to Hostinger blue
+        "inner-glow": "inset 0 0 20px rgba(47, 95, 236, 0.2)" // Updated to Hostinger blue
       },
       keyframes: {
         "accordion-down": {
@@ -179,10 +182,10 @@ export default {
         },
         "logo-glow": {
           "0%, 100%": { 
-            filter: "drop-shadow(0 0 2px rgba(217, 70, 239, 0.3))" 
+            filter: "drop-shadow(0 0 2px rgba(47, 95, 236, 0.3))" // Updated to Hostinger blue
           },
           "50%": { 
-            filter: "drop-shadow(0 0 8px rgba(217, 70, 239, 0.6))" 
+            filter: "drop-shadow(0 0 8px rgba(47, 95, 236, 0.6))" // Updated to Hostinger blue
           },
         },
         "logo-bounce": {
