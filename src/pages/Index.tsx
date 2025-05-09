@@ -86,7 +86,7 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* Featured Tools Section - With Hostinger style divider */}
+        {/* Featured Tools Section - With updated hostinger style divider */}
         <div className="relative">
           <div className="wave-divider-down hostinger-bg-gradient absolute top-0 left-0 right-0 z-10"></div>
           <div className="pt-16 hostinger-pattern">
@@ -162,7 +162,7 @@ const Index = () => {
                         <span className="relative z-10 flex items-center">
                           <Search size={16} className="mr-2" />
                           Explore Tools
-                          <ArrowRight size={16} className="mr-2 transition-transform group-hover:translate-x-1" />
+                          <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
                         </span>
                       </Link>
                     </Button>

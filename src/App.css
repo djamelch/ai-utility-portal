@@ -1,4 +1,3 @@
-
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -14,7 +13,7 @@
 }
 
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #0066ffaa);
 }
 
 .logo.react:hover {
@@ -92,10 +91,10 @@
 .text-shimmer {
   background: linear-gradient(
     to right,
-    var(--primary) 0%,
-    var(--accent) 30%,
-    var(--primary) 60%,
-    var(--accent) 100%
+    #0066ff 0%, /* Hostinger blue */
+    #936cff 30%, /* Hostinger purple */
+    #0066ff 60%, /* Hostinger blue */
+    #936cff 100% /* Hostinger purple */
   );
   background-size: 200% auto;
   background-clip: text;
@@ -160,7 +159,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--primary);
+  background: #0066ff; /* Updated Hostinger blue */
   transition: width 0.3s ease;
 }
 
@@ -265,4 +264,22 @@
 
 .card-back {
   transform: rotateY(180deg);
+}
+
+/* Enhance dropdown styling for better visibility */
+[data-radix-popper-content-wrapper] {
+  @apply z-50;
+}
+
+/* Add these new modern color utility classes - Updated for Hostinger */
+.bg-modern-gradient {
+  background: linear-gradient(to right, #0066ff, #936cff); /* Updated Hostinger blue to purple gradient */
+}
+
+.bg-modern-gradient-subtle {
+  background: linear-gradient(to right, rgba(0, 102, 255, 0.1), rgba(147, 108, 255, 0.05)); /* Updated Hostinger blue to purple subtle gradient */
+}
+
+.border-modern-gradient {
+  border-image: linear-gradient(to right, #0066ff, #936cff) 1; /* Updated Hostinger blue to purple border gradient */
 }

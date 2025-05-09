@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,31 +53,31 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))"
         },
-        // Hostinger colors palette
+        // Updated Hostinger colors palette
         hostinger: {
           blue: {
-            50: "#eef3fe",
-            100: "#dee7fd",
-            200: "#c3d4fb",
-            300: "#9bb8f8",
-            400: "#7094f3",
-            500: "#4d74f1", // Main blue
-            600: "#2f5fec", // Primary
-            700: "#1941cc",
-            800: "#1c37a5",
-            900: "#1d3283",
+            50: "#e6f0ff",
+            100: "#cce0ff",
+            200: "#99c2ff",
+            300: "#66a3ff",
+            400: "#3385ff",
+            500: "#0066ff", // Main blue
+            600: "#0052cc", // Primary
+            700: "#003d99",
+            800: "#002966",
+            900: "#001433",
           },
           purple: {
             50: "#f5f2ff",
             100: "#ede8ff",
-            200: "#ded5ff",
-            300: "#c9b7ff",
-            400: "#b29afc",
-            500: "#9d8df9", // Main purple
-            600: "#8a6cf6",
-            700: "#7c58e7",
-            800: "#6647cf",
-            900: "#593ea9",
+            200: "#d6c9ff",
+            300: "#bfaaff",
+            400: "#a98bff",
+            500: "#936cff", // Main purple
+            600: "#7856cc",
+            700: "#5c4199",
+            800: "#3e2b66",
+            900: "#1f1633",
           }
         }
       },
