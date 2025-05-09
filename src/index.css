@@ -166,6 +166,42 @@
     @apply focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/40;
     @apply transition-all duration-300;
   }
+  
+  /* New organic section dividers */
+  .wave-divider {
+    @apply relative h-16 md:h-24 w-full overflow-hidden;
+  }
+  
+  .curved-section {
+    @apply relative overflow-visible;
+  }
+  
+  .curved-section::before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-8 md:h-12 bg-inherit;
+    border-top-left-radius: 50% 100%;
+    border-top-right-radius: 50% 100%;
+    transform: translateY(-100%);
+  }
+  
+  .curved-section::after {
+    content: '';
+    @apply absolute bottom-0 left-0 right-0 h-8 md:h-12 bg-inherit;
+    border-bottom-left-radius: 50% 100%;
+    border-bottom-right-radius: 50% 100%;
+    transform: translateY(100%);
+  }
+  
+  /* Soft section transitions */
+  .soft-section-top {
+    @apply relative;
+    clip-path: ellipse(70% 50% at 50% 0%);
+  }
+  
+  .soft-section-bottom {
+    @apply relative;
+    clip-path: ellipse(70% 50% at 50% 100%);
+  }
 }
 
 /* Animation Delays */
@@ -193,6 +229,28 @@
 
 .animate-shimmer {
   animation: shimmer 3s linear infinite;
+}
+
+/* Floating animation for organic feel */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Subtle breathing animation for background elements */
+@keyframes breathe {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.animate-breathe {
+  animation: breathe 8s ease-in-out infinite;
 }
 
 /* Enhance dropdown styling for better visibility */
