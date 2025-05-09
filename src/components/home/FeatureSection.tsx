@@ -8,23 +8,23 @@ export function FeatureSection() {
   const features = [
     {
       icon: Star,
-      title: "تصنيف مختار",
-      description: "كل أداة تمت مراجعتها واختيارها بعناية على أساس الجودة وسهولة الاستخدام والقيمة."
+      title: "Curated Selection",
+      description: "Every tool is carefully reviewed and selected based on quality, ease of use, and value."
     },
     {
       icon: Zap,
-      title: "تحديث أسبوعي",
-      description: "نضيف باستمرار أدوات جديدة ونحدث الأدوات الموجودة لضمان وصولك إلى أحدث الابتكارات."
+      title: "Weekly Updates",
+      description: "We continuously add new tools and update existing ones to ensure you have access to the latest innovations."
     },
     {
       icon: CheckCircle,
-      title: "تقييمات موثوقة",
-      description: "مراجعات أصلية من مستخدمين حقيقيين لمساعدتك على اتخاذ قرارات مستنيرة حول كل أداة."
+      title: "Reliable Reviews",
+      description: "Authentic reviews from real users to help you make informed decisions about each tool."
     },
     {
       icon: ShieldCheck,
-      title: "تركيز على الخصوصية",
-      description: "نحن نعطي الأولوية لخصوصيتك ونوصي فقط بالأدوات التي تحافظ على معايير أمان عالية."
+      title: "Privacy Focused",
+      description: "We prioritize your privacy and only recommend tools that maintain high security standards."
     }
   ];
 
@@ -36,14 +36,14 @@ export function FeatureSection() {
         <div className="container-wide relative z-20">
           <MotionWrapper animation="fadeIn">
             <div className="text-center mb-12">
-              <span className="text-sm font-medium text-primary uppercase tracking-wider mb-2 block">وعدنا لكم</span>
+              <span className="text-sm font-medium text-primary uppercase tracking-wider mb-2 block">Our Promise</span>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 <span className="text-gradient">
-                  لماذا تختار
-                </span> أدوات الذكاء الاصطناعي
+                  Why Choose
+                </span> AI Tools Directory
               </h2>
               <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-                نساعد المحترفين والفرق على العثور على حلول الذكاء الاصطناعي المناسبة بشكل أسرع، مع اتخاذ قرارات واثقة مدعومة بتقييمات الخبراء والمستخدمين
+                We help professionals and teams find the right AI solutions faster, making confident decisions backed by expert and user reviews
               </p>
             </div>
           </MotionWrapper>
