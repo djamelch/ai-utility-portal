@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
@@ -113,10 +112,8 @@ const Index = () => {
           variant="accent"
         />
         
-        {/* Feature Section - Moved to bottom before CTA */}
-        <GradientBackground variant="subtle" className="py-12 md:py-16" intensity="light">
-          <FeatureSection />
-        </GradientBackground>
+        {/* Feature Section - Using our enhanced design */}
+        <FeatureSection />
         
         {/* CTA Section */}
         <GradientBackground variant="primary" className="py-12 md:py-16" intensity="medium">
