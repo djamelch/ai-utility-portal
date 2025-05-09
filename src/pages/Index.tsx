@@ -74,9 +74,9 @@ const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SEOHead 
-        title="دليل أدوات الذكاء الاصطناعي - اكتشف وقارن بين أفضل أدوات الذكاء الاصطناعي"
-        description="اكتشف أفضل أدوات الذكاء الاصطناعي للإنتاجية والإبداع والأعمال. يساعدك دليلنا الشامل في العثور ومقارنة حلول الذكاء الاصطناعي المثالية لاحتياجاتك."
-        keywords="أدوات الذكاء الاصطناعي، الذكاء الاصطناعي، أدوات التعلم الآلي، أدوات الإنتاجية، دليل الذكاء الاصطناعي، أفضل أدوات الذكاء الاصطناعي"
+        title="AI Tools Directory - Discover and Compare the Best AI Tools"
+        description="Discover the best AI tools for productivity, creativity, and business. Our comprehensive directory helps you find and compare the perfect AI solutions for your needs."
+        keywords="AI tools, artificial intelligence, machine learning tools, productivity tools, AI directory, best AI tools"
         canonicalUrl="/"
         schemaData={generateHomeSchema()}
       />
@@ -91,8 +91,8 @@ const Index = () => {
           <div className="wave-divider-down hostinger-bg-gradient absolute top-0 left-0 right-0 z-10"></div>
           <div className="pt-16 hostinger-pattern">
             <ToolsSection 
-              title="أدوات مميزة" 
-              description="اكتشف مجموعتنا المختارة بعناية من أفضل أدوات الذكاء الاصطناعي"
+              title="Featured Tools" 
+              description="Discover our carefully curated selection of the best AI tools"
               queryType="featured"
               limit={sectionLimits.featured}
               variant="primary"
@@ -105,8 +105,8 @@ const Index = () => {
           <div className="curved-divider bg-white dark:bg-background absolute top-0 left-0 right-0 z-10"></div>
           <div className="pt-12 bg-modern-gradient-subtle">
             <ToolsSection 
-              title="الأدوات الأعلى تقييماً" 
-              description="استكشف أدوات الذكاء الاصطناعي الأعلى تقييماً من قبل مجتمعنا"
+              title="Top Rated Tools" 
+              description="Explore the highest rated AI tools by our community"
               queryType="top-rated"
               limit={sectionLimits.topRated}
               variant="secondary"
@@ -119,8 +119,8 @@ const Index = () => {
           <div className="wave-divider bg-white dark:bg-background absolute top-0 left-0 right-0 z-10"></div>
           <div className="pt-16 hostinger-pattern">
             <ToolsSection 
-              title="أدوات مضافة حديثاً" 
-              description="تحقق من أحدث أدوات الذكاء الاصطناعي المضافة إلى مجموعتنا"
+              title="Recently Added Tools" 
+              description="Check out the latest AI tools added to our collection"
               queryType="recent"
               limit={sectionLimits.recent}
               variant="accent"
@@ -147,10 +147,10 @@ const Index = () => {
                   </div>
                   
                   <h2 className="text-xl sm:text-2xl font-bold">
-                    هل أنت مستعد للعثور على <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">أداة الذكاء الاصطناعي المثالية؟</span>
+                    Ready to find your <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool?</span>
                   </h2>
                   <p className="mt-3 text-muted-foreground max-w-2xl mx-auto text-sm">
-                    تصفح مجموعتنا المختارة من أفضل أدوات الذكاء الاصطناعي لتعزيز إنتاجيتك وإبداعك وكفاءتك.
+                    Browse our curated collection of the best AI tools to boost your productivity, creativity, and efficiency.
                   </p>
                   <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                     <Button 
@@ -161,7 +161,7 @@ const Index = () => {
                       <Link to="/tools">
                         <span className="relative z-10 flex items-center">
                           <Search size={16} className="mr-2" />
-                          استكشاف الأدوات
+                          Explore Tools
                           <ArrowRight size={16} className="mr-2 transition-transform group-hover:translate-x-1" />
                         </span>
                       </Link>
@@ -173,7 +173,7 @@ const Index = () => {
                     >
                       <Link to="/blog" className="flex items-center">
                         <Star size={16} className="mr-2" />
-                        قراءة مدونتنا
+                        Read Our Blog
                       </Link>
                     </Button>
                   </div>

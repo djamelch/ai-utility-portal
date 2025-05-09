@@ -15,23 +15,23 @@ export function RequireAuth({ children, requireAdmin = false }: RequireAuthProps
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingIndicator size={32} text="التحقق من الصلاحيات..." />
+        <LoadingIndicator size={32} text="Verifying permissions..." />
       </div>
     );
   }
 
   if (!user) {
-    // توجيه إلى صفحة تسجيل الدخول، مع حفظ الموقع الحالي
+    // Redirect to login page, preserving current location
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // التحقق من صلاحيات المسؤول - فقط المسؤولون يمكنهم الوصول إلى مسارات المسؤول
+  // Check admin permissions - only admins can access admin routes
   if (requireAdmin && !isAdmin) {
-    // المستخدم مسجل الدخول ولكنه ليس مسؤولاً، ونحن نتطلب وصول المسؤول
+    // User is logged in but isn't an admin, and we require admin access
     console.log("Access denied: User is not admin but admin access is required");
     return <Navigate to="/" replace />;
   }
 
-  // المستخدم مسجل الدخول (وهو مسؤول إذا كان مطلوبًا)
+  // User is logged in (and is admin if required)
   return <>{children}</>;
 }
