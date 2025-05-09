@@ -2,7 +2,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
-import { CategorySection } from "@/components/home/CategorySection";
 import { FeatureSection } from "@/components/home/FeatureSection";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
@@ -95,11 +94,6 @@ const Index = () => {
           limit={sectionLimits.featured}
           variant="primary"
         />
-        
-        {/* Categories Section with light background */}
-        <GradientBackground variant="subtle" className="py-12 md:py-16" intensity="light">
-          <CategorySection />
-        </GradientBackground>
         
         {/* Top Rated Tools Section */}
         <ToolsSection 
