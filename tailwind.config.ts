@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -55,30 +54,24 @@ export default {
         },
         // Updated Hostinger colors palette
         hostinger: {
-          blue: {
-            50: "#e6f0ff",
-            100: "#cce0ff",
-            200: "#99c2ff",
-            300: "#66a3ff",
-            400: "#3385ff",
-            500: "#0066ff", // Main blue
-            600: "#0052cc", // Primary
-            700: "#003d99",
-            800: "#002966",
-            900: "#001433",
-          },
-          purple: {
-            50: "#f5f2ff",
-            100: "#ede8ff",
-            200: "#d6c9ff",
-            300: "#bfaaff",
-            400: "#a98bff",
-            500: "#936cff", // Main purple
-            600: "#7856cc",
-            700: "#5c4199",
-            800: "#3e2b66",
-            900: "#1f1633",
-          }
+          // Main brand colors
+          brand: "#674CC4", // Main brand color, logo, headers
+          international: "#673DE6", // International logo, gradients, highlights
+          
+          // UI elements
+          link: "#4285F4", // Icons, links, notification badges
+          active: "#1967D2", // Active buttons, hover states, progress bars
+          warning: "#FBBC04", // Warning messages, promotions
+          error: "#F72A25", // Error messages, critical alerts
+          success: "#34A853", // Success messages, active status
+          successHover: "#188038", // Hover states on success indicators
+          
+          // Background and decorative elements
+          bgGradient: "#6D00B5", // Backgrounds, gradients
+          accent: "#9D26DC", // Accent elements
+          decorative: "#CE56F6", // Decorative backgrounds
+          promo: "#F939E3", // Promotional banners
+          highlight: "#339BEE", // Hover effects, highlights
         }
       },
       borderRadius: {
@@ -94,8 +87,8 @@ export default {
         glass: "0 4px 30px rgba(0, 0, 0, 0.1)",
         card: "0 2px 10px rgba(0, 0, 0, 0.05)",
         "card-hover": "0 10px 30px rgba(0, 0, 0, 0.1)",
-        glow: "0 0 20px rgba(47, 95, 236, 0.4)", // Updated to Hostinger blue
-        "inner-glow": "inset 0 0 20px rgba(47, 95, 236, 0.2)" // Updated to Hostinger blue
+        glow: "0 0 20px rgba(103, 76, 196, 0.4)", // Updated to Hostinger main brand color
+        "inner-glow": "inset 0 0 20px rgba(103, 76, 196, 0.2)" // Updated to Hostinger main brand color
       },
       keyframes: {
         "accordion-down": {
@@ -183,10 +176,10 @@ export default {
         },
         "logo-glow": {
           "0%, 100%": { 
-            filter: "drop-shadow(0 0 2px rgba(47, 95, 236, 0.3))" // Updated to Hostinger blue
+            filter: "drop-shadow(0 0 2px rgba(103, 76, 196, 0.3))" // Updated to Hostinger main brand color
           },
           "50%": { 
-            filter: "drop-shadow(0 0 8px rgba(47, 95, 236, 0.6))" // Updated to Hostinger blue
+            filter: "drop-shadow(0 0 8px rgba(103, 76, 196, 0.6))" // Updated to Hostinger main brand color
           },
         },
         "logo-bounce": {

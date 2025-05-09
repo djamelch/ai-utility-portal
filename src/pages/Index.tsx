@@ -142,12 +142,12 @@ const Index = () => {
                   hoverEffect
                 >
                   <div className="relative mb-5">
-                    <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-primary via-accent to-primary rounded-full"></div>
-                    <Sparkles size={36} className="mx-auto text-primary" />
+                    <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-hostinger-brand via-hostinger-accent to-hostinger-brand rounded-full"></div>
+                    <Sparkles size={36} className="mx-auto text-hostinger-brand" />
                   </div>
                   
                   <h2 className="text-xl sm:text-2xl font-bold">
-                    Ready to find your <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">perfect AI tool?</span>
+                    Ready to find your <span className="bg-gradient-to-r from-hostinger-brand to-hostinger-accent bg-clip-text text-transparent">perfect AI tool?</span>
                   </h2>
                   <p className="mt-3 text-muted-foreground max-w-2xl mx-auto text-sm">
                     Browse our curated collection of the best AI tools to boost your productivity, creativity, and efficiency.

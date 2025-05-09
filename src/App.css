@@ -43,20 +43,20 @@
   color: #888;
 }
 
-/* Glass morphism effect classes - Enhanced */
+/* Glass morphism effect classes - Enhanced with Hostinger colors */
 .glass {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(103, 76, 196, 0.1); /* Updated to Hostinger brand color */
   transition: all 0.3s ease-in-out;
 }
 
 .glass:hover {
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(103, 76, 196, 0.15); /* Updated to Hostinger brand color */
   transform: translateY(-5px);
 }
 
@@ -91,10 +91,10 @@
 .text-shimmer {
   background: linear-gradient(
     to right,
-    #0066ff 0%, /* Hostinger blue */
-    #936cff 30%, /* Hostinger purple */
-    #0066ff 60%, /* Hostinger blue */
-    #936cff 100% /* Hostinger purple */
+    #674CC4 0%, /* Hostinger main brand */
+    #9D26DC 30%, /* Hostinger accent */
+    #674CC4 60%, /* Hostinger main brand */
+    #9D26DC 100% /* Hostinger accent */
   );
   background-size: 200% auto;
   background-clip: text;
@@ -159,7 +159,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: #0066ff; /* Updated Hostinger blue */
+  background: #4285F4; /* Updated to Hostinger link color */
   transition: width 0.3s ease;
 }
 
@@ -226,15 +226,15 @@
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 500;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, #674CC4, #9D26DC); /* Updated to Hostinger colors */
   color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .modern-badge.outline {
   background: transparent;
-  border: 1px solid var(--primary);
-  color: var(--primary);
+  border: 1px solid #674CC4; /* Updated to Hostinger brand color */
+  color: #674CC4; /* Updated to Hostinger brand color */
 }
 
 /* Card flip animation */
@@ -273,13 +273,13 @@
 
 /* Add these new modern color utility classes - Updated for Hostinger */
 .bg-modern-gradient {
-  background: linear-gradient(to right, #0066ff, #936cff); /* Updated Hostinger blue to purple gradient */
+  background: linear-gradient(to right, #674CC4, #9D26DC); /* Updated Hostinger brand to accent gradient */
 }
 
 .bg-modern-gradient-subtle {
-  background: linear-gradient(to right, rgba(0, 102, 255, 0.1), rgba(147, 108, 255, 0.05)); /* Updated Hostinger blue to purple subtle gradient */
+  background: linear-gradient(to right, rgba(103, 76, 196, 0.1), rgba(157, 38, 220, 0.05)); /* Updated Hostinger subtle gradient */
 }
 
 .border-modern-gradient {
-  border-image: linear-gradient(to right, #0066ff, #936cff) 1; /* Updated Hostinger blue to purple border gradient */
+  border-image: linear-gradient(to right, #674CC4, #9D26DC) 1; /* Updated Hostinger border gradient */
 }

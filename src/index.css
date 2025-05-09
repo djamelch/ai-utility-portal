@@ -101,12 +101,12 @@
   }
   
   .hero-gradient {
-    background: radial-gradient(circle at top center, hsl(var(--primary)), transparent 70%);
+    background: radial-gradient(circle at top center, #674CC4, transparent 70%);
     opacity: 0.1;
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-hostinger-brand to-hostinger-accent bg-clip-text text-transparent;
   }
   
   .section-padding {
@@ -139,7 +139,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    @apply bg-primary opacity-0 transition-opacity duration-300;
+    @apply bg-hostinger-brand opacity-0 transition-opacity duration-300;
   }
   
   .tool-card:hover::before {
@@ -155,14 +155,14 @@
   /* Enhanced filter pills - Updated Hostinger colors */
   .filter-pill {
     @apply px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300;
-    @apply bg-primary/10 text-primary hover:bg-primary/20;
+    @apply bg-hostinger-brand/10 text-hostinger-brand hover:bg-hostinger-brand/20;
     @apply flex items-center gap-1.5 hover:gap-2;
   }
   
   /* Search bar enhancement */
   .search-bar {
     @apply rounded-lg border border-border/60 bg-background/80 backdrop-blur-sm;
-    @apply focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/40;
+    @apply focus-within:ring-2 focus-within:ring-hostinger-brand/30 focus-within:border-hostinger-brand/40;
     @apply transition-all duration-300;
   }
 
@@ -184,14 +184,14 @@
 
   /* Hostinger-inspired section backgrounds */
   .hostinger-bg-gradient {
-    @apply bg-gradient-to-br from-primary/5 to-accent/5;
+    @apply bg-gradient-to-br from-hostinger-brand/5 to-hostinger-accent/5;
   }
   
   .hostinger-pattern {
     background-color: hsla(0, 0%, 100%, 1);
     background-image: 
-      radial-gradient(at 76% 0%, hsla(var(--primary), 0.05) 0px, transparent 50%),
-      radial-gradient(at 1% 100%, hsla(var(--accent), 0.05) 0px, transparent 50%);
+      radial-gradient(at 76% 0%, rgba(103, 76, 196, 0.05) 0px, transparent 50%),
+      radial-gradient(at 1% 100%, rgba(157, 38, 220, 0.05) 0px, transparent 50%);
   }
 }
 
@@ -241,23 +241,23 @@
 
 /* Add these new modern color utility classes - Updated for Hostinger */
 .bg-modern-gradient {
-  @apply bg-gradient-to-r from-primary to-accent;
+  @apply bg-gradient-to-r from-hostinger-brand to-hostinger-accent;
 }
 
 .bg-modern-gradient-subtle {
-  @apply bg-gradient-to-r from-primary/10 to-accent/5;
+  @apply bg-gradient-to-r from-hostinger-brand/10 to-hostinger-accent/5;
 }
 
 .border-modern-gradient {
-  border-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent))) 1;
+  border-image: linear-gradient(to right, #674CC4, #9D26DC) 1;
 }
 
 .text-primary-accent {
-  @apply text-primary;
+  @apply text-hostinger-brand;
 }
 
 .text-secondary-accent {
-  @apply text-accent;
+  @apply text-hostinger-accent;
 }
 
 /* Enhanced button hover effects */

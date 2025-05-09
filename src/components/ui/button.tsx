@@ -10,16 +10,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 hover:-translate-y-0.5",
+        default: "bg-hostinger-brand text-primary-foreground hover:bg-hostinger-brand/90 hover:shadow-md hover:shadow-hostinger-brand/20 hover:-translate-y-0.5",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-md hover:shadow-destructive/20 hover:-translate-y-0.5",
+          "bg-hostinger-error text-destructive-foreground hover:bg-hostinger-error/90 hover:shadow-md hover:shadow-hostinger-error/20 hover:-translate-y-0.5",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent hover:shadow-sm hover:-translate-y-0.5",
+          "border border-input bg-background hover:bg-hostinger-accent/10 hover:text-hostinger-accent hover:border-hostinger-accent hover:shadow-sm hover:-translate-y-0.5",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-sm hover:-translate-y-0.5",
-        ghost: "hover:bg-accent hover:text-accent-foreground hover:shadow-sm",
-        link: "text-primary underline-offset-4 hover:underline hover:text-primary/90",
-        gradient: "bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-md hover:shadow-primary/20 hover:-translate-y-0.5 hover:opacity-90",
+        ghost: "hover:bg-hostinger-accent/10 hover:text-hostinger-accent hover:shadow-sm",
+        link: "text-hostinger-link underline-offset-4 hover:underline hover:text-hostinger-link/90",
+        gradient: "bg-gradient-to-r from-hostinger-brand to-hostinger-accent text-primary-foreground hover:shadow-md hover:shadow-hostinger-brand/20 hover:-translate-y-0.5 hover:opacity-90",
+        active: "bg-hostinger-active text-primary-foreground hover:bg-hostinger-active/90 hover:shadow-md hover:shadow-hostinger-active/20 hover:-translate-y-0.5",
+        success: "bg-hostinger-success text-primary-foreground hover:bg-hostinger-successHover hover:shadow-md hover:shadow-hostinger-success/20 hover:-translate-y-0.5",
+        warning: "bg-hostinger-warning text-black hover:bg-hostinger-warning/90 hover:shadow-md hover:shadow-hostinger-warning/20 hover:-translate-y-0.5",
       },
       size: {
         default: "h-10 px-4 py-2",

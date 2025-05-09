@@ -36,9 +36,9 @@ export function FeatureSection() {
         <div className="container-wide relative z-20">
           <MotionWrapper animation="fadeIn">
             <div className="text-center mb-12">
-              <span className="text-sm font-medium text-primary uppercase tracking-wider mb-2 block">Our Promise</span>
+              <span className="text-sm font-medium text-hostinger-brand uppercase tracking-wider mb-2 block">Our Promise</span>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                <span className="text-gradient">
+                <span className="bg-gradient-to-r from-hostinger-brand to-hostinger-accent bg-clip-text text-transparent">
                   Why Choose
                 </span> AI Tools Directory
               </h2>
@@ -58,7 +58,7 @@ export function FeatureSection() {
                   glowEffect
                   hoverEffect
                 >
-                  <div className="rounded-full p-3 bg-primary/10 text-primary mb-4 shadow-inner">
+                  <div className="rounded-full p-3 bg-hostinger-brand/10 text-hostinger-brand mb-4 shadow-inner">
                     <feature.icon size={24} className="animate-float" />
                   </div>
                   <h3 className="text-xl font-medium mb-2">{feature.title}</h3>
