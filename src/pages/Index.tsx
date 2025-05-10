@@ -113,9 +113,6 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Category Browser Section - Added after Top Rated Tools */}
-        <TrendingToolsSection />
-        
         {/* Recently Added Tools Section */}
         <div className="relative">
           <div className="pt-16">
@@ -128,6 +125,9 @@ const Index = () => {
             />
           </div>
         </div>
+        
+        {/* Category Browser Section - Moved to after Recently Added Tools */}
+        <TrendingToolsSection />
                 
         {/* CTA Section */}
         <div className="relative">

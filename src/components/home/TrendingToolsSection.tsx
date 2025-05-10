@@ -1,5 +1,5 @@
 
-import { ArrowRight, Star, TrendingUp, Image, Feather, Sparkles, MessageSquare, Code, Database, PenTool, Video, Music, LineChart, Bookmark } from "lucide-react";
+import { ArrowRight, Star, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
 
 interface Category {
   id: string;
@@ -15,219 +16,123 @@ interface Category {
   icon: React.ElementType;
   count: number;
   color: string;
-  gradientFrom: string;
-  gradientTo: string;
+  tools: Tool[];
 }
+
+interface Tool {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  logo_url?: string;
+}
+
+// Define available category colors
+const categoryColors = [
+  "bg-blue-500",
+  "bg-pink-500",
+  "bg-purple-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-violet-500",
+  "bg-red-500",
+  "bg-sky-500", 
+  "bg-teal-500",
+  "bg-fuchsia-500",
+  "bg-indigo-500",
+  "bg-rose-500",
+];
 
 export function TrendingToolsSection() {
   const [categories, setCategories] = useState<Category[]>([]);
-  
-  // Define the categories with their icons and colors
-  const initialCategories: Category[] = [
-    { 
-      id: "chatbots", 
-      name: "AI Chatbots", 
-      icon: MessageSquare, 
-      count: 0, 
-      color: "from-blue-500 to-cyan-300",
-      gradientFrom: "from-blue-500/10",
-      gradientTo: "to-blue-300/5"
-    },
-    { 
-      id: "image-generation", 
-      name: "Image Generation", 
-      icon: Image, 
-      count: 0, 
-      color: "from-pink-500 to-rose-300",
-      gradientFrom: "from-pink-500/10", 
-      gradientTo: "to-rose-300/5"
-    },
-    { 
-      id: "code-assistants", 
-      name: "Code Assistants", 
-      icon: Code, 
-      count: 0, 
-      color: "from-indigo-500 to-purple-300",
-      gradientFrom: "from-indigo-500/10", 
-      gradientTo: "to-purple-300/5"
-    },
-    { 
-      id: "data-analysis", 
-      name: "Data Analysis", 
-      icon: Database, 
-      count: 0, 
-      color: "from-amber-500 to-yellow-300",
-      gradientFrom: "from-amber-500/10", 
-      gradientTo: "to-yellow-300/5"
-    },
-    { 
-      id: "writing", 
-      name: "Writing & Content", 
-      icon: PenTool, 
-      count: 0, 
-      color: "from-emerald-500 to-green-300",
-      gradientFrom: "from-emerald-500/10", 
-      gradientTo: "to-green-300/5"
-    },
-    { 
-      id: "productivity", 
-      name: "Productivity", 
-      icon: Sparkles, 
-      count: 0, 
-      color: "from-violet-500 to-purple-300",
-      gradientFrom: "from-violet-500/10", 
-      gradientTo: "to-purple-300/5"
-    },
-    { 
-      id: "video", 
-      name: "Video Creation", 
-      icon: Video, 
-      count: 0, 
-      color: "from-red-500 to-orange-300",
-      gradientFrom: "from-red-500/10", 
-      gradientTo: "to-orange-300/5"
-    },
-    { 
-      id: "audio", 
-      name: "Audio & Music", 
-      icon: Music, 
-      count: 0, 
-      color: "from-sky-500 to-blue-300",
-      gradientFrom: "from-sky-500/10", 
-      gradientTo: "to-blue-300/5"
-    },
-    { 
-      id: "research", 
-      name: "Research Tools", 
-      icon: Bookmark, 
-      count: 0, 
-      color: "from-teal-500 to-emerald-300",
-      gradientFrom: "from-teal-500/10", 
-      gradientTo: "to-emerald-300/5"
-    },
-    { 
-      id: "marketing", 
-      name: "Marketing & SEO", 
-      icon: LineChart, 
-      count: 0, 
-      color: "from-fuchsia-500 to-pink-300",
-      gradientFrom: "from-fuchsia-500/10", 
-      gradientTo: "to-pink-300/5"
-    },
-    { 
-      id: "top-trends", 
-      name: "Top 50 Trends", 
-      icon: TrendingUp, 
-      count: 0, 
-      color: "from-purple-500 to-indigo-300",
-      gradientFrom: "from-purple-500/10", 
-      gradientTo: "to-indigo-300/5"
-    },
-    { 
-      id: "latest", 
-      name: "Latest AI", 
-      icon: Star, 
-      count: 0, 
-      color: "from-amber-500 to-yellow-300",
-      gradientFrom: "from-amber-500/10", 
-      gradientTo: "to-yellow-300/5"
-    },
-  ];
+  const [displayCount, setDisplayCount] = useState(12); // Show 12 categories initially
 
-  // Fetch tool counts for each category
-  const { data: categoryCounts, isLoading } = useQuery({
-    queryKey: ["category-counts"],
+  // Fetch categories and their tools
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["categories-with-tools"],
     queryFn: async () => {
       try {
-        // Get count for different primary tasks
-        const tasks = [
-          "Chatbot",
-          "Image Generation",
-          "Code Assistant",
-          "Data Analysis",
-          "Writing",
-          "Productivity",
-          "Video Creation",
-          "Audio",
-          "Research",
-          "Marketing"
+        // First get all distinct primary_task values (categories)
+        const { data: categoryData, error: categoryError } = await supabase
+          .from("tools")
+          .select('primary_task, count(*)')
+          .not('primary_task', 'is', null)
+          .group('primary_task');
+        
+        if (categoryError) throw categoryError;
+        
+        // Handle special categories first
+        const specialCategories = [
+          {
+            id: "latest",
+            name: "Latest AI",
+            count: 0,
+            tools: [],
+            color: categoryColors[10], // Assign a color
+          },
+          {
+            id: "top-trends",
+            name: "Top 50 Trends [24H]",
+            count: 0,
+            tools: [],
+            color: categoryColors[11], // Assign a color
+          }
         ];
         
-        const counts: Record<string, number> = {};
+        // Transform categories
+        let regularCategories = categoryData.map((item, index) => ({
+          id: item.primary_task.toLowerCase().replace(/\s+/g, '-'),
+          name: item.primary_task,
+          count: parseInt(item.count),
+          tools: [],
+          color: categoryColors[index % categoryColors.length], // Cycle through colors
+        }));
         
-        // Map primary tasks to category IDs
-        const taskToCategory: Record<string, string> = {
-          "Chatbot": "chatbots",
-          "Image Generation": "image-generation",
-          "Code Assistant": "code-assistants",
-          "Data Analysis": "data-analysis",
-          "Writing": "writing",
-          "Productivity": "productivity",
-          "Video Creation": "video",
-          "Audio": "audio",
-          "Research": "research",
-          "Marketing": "marketing"
-        };
+        // Sort regular categories by count (highest to lowest)
+        regularCategories = regularCategories.sort((a, b) => b.count - a.count);
         
-        // Get total count for latest
-        const { count: totalCount, error: totalError } = await supabase
-          .from("tools")
-          .select("*", { count: "exact", head: true });
+        // Merge special and regular categories
+        const allCategories = [...specialCategories, ...regularCategories];
         
-        if (totalError) console.error("Error fetching total tools count:", totalError);
-        
-        counts["latest"] = totalCount || 0;
-        counts["top-trends"] = totalCount || 0; // Same as latest for now
-        
-        // Get count for each primary task
-        for (const task of tasks) {
-          const { count, error } = await supabase
-            .from("tools")
-            .select("*", { count: "exact", head: true })
-            .eq("primary_task", task);
+        // Now fetch tools for each category
+        for (let category of allCategories) {
+          let query = supabase.from("tools").select("id, name, slug, logo_url").limit(15);
           
-          if (error) console.error(`Error fetching ${task} count:`, error);
+          if (category.id === "latest") {
+            // For "Latest AI" category, get the most recently added tools
+            query = query.order("created_at", { ascending: false });
+          } else if (category.id === "top-trends") {
+            // For "Top 50 Trends" category, get most viewed/rated tools
+            // In a real scenario, you might have a views/ratings column
+            query = query.order("created_at", { ascending: false });
+          } else {
+            // For regular categories, filter by primary_task
+            query = query.eq("primary_task", category.name);
+          }
           
-          const categoryId = taskToCategory[task];
-          counts[categoryId] = count || 0;
+          const { data: toolsData, error: toolsError } = await query;
+          
+          if (toolsError) throw toolsError;
+          
+          category.tools = toolsData || [];
+          category.count = category.tools.length;
         }
         
-        return counts;
+        return allCategories;
       } catch (error) {
-        console.error("Error fetching category counts:", error);
-        return {};
+        console.error("Error fetching categories with tools:", error);
+        return [];
       }
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
-  // Update categories with counts and sort them
+  // Update categories with data when available
   useEffect(() => {
-    if (categoryCounts) {
-      // Special categories to always show first (latest and top-trends)
-      const specialCategories = ["latest", "top-trends"];
-      
-      // Update all categories with their counts
-      const updatedCategories = initialCategories.map(category => ({
-        ...category,
-        count: categoryCounts[category.id] || 0
-      }));
-      
-      // Split into special and regular categories
-      const special = updatedCategories.filter(cat => 
-        specialCategories.includes(cat.id)
-      );
-      
-      const regular = updatedCategories.filter(cat => 
-        !specialCategories.includes(cat.id)
-      ).sort((a, b) => b.count - a.count); // Sort by count (high to low)
-      
-      // Combine with special categories first, then sorted regular categories
-      setCategories([...special, ...regular]);
-    } else {
-      setCategories(initialCategories);
+    if (data) {
+      setCategories(data);
     }
-  }, [categoryCounts]);
+  }, [data]);
 
   return (
     <section className="py-12 md:py-16 bg-background">
@@ -237,7 +142,7 @@ export function TrendingToolsSection() {
             <div>
               <h2 className="text-2xl md:text-3xl font-bold">Browse Categories</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Discover AI tools by popular categories
+                Explore AI tools by popular categories
               </p>
             </div>
             
@@ -252,46 +157,19 @@ export function TrendingToolsSection() {
         </MotionWrapper>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <SkeletonCategoryCard key={index} />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center">
+            <p className="text-destructive">Error loading categories</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {categories.map((category) => (
-              <MotionWrapper key={category.id} animation="fadeIn">
-                <Link
-                  to={`/tools?category=${category.id}`}
-                  className="group"
-                >
-                  <GlassCard 
-                    className={`flex flex-col items-center p-6 relative overflow-hidden
-                      after:absolute after:inset-0 after:bg-gradient-to-br
-                      after:${category.color}
-                      after:opacity-0 after:-z-10 after:transition-opacity after:duration-300
-                      group-hover:after:opacity-5
-                      before:absolute before:inset-0 before:bg-gradient-to-br
-                      before:${category.gradientFrom} before:${category.gradientTo}
-                      before:opacity-0 before:-z-10 before:blur-xl before:scale-150
-                      before:transition-opacity before:duration-300 group-hover:before:opacity-100`}
-                    animation="none"
-                  >
-                    <div className="rounded-full p-3 bg-white/80 dark:bg-black/40 text-primary shadow-sm
-                        group-hover:scale-110 transition-all duration-500 relative">
-                      <category.icon size={24} className="transition-all duration-500 group-hover:rotate-6" />
-                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary animate-ping opacity-0 group-hover:opacity-70"></span>
-                    </div>
-                    <h3 className="mt-4 font-medium text-center group-hover:text-primary transition-colors">
-                      {category.name}
-                    </h3>
-                    <span className="mt-1 text-sm text-muted-foreground">
-                      {category.count} tools
-                    </span>
-                    <div className="absolute bottom-2 right-2 opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-                      <ArrowRight size={14} className="text-primary" />
-                    </div>
-                  </GlassCard>
-                </Link>
-              </MotionWrapper>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {categories.slice(0, displayCount).map((category) => (
+              <CategoryCard key={category.id} category={category} />
             ))}
           </div>
         )}
@@ -307,5 +185,89 @@ export function TrendingToolsSection() {
         </MotionWrapper>
       </div>
     </section>
+  );
+}
+
+// Skeleton loader for category cards
+function SkeletonCategoryCard() {
+  return (
+    <div className="h-[420px] rounded-lg border bg-card p-4 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-5 w-16" />
+      </div>
+      <div className="space-y-2">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <Skeleton key={i} className="h-4 w-full" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Category card component
+function CategoryCard({ category }: { category: Category }) {
+  return (
+    <Link to={`/tools?category=${category.id}`} className="group">
+      <GlassCard 
+        className="h-full backdrop-blur-sm border hover:shadow-md transition-all duration-300"
+        animation="none"
+        hoverEffect
+        variant="elevated"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            {category.id === "latest" ? (
+              <Star size={16} className="text-amber-500" />
+            ) : category.id === "top-trends" ? (
+              <TrendingUp size={16} className="text-primary" />
+            ) : (
+              <span className={`w-3 h-3 rounded-full ${category.color}`}></span>
+            )}
+            {category.name}
+          </h3>
+          <Badge variant="outline" className="text-xs">
+            {category.count}
+          </Badge>
+        </div>
+        
+        <div className="space-y-1.5 text-sm">
+          {category.tools.slice(0, 12).map((tool) => (
+            <div key={tool.id} className="flex items-center gap-2 py-0.5">
+              {tool.logo_url ? (
+                <img 
+                  src={tool.logo_url} 
+                  alt={tool.name} 
+                  className="w-4 h-4 rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = "/placeholder.svg";
+                  }}
+                />
+              ) : (
+                <div className="w-4 h-4 rounded-full bg-primary/10"></div>
+              )}
+              <span className="text-muted-foreground hover:text-foreground truncate transition-colors">
+                {tool.name}
+              </span>
+            </div>
+          ))}
+          
+          {/* Show indicator if there are more tools than shown */}
+          {category.tools.length > 12 && (
+            <div className="pt-2 text-right">
+              <span className="text-xs text-muted-foreground">
+                +{category.tools.length - 12} more
+              </span>
+            </div>
+          )}
+        </div>
+        
+        <div className="absolute bottom-2 right-2 opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+          <ArrowRight size={14} className="text-primary" />
+        </div>
+      </GlassCard>
+    </Link>
   );
 }
