@@ -5,9 +5,15 @@ import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ModernLoadingIndicator } from "../ui/ModernLoadingIndicator";
 import { Badge } from "../ui/badge";
+import { 
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "../ui/table";
 
 interface ToolCategory {
   id: string;
@@ -22,6 +28,7 @@ interface Tool {
   company_name?: string;
   logo_url?: string;
   trending_number?: number;
+  trend_stats?: string;
 }
 
 export function TrendingToolsSection() {
@@ -87,11 +94,20 @@ export function TrendingToolsSection() {
           throw error;
         }
         
-        // Transform data to add trending numbers for visualization
-        const toolsWithNumbers = data.map((tool, index) => ({
-          ...tool,
-          trending_number: index + 1
-        }));
+        // Transform data to add trending numbers and fake stats for visualization
+        const toolsWithNumbers = data.map((tool, index) => {
+          // Fake trend stats based on category
+          let trendStats;
+          if (activeCategory === "top-trends") {
+            trendStats = `+${Math.floor(Math.random() * 900) + 100}`;
+          }
+          
+          return {
+            ...tool,
+            trending_number: index + 1,
+            trend_stats: trendStats
+          };
+        });
         
         return toolsWithNumbers;
       } catch (error) {
@@ -112,6 +128,22 @@ export function TrendingToolsSection() {
 
   // Get the current active category object
   const currentCategory = categoriesWithTools.find(c => c.id === activeCategory) || categoriesWithTools[0];
+
+  // Get category-specific button text
+  const getCategoryButtonText = (categoryId: string) => {
+    switch (categoryId) {
+      case "latest":
+        return "More new AI (3702)";
+      case "top-trends":
+        return "See Top 100";
+      case "image-generators":
+        return "See all category (210)";
+      case "writing":
+        return "See all category (198)";
+      default:
+        return "View all";
+    }
+  };
 
   return (
     <section className="py-12 md:py-16 bg-background">
@@ -142,7 +174,7 @@ export function TrendingToolsSection() {
               <GlassCard 
                 className={`p-0 overflow-hidden h-[470px] ${
                   category.id === activeCategory 
-                    ? 'ring-2 ring-primary ring-opacity-50' 
+                    ? 'ring-1 ring-primary/50' 
                     : 'hover:ring-1 hover:ring-primary/30'
                 }`}
               >
@@ -163,84 +195,98 @@ export function TrendingToolsSection() {
                 </div>
                 
                 {/* Card Content */}
-                <div className="p-2 h-[400px] overflow-y-auto">
+                <div className="h-[380px] overflow-y-auto scrollbar-thin">
                   {isLoading && category.id === activeCategory ? (
                     <div className="flex justify-center items-center h-full">
                       <ModernLoadingIndicator variant="dots" size="md" />
                     </div>
                   ) : (
                     category.id === activeCategory && (
-                      <ul className="space-y-1">
-                        {currentCategory.tools.map((tool, index) => (
-                          <li key={tool.id} className="group">
-                            <Link 
-                              to={`/tools/${tool.id}`}
-                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-                            >
-                              <span className="w-7 h-7 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
-                                {index + 1}
-                              </span>
-                              
-                              {tool.logo_url ? (
-                                <img 
-                                  src={tool.logo_url} 
-                                  alt={tool.company_name || tool.name} 
-                                  className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-                                />
-                              ) : (
-                                <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                                  <Star className="h-3.5 w-3.5 text-primary/70" />
-                                </div>
-                              )}
-                              
-                              <span className="line-clamp-1 text-sm font-medium flex-grow">
-                                {tool.company_name || tool.name}
-                              </span>
-                              
-                              {tool.trending_number && tool.trending_number <= 3 && (
-                                <Badge 
-                                  variant="outline" 
-                                  className="bg-primary/5 border-primary/20 text-primary text-xs"
+                      <Table>
+                        <TableBody>
+                          {currentCategory.tools.map((tool, index) => (
+                            <TableRow key={tool.id} className="group border-none hover:bg-secondary/20">
+                              <TableCell className="p-0">
+                                <Link 
+                                  to={`/tools/${tool.id}`}
+                                  className="flex items-center gap-2 py-3 px-4 w-full"
                                 >
-                                  <TrendingUp size={10} className="mr-1" />
-                                  Hot
-                                </Badge>
-                              )}
-                              
-                              <ArrowRight size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </Link>
-                          </li>
-                        ))}
-                        
-                        {currentCategory.tools.length === 0 && (
-                          <div className="flex flex-col items-center justify-center h-60 text-center px-4">
-                            <div className="bg-secondary/50 w-12 h-12 rounded-full flex items-center justify-center mb-3">
-                              {currentCategory.icon}
-                            </div>
-                            <h4 className="font-medium">No tools found</h4>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              No tools are currently available in this category
-                            </p>
-                          </div>
-                        )}
-                      </ul>
+                                  {/* Tool number */}
+                                  <span className="text-sm text-muted-foreground w-4 flex-shrink-0">
+                                    {index + 1}.
+                                  </span>
+                                  
+                                  {/* Tool logo */}
+                                  {tool.logo_url ? (
+                                    <img 
+                                      src={tool.logo_url} 
+                                      alt={tool.company_name || tool.name} 
+                                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                                      <Star className="h-3 w-3 text-primary/70" />
+                                    </div>
+                                  )}
+                                  
+                                  {/* Tool name */}
+                                  <span className="line-clamp-1 text-sm flex-grow">
+                                    {tool.company_name || tool.name}
+                                  </span>
+                                  
+                                  {/* Trend stats for top-trends category */}
+                                  {category.id === "top-trends" && tool.trend_stats && (
+                                    <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-xs">
+                                      {tool.trend_stats}
+                                    </Badge>
+                                  )}
+                                  
+                                  {/* Hot badge for top 3 */}
+                                  {index < 3 && category.id !== "top-trends" && (
+                                    <Badge 
+                                      variant="outline" 
+                                      className="bg-primary/5 border-primary/20 text-primary text-xs"
+                                    >
+                                      <TrendingUp size={10} className="mr-1" />
+                                      Hot
+                                    </Badge>
+                                  )}
+                                  
+                                  {/* External link arrow */}
+                                  <ArrowRight size={14} className="text-muted-foreground ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </Link>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          
+                          {currentCategory.tools.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={5}>
+                                <div className="flex flex-col items-center justify-center h-60 text-center px-4">
+                                  <div className="bg-secondary/50 w-12 h-12 rounded-full flex items-center justify-center mb-3">
+                                    {currentCategory.icon}
+                                  </div>
+                                  <h4 className="font-medium">No tools found</h4>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    No tools are currently available in this category
+                                  </p>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
                     )
                   )}
                 </div>
                 
                 {/* Card Footer */}
-                <div className="p-3 border-t border-border bg-secondary/10">
+                <div className="p-3 border-t border-border bg-secondary/5">
                   <Link 
                     to="/tools" 
-                    className="w-full flex items-center justify-center gap-1.5 text-sm text-center py-1.5 rounded-md bg-background hover:bg-secondary/50 transition-colors"
+                    className="w-full flex items-center justify-center gap-1.5 text-xs text-center py-2 rounded-md bg-background hover:bg-secondary/50 transition-colors"
                   >
-                    {category.id === "latest" ? (
-                      <>More new AI (3702) <ArrowRight size={14} /></>
-                    ) : category.id === "top-trends" ? (
-                      <>See Top 100 <ArrowRight size={14} /></>
-                    ) : (
-                      <>See all category (210) <ArrowRight size={14} /></>
-                    )}
+                    {getCategoryButtonText(category.id)} <ArrowRight size={12} />
                   </Link>
                 </div>
               </GlassCard>

@@ -1,3 +1,4 @@
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ToolsSection } from "@/components/home/ToolsSection";
@@ -85,9 +86,6 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* New Trending Tools Section */}
-        <TrendingToolsSection />
-        
         {/* Featured Tools Section */}
         <div className="relative">
           <div className="bg-background/80 pt-16">
@@ -126,6 +124,9 @@ const Index = () => {
             />
           </div>
         </div>
+        
+        {/* Trending Tools Section - Repositioned to be after Recently Added Tools */}
+        <TrendingToolsSection />
         
         {/* CTA Section */}
         <div className="relative">
