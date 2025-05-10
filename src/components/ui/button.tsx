@@ -14,17 +14,18 @@ const buttonVariants = cva(
         destructive:
           "bg-hostinger-error text-white hover:bg-hostinger-error/90 hover:shadow-md hover:shadow-hostinger-error/20 hover:-translate-y-0.5 dark:bg-hostinger-error/90 dark:hover:bg-hostinger-error",
         outline:
-          "border border-input bg-background hover:bg-hostinger-accent/10 hover:text-hostinger-accent hover:border-hostinger-accent hover:shadow-sm hover:-translate-y-0.5 dark:border-hostinger-accent/30 dark:hover:bg-hostinger-accent/20",
+          "border border-input bg-background hover:bg-hostinger-brand/10 hover:text-hostinger-brand hover:border-hostinger-brand hover:shadow-sm hover:-translate-y-0.5 dark:border-hostinger-brand/30 dark:hover:bg-hostinger-brand/20",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-sm hover:-translate-y-0.5 dark:bg-secondary/30 dark:text-secondary-foreground dark:hover:bg-secondary/40",
-        ghost: "hover:bg-hostinger-accent/10 hover:text-hostinger-accent hover:shadow-sm dark:hover:bg-hostinger-accent/20",
-        link: "text-hostinger-link underline-offset-4 hover:underline hover:text-hostinger-link/90 dark:text-hostinger-accent dark:hover:text-hostinger-accent/80",
+        ghost: "hover:bg-hostinger-brand/10 hover:text-hostinger-brand hover:shadow-sm dark:hover:bg-hostinger-brand/20",
+        link: "text-hostinger-brand underline-offset-4 hover:underline hover:text-hostinger-brand/90 dark:text-hostinger-brand dark:hover:text-hostinger-brand/80",
         gradient: "bg-gradient-to-r from-hostinger-brand to-hostinger-accent text-white hover:shadow-md hover:shadow-hostinger-brand/20 hover:-translate-y-0.5 hover:opacity-90 dark:from-hostinger-brand/90 dark:to-hostinger-accent/90 dark:hover:from-hostinger-brand dark:hover:to-hostinger-accent",
-        active: "bg-hostinger-active text-white hover:bg-hostinger-active/90 hover:shadow-md hover:shadow-hostinger-active/20 hover:-translate-y-0.5 dark:bg-hostinger-active/90 dark:hover:bg-hostinger-active",
+        // Simplified variants - now using the main brand color for consistency
+        active: "bg-hostinger-brand text-white hover:bg-hostinger-brand/90 hover:shadow-md hover:shadow-hostinger-brand/20 hover:-translate-y-0.5 dark:bg-hostinger-brand/90 dark:hover:bg-hostinger-brand",
         success: "bg-hostinger-success text-white hover:bg-hostinger-successHover hover:shadow-md hover:shadow-hostinger-success/20 hover:-translate-y-0.5 dark:bg-hostinger-success/90 dark:hover:bg-hostinger-success",
         warning: "bg-hostinger-warning text-black hover:bg-hostinger-warning/90 hover:shadow-md hover:shadow-hostinger-warning/20 hover:-translate-y-0.5 dark:text-black dark:bg-hostinger-warning/90 dark:hover:bg-hostinger-warning",
-        international: "bg-hostinger-international text-white hover:bg-hostinger-international/90 hover:shadow-md hover:shadow-hostinger-international/20 hover:-translate-y-0.5 dark:bg-hostinger-international/90 dark:hover:bg-hostinger-international",
-        accent: "bg-hostinger-accent text-white hover:bg-hostinger-accent/90 hover:shadow-md hover:shadow-hostinger-accent/20 hover:-translate-y-0.5 dark:bg-hostinger-accent/90 dark:hover:bg-hostinger-accent",
+        international: "bg-hostinger-brand text-white hover:bg-hostinger-brand/90 hover:shadow-md hover:shadow-hostinger-brand/20 hover:-translate-y-0.5 dark:bg-hostinger-brand/90 dark:hover:bg-hostinger-brand",
+        accent: "bg-hostinger-brand text-white hover:bg-hostinger-brand/90 hover:shadow-md hover:shadow-hostinger-brand/20 hover:-translate-y-0.5 dark:bg-hostinger-brand/90 dark:hover:bg-hostinger-brand",
       },
       size: {
         default: "h-10 px-4 py-2",
