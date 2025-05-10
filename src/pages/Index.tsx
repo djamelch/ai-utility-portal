@@ -100,6 +100,12 @@ const Index = () => {
           </div>
         </div>
         
+        {/* Category Browser Section - Moved to after Hero for better visibility */}
+        <CategorySection />
+        
+        {/* Trending Tools Section */}
+        <TrendingToolsSection />
+        
         {/* Top Rated Tools Section */}
         <div className="relative">
           <div className="pt-12 bg-secondary/30 dark:bg-secondary/10">
@@ -126,9 +132,6 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Category Browser Section - Moved to after Recently Added Tools */}
-        <TrendingToolsSection />
-                
         {/* CTA Section */}
         <div className="relative">
           <GradientBackground variant="primary" className="py-12 md:py-16" intensity="light">
