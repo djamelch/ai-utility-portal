@@ -1,11 +1,10 @@
-
 import { ArrowRight, Star, TrendingUp, Image, Feather } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ModernLoadingIndicator } from "../ui/ModernLoadingIndicator";
 import { Badge } from "../ui/badge";
 import { 
@@ -20,6 +19,7 @@ interface ToolCategory {
   title: string;
   icon: React.ReactNode;
   tools: Tool[];
+  count?: number; // Add count property to track number of tools
 }
 
 interface Tool {
@@ -33,9 +33,10 @@ interface Tool {
 
 export function TrendingToolsSection() {
   const [activeCategory, setActiveCategory] = useState<string>("latest");
+  const [sortedCategories, setSortedCategories] = useState<ToolCategory[]>([]);
   
-  // Define categories with their IDs and titles
-  const categories: ToolCategory[] = [
+  // Define initial categories with their IDs and titles
+  const initialCategories: ToolCategory[] = [
     {
       id: "latest",
       title: "Latest AI",
@@ -61,6 +62,68 @@ export function TrendingToolsSection() {
       tools: []
     }
   ];
+
+  // Fetch tool counts for each category
+  const { data: categoryCounts, isLoading: isLoadingCounts } = useQuery({
+    queryKey: ["category-counts"],
+    queryFn: async () => {
+      try {
+        // Get count for image generators
+        const { count: imageCount, error: imageError } = await supabase
+          .from("tools")
+          .select("*", { count: "exact", head: true })
+          .eq("primary_task", "Image Generation");
+        
+        if (imageError) console.error("Error fetching image tools count:", imageError);
+        
+        // Get count for writing tools
+        const { count: writingCount, error: writingError } = await supabase
+          .from("tools")
+          .select("*", { count: "exact", head: true })
+          .eq("primary_task", "Writing");
+        
+        if (writingError) console.error("Error fetching writing tools count:", writingError);
+        
+        // Get total count for latest
+        const { count: totalCount, error: totalError } = await supabase
+          .from("tools")
+          .select("*", { count: "exact", head: true });
+        
+        if (totalError) console.error("Error fetching total tools count:", totalError);
+        
+        return {
+          "image-generators": imageCount || 0,
+          "writing": writingCount || 0,
+          "latest": totalCount || 0,
+          "top-trends": totalCount || 0, // Same as latest for now, could be different metric
+        };
+      } catch (error) {
+        console.error("Error fetching category counts:", error);
+        return {};
+      }
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+
+  // Sort categories based on tool counts (except keep "latest" and "top-trends" at the top)
+  useEffect(() => {
+    if (categoryCounts) {
+      const topCategories = initialCategories.filter(cat => 
+        cat.id === "latest" || cat.id === "top-trends"
+      );
+      
+      const otherCategories = initialCategories.filter(cat => 
+        cat.id !== "latest" && cat.id !== "top-trends"
+      ).map(cat => ({
+        ...cat,
+        count: categoryCounts[cat.id] || 0
+      })).sort((a, b) => (b.count || 0) - (a.count || 0));
+      
+      setSortedCategories([...topCategories, ...otherCategories]);
+    } else {
+      setSortedCategories(initialCategories);
+    }
+  }, [categoryCounts]);
 
   // Fetch tools from Supabase
   const { data: toolsData, isLoading } = useQuery({
@@ -119,7 +182,7 @@ export function TrendingToolsSection() {
   });
 
   // Update the tools array in the categories
-  const categoriesWithTools = categories.map(category => {
+  const categoriesWithTools = sortedCategories.map(category => {
     if (category.id === activeCategory && toolsData) {
       return { ...category, tools: toolsData };
     }
@@ -131,17 +194,19 @@ export function TrendingToolsSection() {
 
   // Get category-specific button text
   const getCategoryButtonText = (categoryId: string) => {
+    const count = categoryCounts ? categoryCounts[categoryId] || 0 : 0;
+    
     switch (categoryId) {
       case "latest":
-        return "More new AI (3702)";
+        return `More new AI (${count})`;
       case "top-trends":
         return "See Top 100";
       case "image-generators":
-        return "See all category (210)";
+        return `See all category (${count})`;
       case "writing":
-        return "See all category (198)";
+        return `See all category (${count})`;
       default:
-        return "View all";
+        return `View all (${count})`;
     }
   };
 
@@ -169,7 +234,7 @@ export function TrendingToolsSection() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Category cards */}
-          {categories.map((category) => (
+          {categoriesWithTools.map((category) => (
             <MotionWrapper key={category.id} animation="fadeIn">
               <GlassCard 
                 className={`p-0 overflow-hidden h-[470px] ${
@@ -190,6 +255,9 @@ export function TrendingToolsSection() {
                       {category.icon}
                     </span>
                     <h3 className="font-medium">{category.title}</h3>
+                    {category.count !== undefined && category.id !== "latest" && category.id !== "top-trends" && (
+                      <span className="text-xs text-muted-foreground">({category.count})</span>
+                    )}
                   </div>
                   <ArrowRight size={16} className={`${category.id === activeCategory ? 'text-primary' : 'text-muted-foreground'}`} />
                 </div>
