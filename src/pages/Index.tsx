@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ToolsSection } from "@/components/home/ToolsSection";
@@ -10,9 +9,9 @@ import { GradientBackground } from "@/components/ui/GradientBackground";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useEffect, useState } from "react";
-import { Hero } from "@/components/home/Hero"; // Import the Hero component
-import { TrendingToolsSection } from "@/components/home/TrendingToolsSection"; // Import the TrendingToolsSection component
-import { CategorySection } from "@/components/home/CategorySection"; // Import the CategorySection component
+import { Hero } from "@/components/home/Hero"; 
+import { TrendingToolsSection } from "@/components/home/TrendingToolsSection"; 
+import { CategorySection } from "@/components/home/CategorySection"; 
 
 const Index = () => {
   const [sectionLimits, setSectionLimits] = useState({
@@ -72,6 +71,11 @@ const Index = () => {
     };
   };
 
+  // Ensure sections are visible when page loads
+  useEffect(() => {
+    console.log("Index page mounted - ensuring sections are visible");
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SEOHead 
@@ -87,7 +91,7 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* Category Browser Section - Moved before Featured Tools */}
+        {/* Category Browser Section - High priority placement */}
         <CategorySection />
         
         {/* Trending Tools Section */}
@@ -134,7 +138,7 @@ const Index = () => {
                 
         {/* CTA Section */}
         <div className="relative">
-          <GradientBackground variant="primary" className="py-12 md:py-16" intensity="light">
+          <GradientBackground variant="primary" className="py-12 md:py-16" intensity="light" id="cta-section">
             <div className="container-tight">
               <MotionWrapper animation="fadeIn">
                 <GlassCard 

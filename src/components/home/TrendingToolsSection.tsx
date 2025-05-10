@@ -1,4 +1,3 @@
-
 import { ArrowRight, Star, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
@@ -47,6 +46,7 @@ const categoryColors = [
 export function TrendingToolsSection() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [displayCount, setDisplayCount] = useState(12); // Show 12 categories initially
+  const [isVisible, setIsVisible] = useState(true);
 
   // Fetch categories and their tools
   const { data, isLoading, error } = useQuery({
@@ -168,8 +168,20 @@ export function TrendingToolsSection() {
     }
   }, [data]);
 
+  // Ensure component stays visible
+  useEffect(() => {
+    console.log("TrendingToolsSection mounted and visible");
+    setIsVisible(true);
+    return () => console.log("TrendingToolsSection unmounted");
+  }, []);
+
+  if (!isVisible) {
+    console.log("Component is marked as invisible but should be visible");
+    setIsVisible(true);
+  }
+
   return (
-    <section className="py-12 md:py-16 bg-background">
+    <section className="py-12 md:py-16 bg-background" id="trending-section">
       <div className="container-wide">
         <MotionWrapper animation="fadeIn">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
@@ -249,6 +261,8 @@ function CategoryCard({ category }: { category: Category }) {
   if (!category || !category.tools) {
     return null;
   }
+
+  console.log("Rendering CategoryCard for:", category.name);
 
   return (
     <Link to={`/tools?category=${category.id}`} className="group">
