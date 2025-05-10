@@ -57,9 +57,17 @@ export function TrendingToolsSection() {
       console.log("Fetching categories and tools...");
       try {
         // First get all distinct primary tasks (categories)
-        // We need to use raw SQL for the aggregation since the Supabase JS client has limitations
+        // We need to use raw SQL since the Supabase JS client has limitations with aggregation
         const { data: taskCounts, error: distinctError } = await supabase
-          .rpc('get_primary_task_counts');
+          .from('tools')
+          .select('primary_task, count')
+          .not('primary_task', 'is', null)
+          .select(`
+            primary_task,
+            count:id(count)
+          `)
+          .groupBy('primary_task')
+          .order('count', { ascending: false });
         
         if (distinctError) {
           console.error("Error fetching distinct tasks:", distinctError);
@@ -93,7 +101,7 @@ export function TrendingToolsSection() {
         const regularCategories: Category[] = [];
         
         // Process each distinct primary task
-        if (taskCounts) {
+        if (taskCounts && Array.isArray(taskCounts)) {
           console.log(`Processing ${taskCounts.length} distinct tasks...`);
           
           for (let i = 0; i < taskCounts.length; i++) {
@@ -114,7 +122,7 @@ export function TrendingToolsSection() {
             regularCategories.push({
               id: categoryId,
               name: taskName,
-              count: task.count || 0,
+              count: typeof task.count === 'number' ? task.count : 0,
               tools: [] as Tool[],
               color: categoryColors[i % categoryColors.length],
             });

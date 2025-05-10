@@ -273,6 +273,13 @@ export type Database = {
         Args: { user_id: string; user_role: string }
         Returns: undefined
       }
+      get_primary_task_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          primary_task: string
+          count: number
+        }[]
+      }
       get_profile_by_id: {
         Args: { user_id: string }
         Returns: {
