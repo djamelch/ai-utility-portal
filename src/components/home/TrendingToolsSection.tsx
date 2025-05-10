@@ -75,14 +75,14 @@ export function TrendingToolsSection() {
             id: "latest",
             name: "Latest AI",
             count: 0,
-            tools: [],
+            tools: [] as Tool[],
             color: categoryColors[10], // Assign a color
           },
           {
             id: "top-trends",
             name: "Top 50 Trends [24H]",
             count: 0,
-            tools: [],
+            tools: [] as Tool[],
             color: categoryColors[11], // Assign a color
           }
         ];
@@ -117,14 +117,14 @@ export function TrendingToolsSection() {
               id: taskName.toLowerCase().replace(/\s+/g, '-'),
               name: taskName,
               count: count || 0,
-              tools: [],
+              tools: [] as Tool[],
               color: categoryColors[i % categoryColors.length], // Cycle through colors
             };
           });
 
           // Wait for all counts to be fetched
           const categoriesResults = await Promise.all(categoriesPromises);
-          regularCategories.push(...categoriesResults.filter(Boolean) as Category[]);
+          regularCategories.push(...(categoriesResults.filter(Boolean) as Category[]));
         }
         
         console.log("Regular categories before sorting:", regularCategories);
@@ -139,7 +139,7 @@ export function TrendingToolsSection() {
         
         // Now fetch tools for each category
         const categoriesWithToolsPromises = allCategories.map(async (category) => {
-          let query = supabase.from("tools").select("id, company_name as name, slug, logo_url").limit(15);
+          let query = supabase.from("tools").select("id, company_name, slug, logo_url").limit(15);
           
           if (category.id === "latest") {
             // For "Latest AI" category, get the most recently added tools
@@ -161,10 +161,18 @@ export function TrendingToolsSection() {
           
           console.log(`Category: ${category.name}, Tools fetched: ${toolsData?.length || 0}`);
           
+          // Map the tools data to match our Tool interface
+          const mappedTools: Tool[] = (toolsData || []).map(tool => ({
+            id: String(tool.id),
+            name: tool.company_name || "",
+            slug: tool.slug || "",
+            logo_url: tool.logo_url || ""
+          }));
+          
           return { 
             ...category, 
-            tools: toolsData || [], 
-            count: toolsData?.length || 0 
+            tools: mappedTools, 
+            count: mappedTools.length || 0 
           };
         });
         
