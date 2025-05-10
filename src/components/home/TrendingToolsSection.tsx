@@ -9,6 +9,8 @@ import { useState, useEffect } from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import { Card, CardContent } from "../ui/card";
+import { toast } from "sonner";
 
 interface Category {
   id: string;
@@ -52,7 +54,6 @@ export function TrendingToolsSection() {
     queryKey: ["categories-with-tools"],
     queryFn: async () => {
       try {
-        console.log("Starting category fetch...");
         // First get all distinct primary tasks (categories)
         const { data: distinctTasks, error: distinctError } = await supabase
           .from("tools")
@@ -64,8 +65,6 @@ export function TrendingToolsSection() {
           console.error("Error fetching distinct tasks:", distinctError);
           throw distinctError;
         }
-        
-        console.log("Distinct tasks fetched:", distinctTasks);
         
         // Handle special categories first
         const specialCategories = [
@@ -122,8 +121,6 @@ export function TrendingToolsSection() {
         // Merge special and regular categories
         const allCategories = [...specialCategories, ...sortedRegularCategories];
         
-        console.log("Categories before fetching tools:", allCategories);
-        
         // Now fetch tools for each category
         for (let category of allCategories) {
           let query = supabase.from("tools").select("id, company_name as name, slug, logo_url").limit(15);
@@ -146,8 +143,6 @@ export function TrendingToolsSection() {
             continue;
           }
           
-          console.log(`Tools for ${category.name}:`, toolsData);
-          
           category.tools = toolsData || [];
           category.count = category.tools.length;
         }
@@ -155,11 +150,10 @@ export function TrendingToolsSection() {
         // Filter out categories with no tools
         const categoriesWithTools = allCategories.filter(cat => cat.count > 0);
         
-        console.log("Final categories with tools:", categoriesWithTools);
-        
         return categoriesWithTools;
       } catch (error) {
         console.error("Error fetching categories with tools:", error);
+        toast.error("Failed to load categories");
         return [];
       }
     },
@@ -169,7 +163,6 @@ export function TrendingToolsSection() {
   // Update categories with data when available
   useEffect(() => {
     if (data) {
-      console.log("Setting categories:", data);
       setCategories(data);
     }
   }, [data]);
@@ -177,7 +170,7 @@ export function TrendingToolsSection() {
   return (
     <section className="py-12 md:py-16 bg-background">
       <div className="container-wide">
-        <MotionWrapper animation="fadeIn">
+        <MotionWrapper animation="none">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold">Browse Categories</h2>
@@ -197,7 +190,7 @@ export function TrendingToolsSection() {
         </MotionWrapper>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 12 }).map((_, index) => (
               <SkeletonCategoryCard key={index} />
             ))}
@@ -205,6 +198,10 @@ export function TrendingToolsSection() {
         ) : error ? (
           <div className="p-8 text-center">
             <p className="text-destructive">Error loading categories</p>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">No categories found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -214,7 +211,7 @@ export function TrendingToolsSection() {
           </div>
         )}
         
-        <MotionWrapper animation="fadeIn" delay="delay-300" className="mt-10 text-center">
+        <MotionWrapper animation="none" className="mt-10 text-center">
           <Link 
             to="/tools" 
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 transition-colors"
@@ -231,7 +228,7 @@ export function TrendingToolsSection() {
 // Skeleton loader for category cards
 function SkeletonCategoryCard() {
   return (
-    <div className="h-[420px] rounded-lg border bg-card p-4 shadow-sm">
+    <Card className="h-[420px] rounded-lg border p-4 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <Skeleton className="h-6 w-1/2" />
         <Skeleton className="h-5 w-16" />
@@ -241,7 +238,7 @@ function SkeletonCategoryCard() {
           <Skeleton key={i} className="h-4 w-full" />
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -249,65 +246,62 @@ function SkeletonCategoryCard() {
 function CategoryCard({ category }: { category: Category }) {
   return (
     <Link to={`/tools?category=${category.id}`} className="group">
-      <GlassCard 
-        className="h-full backdrop-blur-sm border hover:shadow-md transition-all duration-300"
-        animation="none"
-        hoverEffect
-        variant="elevated"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            {category.id === "latest" ? (
-              <Star size={16} className="text-amber-500" />
-            ) : category.id === "top-trends" ? (
-              <TrendingUp size={16} className="text-primary" />
-            ) : (
-              <span className={`w-3 h-3 rounded-full ${category.color}`}></span>
-            )}
-            {category.name}
-          </h3>
-          <Badge variant="outline" className="text-xs">
-            {category.count}
-          </Badge>
-        </div>
-        
-        <div className="space-y-1.5 text-sm">
-          {category.tools.slice(0, 12).map((tool) => (
-            <div key={tool.id} className="flex items-center gap-2 py-0.5">
-              {tool.logo_url ? (
-                <img 
-                  src={tool.logo_url} 
-                  alt={tool.name} 
-                  className="w-4 h-4 rounded-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.onerror = null;
-                    target.src = "/placeholder.svg";
-                  }}
-                />
+      <Card className="h-full border hover:shadow-md transition-all duration-300 overflow-hidden">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              {category.id === "latest" ? (
+                <Star size={16} className="text-amber-500" />
+              ) : category.id === "top-trends" ? (
+                <TrendingUp size={16} className="text-primary" />
               ) : (
-                <div className="w-4 h-4 rounded-full bg-primary/10"></div>
+                <span className={`w-3 h-3 rounded-full ${category.color}`}></span>
               )}
-              <span className="text-muted-foreground hover:text-foreground truncate transition-colors">
-                {tool.name}
-              </span>
-            </div>
-          ))}
+              {category.name}
+            </h3>
+            <Badge variant="outline" className="text-xs">
+              {category.count}
+            </Badge>
+          </div>
           
-          {/* Show indicator if there are more tools than shown */}
-          {category.tools.length > 12 && (
-            <div className="pt-2 text-right">
-              <span className="text-xs text-muted-foreground">
-                +{category.tools.length - 12} more
-              </span>
-            </div>
-          )}
-        </div>
-        
-        <div className="absolute bottom-2 right-2 opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-          <ArrowRight size={14} className="text-primary" />
-        </div>
-      </GlassCard>
+          <div className="space-y-1.5 text-sm">
+            {category.tools.slice(0, 12).map((tool) => (
+              <div key={tool.id} className="flex items-center gap-2 py-0.5">
+                {tool.logo_url ? (
+                  <img 
+                    src={tool.logo_url} 
+                    alt={tool.name} 
+                    className="w-4 h-4 rounded-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = "/placeholder.svg";
+                    }}
+                  />
+                ) : (
+                  <div className="w-4 h-4 rounded-full bg-primary/10"></div>
+                )}
+                <span className="text-muted-foreground hover:text-foreground truncate transition-colors">
+                  {tool.name}
+                </span>
+              </div>
+            ))}
+            
+            {/* Show indicator if there are more tools than shown */}
+            {category.tools.length > 12 && (
+              <div className="pt-2 text-right">
+                <span className="text-xs text-muted-foreground">
+                  +{category.tools.length - 12} more
+                </span>
+              </div>
+            )}
+          </div>
+          
+          <div className="absolute bottom-2 right-2 opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+            <ArrowRight size={14} className="text-primary" />
+          </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 }

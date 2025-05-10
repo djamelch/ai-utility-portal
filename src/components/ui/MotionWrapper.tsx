@@ -25,18 +25,23 @@ export function MotionWrapper({
   threshold = 0.1,
   once = true,
 }: MotionWrapperProps) {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(animation === "none");
   const [isBrowser, setIsBrowser] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   // Check if we're in a browser environment
   useEffect(() => {
     setIsBrowser(true);
-  }, []);
+    
+    // If animation is "none", set isVisible to true immediately
+    if (animation === "none") {
+      setIsVisible(true);
+    }
+  }, [animation]);
 
   useEffect(() => {
-    // Skip in non-browser environments
-    if (!isBrowser) {
+    // Skip in non-browser environments or if animation is "none"
+    if (!isBrowser || animation === "none") {
       return;
     }
     
@@ -63,13 +68,13 @@ export function MotionWrapper({
         observer.unobserve(current);
       }
     };
-  }, [once, threshold, isBrowser]);
+  }, [once, threshold, isBrowser, animation]);
 
   const animationClass = animation === "none" ? "" : `animate-${animation}`;
   const delayClass = delay === "none" ? "" : delay;
 
-  // If we're not in a browser, render without animation classes
-  if (!isBrowser) {
+  // If we're not in a browser or animation is "none", render without opacity-0
+  if (!isBrowser || animation === "none") {
     return <div className={className}>{children}</div>;
   }
 
@@ -77,7 +82,7 @@ export function MotionWrapper({
     <div
       ref={ref}
       className={cn(
-        "opacity-0",
+        isVisible ? "" : "opacity-0",
         isVisible && animationClass,
         isVisible && delayClass,
         className
