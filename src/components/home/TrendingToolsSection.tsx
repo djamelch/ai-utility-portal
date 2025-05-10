@@ -11,6 +11,7 @@ import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import { Card, CardContent } from "../ui/card";
 import { toast } from "sonner";
+import { LoadingIndicator } from "../ui/LoadingIndicator";
 
 interface Tool {
   id: string;
@@ -58,9 +59,10 @@ export function TrendingToolsSection() {
         // First get all distinct primary tasks (categories)
         const { data: distinctTasks, error: distinctError } = await supabase
           .from("tools")
-          .select('primary_task')
+          .select('primary_task, count(*)')
           .not('primary_task', 'is', null)
-          .order('primary_task');
+          .group('primary_task')
+          .order('count', { ascending: false }); // Order by count descending
         
         if (distinctError) {
           console.error("Error fetching distinct tasks:", distinctError);
@@ -87,6 +89,9 @@ export function TrendingToolsSection() {
           }
         ];
         
+        // Create a set to track unique category IDs
+        const uniqueCategoryIds = new Set<string>();
+        
         // Transform categories and count tools for each
         const regularCategories: Category[] = [];
         
@@ -94,52 +99,39 @@ export function TrendingToolsSection() {
         if (distinctTasks) {
           console.log(`Processing ${distinctTasks.length} distinct tasks...`);
           
-          // Use Promise.all to fetch all tools counts in parallel
-          const categoriesPromises = distinctTasks.map(async (task, i) => {
+          for (let i = 0; i < distinctTasks.length; i++) {
+            const task = distinctTasks[i];
             const taskName = task.primary_task;
-            if (!taskName) return null; // Skip null or undefined task names
+            if (!taskName) continue;
             
-            // Count tools for this category
-            const { count, error: countError } = await supabase
-              .from("tools")
-              .select('*', { count: 'exact', head: true })
-              .eq('primary_task', taskName);
+            const categoryId = taskName.toLowerCase().replace(/\s+/g, '-');
             
-            if (countError) {
-              console.error(`Error counting tools for ${taskName}:`, countError);
-              return null; // Skip this category but continue with others
+            // Check for duplicates
+            if (uniqueCategoryIds.has(categoryId)) {
+              console.log(`Skipping duplicate category: ${taskName}`);
+              continue;
             }
-
-            console.log(`Category: ${taskName}, Tools count: ${count}`);
             
-            // Create category object
-            return {
-              id: taskName.toLowerCase().replace(/\s+/g, '-'),
+            uniqueCategoryIds.add(categoryId);
+            
+            regularCategories.push({
+              id: categoryId,
               name: taskName,
-              count: count || 0,
+              count: task.count || 0,
               tools: [] as Tool[],
-              color: categoryColors[i % categoryColors.length], // Cycle through colors
-            };
-          });
-
-          // Wait for all counts to be fetched
-          const categoriesResults = await Promise.all(categoriesPromises);
-          regularCategories.push(...(categoriesResults.filter(Boolean) as Category[]));
+              color: categoryColors[i % categoryColors.length],
+            });
+          }
         }
         
-        console.log("Regular categories before sorting:", regularCategories);
-        
-        // Sort regular categories by count (highest to lowest)
-        const sortedRegularCategories = regularCategories.sort((a, b) => b.count - a.count);
+        console.log("Regular categories before fetching tools:", regularCategories);
         
         // Merge special and regular categories
-        const allCategories = [...specialCategories, ...sortedRegularCategories];
-        
-        console.log("All categories before fetching tools:", allCategories);
+        const allCategories = [...specialCategories, ...regularCategories];
         
         // Now fetch tools for each category
         const categoriesWithToolsPromises = allCategories.map(async (category) => {
-          let query = supabase.from("tools").select("id, company_name, slug, logo_url").limit(15);
+          let query = supabase.from("tools").select("id, company_name as name, slug, logo_url").limit(15);
           
           if (category.id === "latest") {
             // For "Latest AI" category, get the most recently added tools
@@ -164,7 +156,7 @@ export function TrendingToolsSection() {
           // Map the tools data to match our Tool interface
           const mappedTools: Tool[] = (toolsData || []).map(tool => ({
             id: String(tool.id),
-            name: tool.company_name || "",
+            name: tool.name || "",
             slug: tool.slug || "",
             logo_url: tool.logo_url || ""
           }));
@@ -172,7 +164,7 @@ export function TrendingToolsSection() {
           return { 
             ...category, 
             tools: mappedTools, 
-            count: mappedTools.length || 0 
+            count: category.count || mappedTools.length 
           };
         });
         
@@ -182,6 +174,9 @@ export function TrendingToolsSection() {
         // Filter out categories with no tools
         const finalCategories = categoriesWithTools.filter(cat => cat.count > 0);
         
+        // Sort by count (highest to lowest)
+        finalCategories.sort((a, b) => b.count - a.count);
+        
         console.log(`Final categories with tools: ${finalCategories.length}`);
         console.log("Sample category:", finalCategories[0]);
         
@@ -189,7 +184,7 @@ export function TrendingToolsSection() {
       } catch (error) {
         console.error("Error fetching categories with tools:", error);
         toast.error("Failed to load categories");
-        return [];
+        return [] as Category[];
       }
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
@@ -232,10 +227,8 @@ export function TrendingToolsSection() {
         </MotionWrapper>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 12 }).map((_, index) => (
-              <SkeletonCategoryCard key={index} />
-            ))}
+          <div className="flex justify-center items-center py-16">
+            <LoadingIndicator size={40} text="Loading categories..." />
           </div>
         ) : error ? (
           <div className="p-8 text-center">
@@ -270,23 +263,6 @@ export function TrendingToolsSection() {
         </MotionWrapper>
       </div>
     </section>
-  );
-}
-
-// Skeleton loader for category cards
-function SkeletonCategoryCard() {
-  return (
-    <Card className="h-[420px] rounded-lg border p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
-        <Skeleton className="h-6 w-1/2" />
-        <Skeleton className="h-5 w-16" />
-      </div>
-      <div className="space-y-2">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <Skeleton key={i} className="h-4 w-full" />
-        ))}
-      </div>
-    </Card>
   );
 }
 
