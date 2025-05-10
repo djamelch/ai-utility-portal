@@ -10,6 +10,8 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 interface Category {
   id: string;
@@ -22,6 +24,24 @@ interface Category {
 }
 
 export function CategorySection() {
+  const isMountedRef = useRef(false);
+  
+  useEffect(() => {
+    // Set mounted flag
+    isMountedRef.current = true;
+    
+    // Only log on first mount
+    if (isMountedRef.current) {
+      console.log("CategorySection mounted");
+    }
+    
+    return () => {
+      // Clean up
+      isMountedRef.current = false;
+      console.log("CategorySection unmounted");
+    };
+  }, []);
+
   const categories: Category[] = [
     { 
       id: "chatbots", 
@@ -115,8 +135,13 @@ export function CategorySection() {
     },
   ];
 
+  const handleCategoryClick = (categoryId: string) => {
+    // Show toast message that indicates successful navigation
+    toast.success(`Exploring ${categoryId} tools`);
+  };
+
   return (
-    <GradientBackground variant="subtle" className="section-padding" interactive>
+    <GradientBackground variant="subtle" className="py-16 md:py-20" interactive>
       <div className="container-wide">
         <MotionWrapper animation="fadeIn">
           <div className="text-center mb-12">
@@ -135,26 +160,22 @@ export function CategorySection() {
 
         <MotionWrapper animation="fadeIn" delay="delay-200">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <Link
                 key={category.id}
                 to={`/tools?category=${category.id}`}
-                className="group"
+                className="group block"
+                onClick={() => handleCategoryClick(category.id)}
               >
                 <GlassCard 
                   animation="none"
                   className={cn(
-                    "flex flex-col items-center p-6 relative overflow-hidden",
-                    "after:absolute after:inset-0 after:bg-gradient-to-br",
-                    `after:${category.color}`,
-                    "after:opacity-0 after:-z-10 after:transition-opacity after:duration-300",
-                    "group-hover:after:opacity-5",
-                    "before:absolute before:inset-0 before:bg-gradient-to-br",
-                    `before:${category.gradientFrom} before:${category.gradientTo}`,
-                    "before:opacity-0 before:-z-10 before:blur-xl before:scale-150",
-                    "before:transition-opacity before:duration-300 group-hover:before:opacity-100"
+                    "flex flex-col items-center p-6 relative overflow-hidden h-full",
+                    "transition-all duration-300 hover:shadow-md",
+                    "border border-border/50 hover:border-primary/20"
                   )}
                 >
+                  {/* Icon container with gradient background */}
                   <div className={cn(
                     "rounded-full p-3 bg-white/80 dark:bg-black/40 text-primary shadow-sm",
                     "group-hover:scale-110 transition-all duration-500 relative"
@@ -162,12 +183,18 @@ export function CategorySection() {
                     <category.icon size={24} className="transition-all duration-500 group-hover:rotate-6" />
                     <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary animate-ping opacity-0 group-hover:opacity-70"></span>
                   </div>
+                  
+                  {/* Category name */}
                   <h3 className="mt-4 font-medium text-center group-hover:text-primary transition-colors">
                     {category.name}
                   </h3>
+                  
+                  {/* Tool count */}
                   <span className="mt-1 text-sm text-muted-foreground">
                     {category.count} tools
                   </span>
+                  
+                  {/* Arrow indicator */}
                   <div className="absolute bottom-2 right-2 opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
                     <ArrowRight size={14} className="text-primary" />
                   </div>
