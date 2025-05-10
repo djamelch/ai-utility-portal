@@ -10,6 +10,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface Category {
   id: string;
@@ -22,6 +23,19 @@ interface Category {
 }
 
 export function CategorySection() {
+  // Add a state to track mounted status
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Set mounted to true after component mounts
+  useEffect(() => {
+    setIsMounted(true);
+    // Add some console logs to help debug the mounting/unmounting
+    console.log("CategorySection mounted");
+    return () => {
+      console.log("CategorySection unmounted");
+    };
+  }, []);
+
   const categories: Category[] = [
     { 
       id: "chatbots", 
