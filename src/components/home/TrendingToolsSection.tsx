@@ -1,3 +1,4 @@
+
 import { ArrowRight, Star, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
@@ -113,7 +114,7 @@ export function TrendingToolsSection() {
         
         // Now fetch tools for each category
         for (let category of allCategories) {
-          let query = supabase.from("tools").select("id, name, slug, logo_url").limit(15);
+          let query = supabase.from("tools").select("id, company_name as name, slug, logo_url").limit(15);
           
           if (category.id === "latest") {
             // For "Latest AI" category, get the most recently added tools
@@ -135,7 +136,12 @@ export function TrendingToolsSection() {
           category.count = category.tools.length;
         }
         
-        return allCategories;
+        // Filter out categories with no tools
+        const categoriesWithTools = allCategories.filter(cat => cat.count > 0);
+        
+        console.log("Fetched categories with tools:", categoriesWithTools);
+        
+        return categoriesWithTools;
       } catch (error) {
         console.error("Error fetching categories with tools:", error);
         return [];
@@ -147,6 +153,7 @@ export function TrendingToolsSection() {
   // Update categories with data when available
   useEffect(() => {
     if (data) {
+      console.log("Setting categories:", data);
       setCategories(data);
     }
   }, [data]);
