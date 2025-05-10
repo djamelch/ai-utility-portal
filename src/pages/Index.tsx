@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ToolsSection } from "@/components/home/ToolsSection";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useEffect, useState } from "react";
 import { Hero } from "@/components/home/Hero"; // Import the Hero component
+import { TrendingToolsSection } from "@/components/home/TrendingToolsSection"; // Import the new TrendingToolsSection component
 
 const Index = () => {
   const [sectionLimits, setSectionLimits] = useState({
@@ -84,6 +84,9 @@ const Index = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <Hero />
+        
+        {/* New Trending Tools Section */}
+        <TrendingToolsSection />
         
         {/* Featured Tools Section */}
         <div className="relative">
