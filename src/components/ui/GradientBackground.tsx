@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils";
 import { useEffect, useState, useRef } from "react";
 
@@ -9,7 +8,6 @@ interface GradientBackgroundProps {
   interactive?: boolean;
   intensity?: "light" | "medium" | "strong";
   followCursor?: boolean;
-  id?: string; // Added id prop
 }
 
 export function GradientBackground({ 
@@ -18,8 +16,7 @@ export function GradientBackground({
   variant = "primary",
   interactive = false,
   intensity = "medium",
-  followCursor = false,
-  id // Added id prop to component function parameters
+  followCursor = false
 }: GradientBackgroundProps) {
   // Updated gradient styles with more harmonious colors
   const gradientStyles = {
@@ -100,7 +97,6 @@ export function GradientBackground({
     <div 
       ref={containerRef}
       className={cn("relative overflow-hidden", className)}
-      id={id} // Apply the id to the main div
     >
       {variant === "dynamic" && interactive ? (
         <div 

@@ -1,3 +1,4 @@
+
 import { ArrowRight, Star, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
@@ -8,12 +9,11 @@ import { useState, useEffect } from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import { toast } from "sonner";
 
 interface Category {
   id: string;
   name: string;
-  icon?: React.ElementType;
+  icon: React.ElementType;
   count: number;
   color: string;
   tools: Tool[];
@@ -27,7 +27,7 @@ interface Tool {
   logo_url?: string;
 }
 
-// Define available category colors with stronger contrast
+// Define available category colors
 const categoryColors = [
   "bg-blue-500",
   "bg-pink-500",
@@ -46,114 +46,81 @@ const categoryColors = [
 export function TrendingToolsSection() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [displayCount, setDisplayCount] = useState(12); // Show 12 categories initially
-  const [isVisible, setIsVisible] = useState(true);
 
   // Fetch categories and their tools
   const { data, isLoading, error } = useQuery({
     queryKey: ["categories-with-tools"],
     queryFn: async () => {
       try {
-        console.log("Fetching tools for categories...");
-        
-        // First, get all tools to work with
-        const { data: toolsData, error: toolsError } = await supabase
+        // First get all distinct primary_task values (categories)
+        const { data: categoryData, error: categoryError } = await supabase
           .from("tools")
-          .select('id, company_name, slug, logo_url, primary_task, created_at');
+          .select('primary_task, count(*)')
+          .not('primary_task', 'is', null)
+          .group('primary_task');
         
-        if (toolsError) {
-          console.error("Error fetching tools:", toolsError);
-          throw toolsError;
-        }
-
-        if (!toolsData || toolsData.length === 0) {
-          console.log("No tools found in the database");
-          return [];
-        }
-
-        console.log(`Successfully fetched ${toolsData.length} tools`);
+        if (categoryError) throw categoryError;
         
-        // Get unique primary tasks for categories
-        const uniqueTasks = Array.from(new Set(
-          toolsData
-            .filter(tool => tool.primary_task) // Filter out null/undefined primary_tasks
-            .map(tool => tool.primary_task)
-        ));
-        
-        console.log("Unique primary tasks:", uniqueTasks);
-        
-        // Create special categories
+        // Handle special categories first
         const specialCategories = [
           {
             id: "latest",
             name: "Latest AI",
             count: 0,
             tools: [],
-            color: categoryColors[10],
+            color: categoryColors[10], // Assign a color
           },
           {
             id: "top-trends",
             name: "Top 50 Trends [24H]",
             count: 0,
             tools: [],
-            color: categoryColors[11],
+            color: categoryColors[11], // Assign a color
           }
         ];
         
-        // Create categories from unique tasks
-        const regularCategories = uniqueTasks.map((taskName, index) => {
-          // Filter tools for this category
-          const toolsInCategory = toolsData
-            .filter(tool => tool.primary_task === taskName)
-            .map(tool => ({
-              id: tool.id.toString(),
-              name: tool.company_name || "Unnamed Tool",
-              slug: tool.slug || "",
-              logo_url: tool.logo_url || ""
-            }));
+        // Transform categories
+        let regularCategories = categoryData.map((item, index) => ({
+          id: item.primary_task.toLowerCase().replace(/\s+/g, '-'),
+          name: item.primary_task,
+          count: parseInt(item.count),
+          tools: [],
+          color: categoryColors[index % categoryColors.length], // Cycle through colors
+        }));
+        
+        // Sort regular categories by count (highest to lowest)
+        regularCategories = regularCategories.sort((a, b) => b.count - a.count);
+        
+        // Merge special and regular categories
+        const allCategories = [...specialCategories, ...regularCategories];
+        
+        // Now fetch tools for each category
+        for (let category of allCategories) {
+          let query = supabase.from("tools").select("id, name, slug, logo_url").limit(15);
           
-          return {
-            id: typeof taskName === 'string' ? taskName.toLowerCase().replace(/\s+/g, '-') : `category-${index}`,
-            name: taskName || `Category ${index + 1}`,
-            count: toolsInCategory.length,
-            tools: toolsInCategory,
-            color: categoryColors[index % categoryColors.length]
-          };
-        });
-        
-        console.log("Regular categories created:", regularCategories.length);
-        
-        // Sort regular categories by tool count (highest to lowest)
-        regularCategories.sort((a, b) => b.count - a.count);
-        
-        // Handle special categories
-        // Latest AI tools - sort by created_at
-        const latestTools = [...toolsData]
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 15)
-          .map(tool => ({
-            id: tool.id.toString(),
-            name: tool.company_name || "Unnamed Tool",
-            slug: tool.slug || "",
-            logo_url: tool.logo_url || ""
-          }));
-        
-        specialCategories[0].tools = latestTools;
-        specialCategories[0].count = latestTools.length;
-        
-        // Top trends - using the same as latest for now
-        specialCategories[1].tools = [...latestTools].slice(0, 10);
-        specialCategories[1].count = specialCategories[1].tools.length;
-        
-        // Combine all categories and filter out empty ones
-        const allCategories = [...specialCategories, ...regularCategories]
-          .filter(category => category.count > 0);
-        
-        console.log("Final categories with tools:", allCategories.length);
+          if (category.id === "latest") {
+            // For "Latest AI" category, get the most recently added tools
+            query = query.order("created_at", { ascending: false });
+          } else if (category.id === "top-trends") {
+            // For "Top 50 Trends" category, get most viewed/rated tools
+            // In a real scenario, you might have a views/ratings column
+            query = query.order("created_at", { ascending: false });
+          } else {
+            // For regular categories, filter by primary_task
+            query = query.eq("primary_task", category.name);
+          }
+          
+          const { data: toolsData, error: toolsError } = await query;
+          
+          if (toolsError) throw toolsError;
+          
+          category.tools = toolsData || [];
+          category.count = category.tools.length;
+        }
         
         return allCategories;
       } catch (error) {
         console.error("Error fetching categories with tools:", error);
-        toast.error("Failed to load categories. Please try again later.");
         return [];
       }
     },
@@ -163,25 +130,12 @@ export function TrendingToolsSection() {
   // Update categories with data when available
   useEffect(() => {
     if (data) {
-      console.log("Setting categories:", data.length);
       setCategories(data);
     }
   }, [data]);
 
-  // Ensure component stays visible
-  useEffect(() => {
-    console.log("TrendingToolsSection mounted and visible");
-    setIsVisible(true);
-    return () => console.log("TrendingToolsSection unmounted");
-  }, []);
-
-  if (!isVisible) {
-    console.log("Component is marked as invisible but should be visible");
-    setIsVisible(true);
-  }
-
   return (
-    <section className="py-12 md:py-16 bg-background" id="trending-section">
+    <section className="py-12 md:py-16 bg-background">
       <div className="container-wide">
         <MotionWrapper animation="fadeIn">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
@@ -211,10 +165,6 @@ export function TrendingToolsSection() {
         ) : error ? (
           <div className="p-8 text-center">
             <p className="text-destructive">Error loading categories</p>
-          </div>
-        ) : categories.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground">No categories found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -255,15 +205,8 @@ function SkeletonCategoryCard() {
   );
 }
 
-// Category card component with improved styling
+// Category card component
 function CategoryCard({ category }: { category: Category }) {
-  // Safety check for category data
-  if (!category || !category.tools) {
-    return null;
-  }
-
-  console.log("Rendering CategoryCard for:", category.name);
-
   return (
     <Link to={`/tools?category=${category.id}`} className="group">
       <GlassCard 
@@ -279,44 +222,40 @@ function CategoryCard({ category }: { category: Category }) {
             ) : category.id === "top-trends" ? (
               <TrendingUp size={16} className="text-primary" />
             ) : (
-              <span className={`w-3 h-3 rounded-full ${category.color || 'bg-primary'}`}></span>
+              <span className={`w-3 h-3 rounded-full ${category.color}`}></span>
             )}
             {category.name}
           </h3>
           <Badge variant="outline" className="text-xs">
-            {category.count || 0}
+            {category.count}
           </Badge>
         </div>
         
         <div className="space-y-1.5 text-sm">
-          {category.tools && category.tools.length > 0 ? (
-            category.tools.slice(0, 12).map((tool) => (
-              <div key={tool.id} className="flex items-center gap-2 py-0.5">
-                {tool.logo_url ? (
-                  <img 
-                    src={tool.logo_url} 
-                    alt={tool.name || "Tool logo"} 
-                    className="w-4 h-4 rounded-full object-cover bg-white"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.onerror = null;
-                      target.src = "/placeholder.svg";
-                    }}
-                  />
-                ) : (
-                  <div className="w-4 h-4 rounded-full bg-primary/10"></div>
-                )}
-                <span className="text-muted-foreground hover:text-foreground truncate transition-colors">
-                  {tool.name || "Unnamed Tool"}
-                </span>
-              </div>
-            ))
-          ) : (
-            <div className="py-2 text-center text-muted-foreground">No tools available</div>
-          )}
+          {category.tools.slice(0, 12).map((tool) => (
+            <div key={tool.id} className="flex items-center gap-2 py-0.5">
+              {tool.logo_url ? (
+                <img 
+                  src={tool.logo_url} 
+                  alt={tool.name} 
+                  className="w-4 h-4 rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = "/placeholder.svg";
+                  }}
+                />
+              ) : (
+                <div className="w-4 h-4 rounded-full bg-primary/10"></div>
+              )}
+              <span className="text-muted-foreground hover:text-foreground truncate transition-colors">
+                {tool.name}
+              </span>
+            </div>
+          ))}
           
           {/* Show indicator if there are more tools than shown */}
-          {category.tools && category.tools.length > 12 && (
+          {category.tools.length > 12 && (
             <div className="pt-2 text-right">
               <span className="text-xs text-muted-foreground">
                 +{category.tools.length - 12} more

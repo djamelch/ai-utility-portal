@@ -54,8 +54,8 @@ export function GlassCard({
         onClick={onClick}
       >
         {/* Subtle glass highlight effects */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-white/5"></div>
-        <div className="absolute top-0 left-0 bottom-0 w-px bg-white/5 opacity-20"></div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-white/5" />
+        <div className="absolute top-0 left-0 bottom-0 w-px bg-white/5 opacity-20" />
         
         {badge && (
           <div className="absolute -top-1 -right-1 z-10">
