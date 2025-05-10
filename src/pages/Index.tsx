@@ -1,7 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
-import { CategorySection } from "@/components/home/CategorySection";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Link } from "react-router-dom";
@@ -85,9 +84,6 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* Category Section - NEW */}
-        <CategorySection />
-        
         {/* Featured Tools Section - With updated hostinger style divider */}
         <div className="relative">
           <div className="wave-divider-down hostinger-bg-gradient absolute top-0 left-0 right-0 z-10"></div>
@@ -129,8 +125,6 @@ const Index = () => {
             />
           </div>
         </div>
-        
-        {/* FeatureSection has been removed */}
         
         {/* CTA Section - With wave divider at top */}
         <div className="relative">
