@@ -88,21 +88,21 @@ export function TrendingToolsSection() {
         
         console.log("Formatted task counts:", formattedTaskCounts);
         
-        // Handle special categories first
+        // Handle special categories first - now with Top 50 Trends first, then Latest AI
         const specialCategories = [
-          {
-            id: "latest",
-            name: "Latest AI",
-            count: 0,
-            tools: [] as Tool[],
-            color: categoryColors[10], // Assign a color
-          },
           {
             id: "top-trends",
             name: "Top 50 Trends [24H]",
             count: 0,
             tools: [] as Tool[],
             color: categoryColors[11], // Assign a color
+          },
+          {
+            id: "latest",
+            name: "Latest AI",
+            count: 0,
+            tools: [] as Tool[],
+            color: categoryColors[10], // Assign a color
           }
         ];
         
@@ -143,7 +143,7 @@ export function TrendingToolsSection() {
         
         console.log("Regular categories before fetching tools:", regularCategories);
         
-        // Merge special and regular categories
+        // Merge special and regular categories - special categories will come first
         const allCategories = [...specialCategories, ...regularCategories];
         
         // Now fetch tools for each category
@@ -191,8 +191,8 @@ export function TrendingToolsSection() {
         // Filter out categories with no tools
         const finalCategories = categoriesWithTools.filter(cat => cat.count > 0);
         
-        // Sort by count (highest to lowest)
-        finalCategories.sort((a, b) => b.count - a.count);
+        // Instead of sorting by count, we'll maintain the order (special categories first, then regular)
+        // This way "Top 50 Trends" comes first, then "Latest AI", and then regular categories sorted by count
         
         console.log(`Final categories with tools: ${finalCategories.length}`);
         console.log("Sample category:", finalCategories[0]);
