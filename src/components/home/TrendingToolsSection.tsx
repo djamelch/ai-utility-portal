@@ -133,7 +133,6 @@ export function TrendingToolsSection() {
             query = query.order("created_at", { ascending: false });
           } else if (category.id === "top-trends") {
             // For "Top 50 Trends" category, get most viewed/rated tools
-            // In a real scenario, you might have a views/ratings column
             query = query.order("click_count", { ascending: false });
           } else {
             // For regular categories, filter by primary_task
