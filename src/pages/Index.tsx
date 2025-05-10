@@ -3,6 +3,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
 import { FeatureSection } from "@/components/home/FeatureSection";
+import { CategorySection } from "@/components/home/CategorySection";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Link } from "react-router-dom";
@@ -86,6 +87,9 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
+        {/* Category Section - NEW */}
+        <CategorySection />
+        
         {/* Featured Tools Section - With updated hostinger style divider */}
         <div className="relative">
           <div className="wave-divider-down hostinger-bg-gradient absolute top-0 left-0 right-0 z-10"></div>
@@ -140,10 +144,11 @@ const Index = () => {
                   className="bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 p-6 md:p-10 text-center"
                   glowEffect
                   hoverEffect
+                  glowColor="before:from-hostinger-international/30 before:to-hostinger-accent/20"
                 >
                   <div className="relative mb-5">
                     <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-hostinger-brand via-hostinger-accent to-hostinger-brand rounded-full"></div>
-                    <Sparkles size={36} className="mx-auto text-hostinger-brand" />
+                    <Sparkles size={36} className="mx-auto text-hostinger-international" />
                   </div>
                   
                   <h2 className="text-xl sm:text-2xl font-bold">
@@ -155,7 +160,7 @@ const Index = () => {
                   <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                     <Button 
                       className="rounded-lg px-5 py-2 font-medium relative overflow-hidden group"
-                      variant="gradient"
+                      variant="international"
                       asChild
                     >
                       <Link to="/tools">
