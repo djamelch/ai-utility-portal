@@ -1,8 +1,6 @@
-
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
-import { FeatureSection } from "@/components/home/FeatureSection";
 import { CategorySection } from "@/components/home/CategorySection";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
@@ -132,8 +130,7 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Feature Section - With wave dividers */}
-        <FeatureSection />
+        {/* FeatureSection has been removed */}
         
         {/* CTA Section - With wave divider at top */}
         <div className="relative">
