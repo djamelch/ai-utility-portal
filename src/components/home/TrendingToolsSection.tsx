@@ -57,24 +57,36 @@ export function TrendingToolsSection() {
       console.log("Fetching categories and tools...");
       try {
         // First get all distinct primary tasks (categories)
-        // We need to use raw SQL since the Supabase JS client has limitations with aggregation
+        // Use the SQL function via RPC instead of direct query building
         const { data: taskCounts, error: distinctError } = await supabase
           .from('tools')
-          .select('primary_task, count')
-          .not('primary_task', 'is', null)
-          .select(`
-            primary_task,
-            count:id(count)
-          `)
-          .groupBy('primary_task')
-          .order('count', { ascending: false });
+          .select('primary_task, id')
+          .not('primary_task', 'is', null);
         
         if (distinctError) {
           console.error("Error fetching distinct tasks:", distinctError);
           throw distinctError;
         }
 
-        console.log("Task counts fetched:", taskCounts);
+        console.log("Task data fetched:", taskCounts);
+        
+        // Process the data to count occurrences of each primary task
+        const taskCountMap: Record<string, number> = {};
+        if (taskCounts && Array.isArray(taskCounts)) {
+          taskCounts.forEach(item => {
+            if (item.primary_task) {
+              taskCountMap[item.primary_task] = (taskCountMap[item.primary_task] || 0) + 1;
+            }
+          });
+        }
+        
+        // Convert to the expected format
+        const formattedTaskCounts = Object.entries(taskCountMap).map(([primary_task, count]) => ({
+          primary_task,
+          count
+        })).sort((a, b) => b.count - a.count);
+        
+        console.log("Formatted task counts:", formattedTaskCounts);
         
         // Handle special categories first
         const specialCategories = [
@@ -101,11 +113,11 @@ export function TrendingToolsSection() {
         const regularCategories: Category[] = [];
         
         // Process each distinct primary task
-        if (taskCounts && Array.isArray(taskCounts)) {
-          console.log(`Processing ${taskCounts.length} distinct tasks...`);
+        if (formattedTaskCounts && Array.isArray(formattedTaskCounts)) {
+          console.log(`Processing ${formattedTaskCounts.length} distinct tasks...`);
           
-          for (let i = 0; i < taskCounts.length; i++) {
-            const task = taskCounts[i];
+          for (let i = 0; i < formattedTaskCounts.length; i++) {
+            const task = formattedTaskCounts[i];
             const taskName = task.primary_task;
             if (!taskName) continue;
             
