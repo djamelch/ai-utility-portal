@@ -52,14 +52,14 @@ export function TrendingToolsSection() {
     queryKey: ["categories-with-tools"],
     queryFn: async () => {
       try {
-        // First get all distinct primary_task values (categories) with their counts
-        const { data: categoryData, error: categoryError } = await supabase
+        // First get all distinct primary tasks (categories)
+        const { data: distinctTasks, error: distinctError } = await supabase
           .from("tools")
-          .select('primary_task, count(*)')
+          .select('primary_task')
           .not('primary_task', 'is', null)
-          .order('count', { ascending: false });
+          .order('primary_task');
         
-        if (categoryError) throw categoryError;
+        if (distinctError) throw distinctError;
         
         // Handle special categories first
         const specialCategories = [
@@ -79,24 +79,42 @@ export function TrendingToolsSection() {
           }
         ];
         
-        // Transform categories
-        let regularCategories = categoryData.map((item, index) => ({
-          id: item.primary_task.toLowerCase().replace(/\s+/g, '-'),
-          name: item.primary_task,
-          count: parseInt(item.count),
-          tools: [],
-          color: categoryColors[index % categoryColors.length], // Cycle through colors
-        }));
+        // Transform categories and count tools for each
+        const regularCategories: Category[] = [];
+        
+        // Process each distinct primary task
+        if (distinctTasks) {
+          for (let i = 0; i < distinctTasks.length; i++) {
+            const taskName = distinctTasks[i].primary_task;
+            
+            // Count tools for this category
+            const { count, error: countError } = await supabase
+              .from("tools")
+              .select('*', { count: 'exact', head: true })
+              .eq('primary_task', taskName);
+            
+            if (countError) throw countError;
+            
+            // Create category object
+            regularCategories.push({
+              id: taskName.toLowerCase().replace(/\s+/g, '-'),
+              name: taskName,
+              count: count || 0,
+              tools: [],
+              color: categoryColors[i % categoryColors.length], // Cycle through colors
+            });
+          }
+        }
         
         // Sort regular categories by count (highest to lowest)
-        regularCategories = regularCategories.sort((a, b) => b.count - a.count);
+        const sortedRegularCategories = regularCategories.sort((a, b) => b.count - a.count);
         
         // Merge special and regular categories
-        const allCategories = [...specialCategories, ...regularCategories];
+        const allCategories = [...specialCategories, ...sortedRegularCategories];
         
         // Now fetch tools for each category
         for (let category of allCategories) {
-          let query = supabase.from("tools").select("id, name, slug, logo_url").limit(15);
+          let query = supabase.from("tools").select("id, company_name as name, slug, logo_url").limit(15);
           
           if (category.id === "latest") {
             // For "Latest AI" category, get the most recently added tools
@@ -118,7 +136,12 @@ export function TrendingToolsSection() {
           category.count = category.tools.length;
         }
         
-        return allCategories;
+        // Filter out categories with no tools
+        const categoriesWithTools = allCategories.filter(cat => cat.count > 0);
+        
+        console.log("Fetched categories with tools:", categoriesWithTools);
+        
+        return categoriesWithTools;
       } catch (error) {
         console.error("Error fetching categories with tools:", error);
         return [];
@@ -130,6 +153,7 @@ export function TrendingToolsSection() {
   // Update categories with data when available
   useEffect(() => {
     if (data) {
+      console.log("Setting categories:", data);
       setCategories(data);
     }
   }, [data]);
