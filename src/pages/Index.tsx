@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useEffect, useState } from "react";
 import { Hero } from "@/components/home/Hero"; // Import the Hero component
-import { TrendingToolsSection } from "@/components/home/TrendingToolsSection"; // Import the new TrendingToolsSection component
+import { TrendingToolsSection } from "@/components/home/TrendingToolsSection"; // Import the TrendingToolsSection component
+import { CategorySection } from "@/components/home/CategorySection"; // Import the CategorySection component
 
 const Index = () => {
   const [sectionLimits, setSectionLimits] = useState({
@@ -112,6 +113,9 @@ const Index = () => {
           </div>
         </div>
         
+        {/* Category Browser Section - Added after Top Rated Tools */}
+        <TrendingToolsSection />
+        
         {/* Recently Added Tools Section */}
         <div className="relative">
           <div className="pt-16">
@@ -124,10 +128,7 @@ const Index = () => {
             />
           </div>
         </div>
-        
-        {/* Trending Tools Section - Repositioned to be after Recently Added Tools */}
-        <TrendingToolsSection />
-        
+                
         {/* CTA Section */}
         <div className="relative">
           <GradientBackground variant="primary" className="py-12 md:py-16" intensity="light">

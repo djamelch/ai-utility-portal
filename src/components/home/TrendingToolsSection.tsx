@@ -1,88 +1,173 @@
-import { ArrowRight, Star, TrendingUp, Image, Feather } from "lucide-react";
+
+import { ArrowRight, Star, TrendingUp, Image, Feather, Sparkles, MessageSquare, Code, Database, PenTool, Video, Music, LineChart, Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { ModernLoadingIndicator } from "../ui/ModernLoadingIndicator";
 import { Badge } from "../ui/badge";
-import { 
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "../ui/table";
+import { Button } from "../ui/button";
 
-interface ToolCategory {
+interface Category {
   id: string;
-  title: string;
-  icon: React.ReactNode;
-  tools: Tool[];
-  count?: number; // Add count property to track number of tools
-}
-
-interface Tool {
-  id: number;
   name: string;
-  company_name?: string;
-  logo_url?: string;
-  trending_number?: number;
-  trend_stats?: string;
+  icon: React.ElementType;
+  count: number;
+  color: string;
+  gradientFrom: string;
+  gradientTo: string;
 }
 
 export function TrendingToolsSection() {
-  const [activeCategory, setActiveCategory] = useState<string>("latest");
-  const [sortedCategories, setSortedCategories] = useState<ToolCategory[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   
-  // Define initial categories with their IDs and titles
-  const initialCategories: ToolCategory[] = [
-    {
-      id: "latest",
-      title: "Latest AI",
-      icon: <Star className="h-4 w-4" />,
-      tools: []
+  // Define the categories with their icons and colors
+  const initialCategories: Category[] = [
+    { 
+      id: "chatbots", 
+      name: "AI Chatbots", 
+      icon: MessageSquare, 
+      count: 0, 
+      color: "from-blue-500 to-cyan-300",
+      gradientFrom: "from-blue-500/10",
+      gradientTo: "to-blue-300/5"
     },
-    {
-      id: "top-trends",
-      title: "Top 50 Trends [24H]",
-      icon: <TrendingUp className="h-4 w-4" />,
-      tools: []
+    { 
+      id: "image-generation", 
+      name: "Image Generation", 
+      icon: Image, 
+      count: 0, 
+      color: "from-pink-500 to-rose-300",
+      gradientFrom: "from-pink-500/10", 
+      gradientTo: "to-rose-300/5"
     },
-    {
-      id: "image-generators",
-      title: "Image Generators",
-      icon: <Image className="h-4 w-4" />,
-      tools: []
+    { 
+      id: "code-assistants", 
+      name: "Code Assistants", 
+      icon: Code, 
+      count: 0, 
+      color: "from-indigo-500 to-purple-300",
+      gradientFrom: "from-indigo-500/10", 
+      gradientTo: "to-purple-300/5"
     },
-    {
-      id: "writing",
-      title: "Writing & Web SEO",
-      icon: <Feather className="h-4 w-4" />,
-      tools: []
-    }
+    { 
+      id: "data-analysis", 
+      name: "Data Analysis", 
+      icon: Database, 
+      count: 0, 
+      color: "from-amber-500 to-yellow-300",
+      gradientFrom: "from-amber-500/10", 
+      gradientTo: "to-yellow-300/5"
+    },
+    { 
+      id: "writing", 
+      name: "Writing & Content", 
+      icon: PenTool, 
+      count: 0, 
+      color: "from-emerald-500 to-green-300",
+      gradientFrom: "from-emerald-500/10", 
+      gradientTo: "to-green-300/5"
+    },
+    { 
+      id: "productivity", 
+      name: "Productivity", 
+      icon: Sparkles, 
+      count: 0, 
+      color: "from-violet-500 to-purple-300",
+      gradientFrom: "from-violet-500/10", 
+      gradientTo: "to-purple-300/5"
+    },
+    { 
+      id: "video", 
+      name: "Video Creation", 
+      icon: Video, 
+      count: 0, 
+      color: "from-red-500 to-orange-300",
+      gradientFrom: "from-red-500/10", 
+      gradientTo: "to-orange-300/5"
+    },
+    { 
+      id: "audio", 
+      name: "Audio & Music", 
+      icon: Music, 
+      count: 0, 
+      color: "from-sky-500 to-blue-300",
+      gradientFrom: "from-sky-500/10", 
+      gradientTo: "to-blue-300/5"
+    },
+    { 
+      id: "research", 
+      name: "Research Tools", 
+      icon: Bookmark, 
+      count: 0, 
+      color: "from-teal-500 to-emerald-300",
+      gradientFrom: "from-teal-500/10", 
+      gradientTo: "to-emerald-300/5"
+    },
+    { 
+      id: "marketing", 
+      name: "Marketing & SEO", 
+      icon: LineChart, 
+      count: 0, 
+      color: "from-fuchsia-500 to-pink-300",
+      gradientFrom: "from-fuchsia-500/10", 
+      gradientTo: "to-pink-300/5"
+    },
+    { 
+      id: "top-trends", 
+      name: "Top 50 Trends", 
+      icon: TrendingUp, 
+      count: 0, 
+      color: "from-purple-500 to-indigo-300",
+      gradientFrom: "from-purple-500/10", 
+      gradientTo: "to-indigo-300/5"
+    },
+    { 
+      id: "latest", 
+      name: "Latest AI", 
+      icon: Star, 
+      count: 0, 
+      color: "from-amber-500 to-yellow-300",
+      gradientFrom: "from-amber-500/10", 
+      gradientTo: "to-yellow-300/5"
+    },
   ];
 
   // Fetch tool counts for each category
-  const { data: categoryCounts, isLoading: isLoadingCounts } = useQuery({
+  const { data: categoryCounts, isLoading } = useQuery({
     queryKey: ["category-counts"],
     queryFn: async () => {
       try {
-        // Get count for image generators
-        const { count: imageCount, error: imageError } = await supabase
-          .from("tools")
-          .select("*", { count: "exact", head: true })
-          .eq("primary_task", "Image Generation");
+        // Get count for different primary tasks
+        const tasks = [
+          "Chatbot",
+          "Image Generation",
+          "Code Assistant",
+          "Data Analysis",
+          "Writing",
+          "Productivity",
+          "Video Creation",
+          "Audio",
+          "Research",
+          "Marketing"
+        ];
         
-        if (imageError) console.error("Error fetching image tools count:", imageError);
+        const counts: Record<string, number> = {};
         
-        // Get count for writing tools
-        const { count: writingCount, error: writingError } = await supabase
-          .from("tools")
-          .select("*", { count: "exact", head: true })
-          .eq("primary_task", "Writing");
-        
-        if (writingError) console.error("Error fetching writing tools count:", writingError);
+        // Map primary tasks to category IDs
+        const taskToCategory: Record<string, string> = {
+          "Chatbot": "chatbots",
+          "Image Generation": "image-generation",
+          "Code Assistant": "code-assistants",
+          "Data Analysis": "data-analysis",
+          "Writing": "writing",
+          "Productivity": "productivity",
+          "Video Creation": "video",
+          "Audio": "audio",
+          "Research": "research",
+          "Marketing": "marketing"
+        };
         
         // Get total count for latest
         const { count: totalCount, error: totalError } = await supabase
@@ -91,12 +176,23 @@ export function TrendingToolsSection() {
         
         if (totalError) console.error("Error fetching total tools count:", totalError);
         
-        return {
-          "image-generators": imageCount || 0,
-          "writing": writingCount || 0,
-          "latest": totalCount || 0,
-          "top-trends": totalCount || 0, // Same as latest for now, could be different metric
-        };
+        counts["latest"] = totalCount || 0;
+        counts["top-trends"] = totalCount || 0; // Same as latest for now
+        
+        // Get count for each primary task
+        for (const task of tasks) {
+          const { count, error } = await supabase
+            .from("tools")
+            .select("*", { count: "exact", head: true })
+            .eq("primary_task", task);
+          
+          if (error) console.error(`Error fetching ${task} count:`, error);
+          
+          const categoryId = taskToCategory[task];
+          counts[categoryId] = count || 0;
+        }
+        
+        return counts;
       } catch (error) {
         console.error("Error fetching category counts:", error);
         return {};
@@ -105,110 +201,33 @@ export function TrendingToolsSection() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
-  // Sort categories based on tool counts (except keep "latest" and "top-trends" at the top)
+  // Update categories with counts and sort them
   useEffect(() => {
     if (categoryCounts) {
-      const topCategories = initialCategories.filter(cat => 
-        cat.id === "latest" || cat.id === "top-trends"
+      // Special categories to always show first (latest and top-trends)
+      const specialCategories = ["latest", "top-trends"];
+      
+      // Update all categories with their counts
+      const updatedCategories = initialCategories.map(category => ({
+        ...category,
+        count: categoryCounts[category.id] || 0
+      }));
+      
+      // Split into special and regular categories
+      const special = updatedCategories.filter(cat => 
+        specialCategories.includes(cat.id)
       );
       
-      const otherCategories = initialCategories.filter(cat => 
-        cat.id !== "latest" && cat.id !== "top-trends"
-      ).map(cat => ({
-        ...cat,
-        count: categoryCounts[cat.id] || 0
-      })).sort((a, b) => (b.count || 0) - (a.count || 0));
+      const regular = updatedCategories.filter(cat => 
+        !specialCategories.includes(cat.id)
+      ).sort((a, b) => b.count - a.count); // Sort by count (high to low)
       
-      setSortedCategories([...topCategories, ...otherCategories]);
+      // Combine with special categories first, then sorted regular categories
+      setCategories([...special, ...regular]);
     } else {
-      setSortedCategories(initialCategories);
+      setCategories(initialCategories);
     }
   }, [categoryCounts]);
-
-  // Fetch tools from Supabase
-  const { data: toolsData, isLoading } = useQuery({
-    queryKey: ["trending-tools", activeCategory],
-    queryFn: async () => {
-      try {
-        let query = supabase.from("tools").select("*");
-        
-        // Apply different filters based on the active category
-        switch (activeCategory) {
-          case "latest":
-            query = query.order("created_at", { ascending: false });
-            break;
-          case "top-trends":
-            query = query.order("click_count", { ascending: false });
-            break;
-          case "image-generators":
-            query = query.eq("primary_task", "Image Generation");
-            break;
-          case "writing":
-            query = query.eq("primary_task", "Writing");
-            break;
-          default:
-            break;
-        }
-        
-        const { data, error } = await query.limit(10);
-        
-        if (error) {
-          console.error("Error fetching tools:", error);
-          throw error;
-        }
-        
-        // Transform data to add trending numbers and fake stats for visualization
-        const toolsWithNumbers = data.map((tool, index) => {
-          // Fake trend stats based on category
-          let trendStats;
-          if (activeCategory === "top-trends") {
-            trendStats = `+${Math.floor(Math.random() * 900) + 100}`;
-          }
-          
-          return {
-            ...tool,
-            trending_number: index + 1,
-            trend_stats: trendStats
-          };
-        });
-        
-        return toolsWithNumbers;
-      } catch (error) {
-        console.error("Error in trending tools query:", error);
-        return [];
-      }
-    },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-  });
-
-  // Update the tools array in the categories
-  const categoriesWithTools = sortedCategories.map(category => {
-    if (category.id === activeCategory && toolsData) {
-      return { ...category, tools: toolsData };
-    }
-    return category;
-  });
-
-  // Get the current active category object
-  const currentCategory = categoriesWithTools.find(c => c.id === activeCategory) || categoriesWithTools[0];
-
-  // Get category-specific button text
-  const getCategoryButtonText = (categoryId: string) => {
-    const count = categoryCounts ? categoryCounts[categoryId] || 0 : 0;
-    
-    switch (categoryId) {
-      case "latest":
-        return `More new AI (${count})`;
-      case "top-trends":
-        return "See Top 100";
-      case "image-generators":
-        return `See all category (${count})`;
-      case "writing":
-        return `See all category (${count})`;
-      default:
-        return `View all (${count})`;
-    }
-  };
 
   return (
     <section className="py-12 md:py-16 bg-background">
@@ -216,9 +235,9 @@ export function TrendingToolsSection() {
         <MotionWrapper animation="fadeIn">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold">Trending AI Tools</h2>
+              <h2 className="text-2xl md:text-3xl font-bold">Browse Categories</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Discover the most popular and trending AI tools
+                Discover AI tools by popular categories
               </p>
             </div>
             
@@ -226,141 +245,66 @@ export function TrendingToolsSection() {
               to="/tools" 
               className="mt-2 sm:mt-0 inline-flex items-center gap-1 text-primary text-sm font-medium hover:underline"
             >
-              View all tools
+              View all categories
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </MotionWrapper>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Category cards */}
-          {categoriesWithTools.map((category) => (
-            <MotionWrapper key={category.id} animation="fadeIn">
-              <GlassCard 
-                className={`p-0 overflow-hidden h-[470px] ${
-                  category.id === activeCategory 
-                    ? 'ring-1 ring-primary/50' 
-                    : 'hover:ring-1 hover:ring-primary/30'
-                }`}
-              >
-                {/* Card Header */}
-                <div 
-                  className={`p-4 border-b border-border flex items-center justify-between cursor-pointer ${
-                    category.id === activeCategory ? 'bg-primary/5' : ''
-                  }`}
-                  onClick={() => setActiveCategory(category.id)}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {categories.map((category) => (
+              <MotionWrapper key={category.id} animation="fadeIn">
+                <Link
+                  to={`/tools?category=${category.id}`}
+                  className="group"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className={`${category.id === activeCategory ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {category.icon}
-                    </span>
-                    <h3 className="font-medium">{category.title}</h3>
-                    {category.count !== undefined && category.id !== "latest" && category.id !== "top-trends" && (
-                      <span className="text-xs text-muted-foreground">({category.count})</span>
-                    )}
-                  </div>
-                  <ArrowRight size={16} className={`${category.id === activeCategory ? 'text-primary' : 'text-muted-foreground'}`} />
-                </div>
-                
-                {/* Card Content */}
-                <div className="h-[380px] overflow-y-auto scrollbar-thin">
-                  {isLoading && category.id === activeCategory ? (
-                    <div className="flex justify-center items-center h-full">
-                      <ModernLoadingIndicator variant="dots" size="md" />
-                    </div>
-                  ) : (
-                    category.id === activeCategory && (
-                      <Table>
-                        <TableBody>
-                          {currentCategory.tools.map((tool, index) => (
-                            <TableRow key={tool.id} className="group border-none hover:bg-secondary/20">
-                              <TableCell className="p-0">
-                                <Link 
-                                  to={`/tools/${tool.id}`}
-                                  className="flex items-center gap-2 py-3 px-4 w-full"
-                                >
-                                  {/* Tool number */}
-                                  <span className="text-sm text-muted-foreground w-4 flex-shrink-0">
-                                    {index + 1}.
-                                  </span>
-                                  
-                                  {/* Tool logo */}
-                                  {tool.logo_url ? (
-                                    <img 
-                                      src={tool.logo_url} 
-                                      alt={tool.company_name || tool.name} 
-                                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                                    />
-                                  ) : (
-                                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                                      <Star className="h-3 w-3 text-primary/70" />
-                                    </div>
-                                  )}
-                                  
-                                  {/* Tool name */}
-                                  <span className="line-clamp-1 text-sm flex-grow">
-                                    {tool.company_name || tool.name}
-                                  </span>
-                                  
-                                  {/* Trend stats for top-trends category */}
-                                  {category.id === "top-trends" && tool.trend_stats && (
-                                    <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-xs">
-                                      {tool.trend_stats}
-                                    </Badge>
-                                  )}
-                                  
-                                  {/* Hot badge for top 3 */}
-                                  {index < 3 && category.id !== "top-trends" && (
-                                    <Badge 
-                                      variant="outline" 
-                                      className="bg-primary/5 border-primary/20 text-primary text-xs"
-                                    >
-                                      <TrendingUp size={10} className="mr-1" />
-                                      Hot
-                                    </Badge>
-                                  )}
-                                  
-                                  {/* External link arrow */}
-                                  <ArrowRight size={14} className="text-muted-foreground ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </Link>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                          
-                          {currentCategory.tools.length === 0 && (
-                            <TableRow>
-                              <TableCell colSpan={5}>
-                                <div className="flex flex-col items-center justify-center h-60 text-center px-4">
-                                  <div className="bg-secondary/50 w-12 h-12 rounded-full flex items-center justify-center mb-3">
-                                    {currentCategory.icon}
-                                  </div>
-                                  <h4 className="font-medium">No tools found</h4>
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    No tools are currently available in this category
-                                  </p>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    )
-                  )}
-                </div>
-                
-                {/* Card Footer */}
-                <div className="p-3 border-t border-border bg-secondary/5">
-                  <Link 
-                    to="/tools" 
-                    className="w-full flex items-center justify-center gap-1.5 text-xs text-center py-2 rounded-md bg-background hover:bg-secondary/50 transition-colors"
+                  <GlassCard 
+                    className={`flex flex-col items-center p-6 relative overflow-hidden
+                      after:absolute after:inset-0 after:bg-gradient-to-br
+                      after:${category.color}
+                      after:opacity-0 after:-z-10 after:transition-opacity after:duration-300
+                      group-hover:after:opacity-5
+                      before:absolute before:inset-0 before:bg-gradient-to-br
+                      before:${category.gradientFrom} before:${category.gradientTo}
+                      before:opacity-0 before:-z-10 before:blur-xl before:scale-150
+                      before:transition-opacity before:duration-300 group-hover:before:opacity-100`}
+                    animation="none"
                   >
-                    {getCategoryButtonText(category.id)} <ArrowRight size={12} />
-                  </Link>
-                </div>
-              </GlassCard>
-            </MotionWrapper>
-          ))}
-        </div>
+                    <div className="rounded-full p-3 bg-white/80 dark:bg-black/40 text-primary shadow-sm
+                        group-hover:scale-110 transition-all duration-500 relative">
+                      <category.icon size={24} className="transition-all duration-500 group-hover:rotate-6" />
+                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary animate-ping opacity-0 group-hover:opacity-70"></span>
+                    </div>
+                    <h3 className="mt-4 font-medium text-center group-hover:text-primary transition-colors">
+                      {category.name}
+                    </h3>
+                    <span className="mt-1 text-sm text-muted-foreground">
+                      {category.count} tools
+                    </span>
+                    <div className="absolute bottom-2 right-2 opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                      <ArrowRight size={14} className="text-primary" />
+                    </div>
+                  </GlassCard>
+                </Link>
+              </MotionWrapper>
+            ))}
+          </div>
+        )}
+        
+        <MotionWrapper animation="fadeIn" delay="delay-300" className="mt-10 text-center">
+          <Link 
+            to="/tools" 
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 transition-colors"
+          >
+            View all categories
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          </Link>
+        </MotionWrapper>
       </div>
     </section>
   );
