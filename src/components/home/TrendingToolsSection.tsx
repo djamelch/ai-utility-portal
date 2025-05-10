@@ -52,6 +52,7 @@ export function TrendingToolsSection() {
     queryKey: ["categories-with-tools"],
     queryFn: async () => {
       try {
+        console.log("Starting category fetch...");
         // First get all distinct primary tasks (categories)
         const { data: distinctTasks, error: distinctError } = await supabase
           .from("tools")
@@ -59,7 +60,12 @@ export function TrendingToolsSection() {
           .not('primary_task', 'is', null)
           .order('primary_task');
         
-        if (distinctError) throw distinctError;
+        if (distinctError) {
+          console.error("Error fetching distinct tasks:", distinctError);
+          throw distinctError;
+        }
+        
+        console.log("Distinct tasks fetched:", distinctTasks);
         
         // Handle special categories first
         const specialCategories = [
@@ -86,6 +92,7 @@ export function TrendingToolsSection() {
         if (distinctTasks) {
           for (let i = 0; i < distinctTasks.length; i++) {
             const taskName = distinctTasks[i].primary_task;
+            if (!taskName) continue; // Skip null or undefined task names
             
             // Count tools for this category
             const { count, error: countError } = await supabase
@@ -93,7 +100,10 @@ export function TrendingToolsSection() {
               .select('*', { count: 'exact', head: true })
               .eq('primary_task', taskName);
             
-            if (countError) throw countError;
+            if (countError) {
+              console.error(`Error counting tools for ${taskName}:`, countError);
+              continue; // Skip this category but continue with others
+            }
             
             // Create category object
             regularCategories.push({
@@ -112,6 +122,8 @@ export function TrendingToolsSection() {
         // Merge special and regular categories
         const allCategories = [...specialCategories, ...sortedRegularCategories];
         
+        console.log("Categories before fetching tools:", allCategories);
+        
         // Now fetch tools for each category
         for (let category of allCategories) {
           let query = supabase.from("tools").select("id, company_name as name, slug, logo_url").limit(15);
@@ -122,7 +134,7 @@ export function TrendingToolsSection() {
           } else if (category.id === "top-trends") {
             // For "Top 50 Trends" category, get most viewed/rated tools
             // In a real scenario, you might have a views/ratings column
-            query = query.order("created_at", { ascending: false });
+            query = query.order("click_count", { ascending: false });
           } else {
             // For regular categories, filter by primary_task
             query = query.eq("primary_task", category.name);
@@ -130,7 +142,12 @@ export function TrendingToolsSection() {
           
           const { data: toolsData, error: toolsError } = await query;
           
-          if (toolsError) throw toolsError;
+          if (toolsError) {
+            console.error(`Error fetching tools for ${category.name}:`, toolsError);
+            continue;
+          }
+          
+          console.log(`Tools for ${category.name}:`, toolsData);
           
           category.tools = toolsData || [];
           category.count = category.tools.length;
@@ -139,7 +156,7 @@ export function TrendingToolsSection() {
         // Filter out categories with no tools
         const categoriesWithTools = allCategories.filter(cat => cat.count > 0);
         
-        console.log("Fetched categories with tools:", categoriesWithTools);
+        console.log("Final categories with tools:", categoriesWithTools);
         
         return categoriesWithTools;
       } catch (error) {
