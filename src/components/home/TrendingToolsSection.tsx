@@ -1,5 +1,5 @@
 
-import { ArrowRight, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, Star, TrendingUp, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -28,7 +28,7 @@ interface Tool {
   logo_url?: string;
 }
 
-// Define available category colors with stronger contrast
+// Define available category colors (simplified)
 const categoryColors = [
   "bg-blue-500",
   "bg-pink-500",
@@ -58,97 +58,105 @@ export function TrendingToolsSection() {
         // First, get all tools to work with
         const { data: toolsData, error: toolsError } = await supabase
           .from("tools")
-          .select('id, company_name, slug, logo_url, primary_task, created_at');
+          .select('id, company_name, slug, logo_url, primary_task, created_at')
+          .order('id', { ascending: false });
         
         if (toolsError) {
           console.error("Error fetching tools:", toolsError);
           throw toolsError;
         }
 
+        console.log(`Fetched tools data:`, toolsData?.length || 0);
+        
         if (!toolsData || toolsData.length === 0) {
           console.log("No tools found in the database");
           return [];
         }
 
-        console.log(`Successfully fetched ${toolsData.length} tools`);
+        // Create a map to store categories and their tools
+        const categoryMap = new Map<string, Category>();
         
-        // Get unique primary tasks for categories
-        const uniqueTasks = Array.from(new Set(
-          toolsData
-            .filter(tool => tool.primary_task) // Filter out null/undefined primary_tasks
-            .map(tool => tool.primary_task)
-        ));
-        
-        console.log("Unique primary tasks:", uniqueTasks);
-        
-        // Create special categories
-        const specialCategories = [
-          {
-            id: "latest",
-            name: "Latest AI",
-            count: 0,
-            tools: [],
-            color: categoryColors[10],
-          },
-          {
-            id: "top-trends",
-            name: "Top 50 Trends [24H]",
-            count: 0,
-            tools: [],
-            color: categoryColors[11],
-          }
-        ];
-        
-        // Create categories from unique tasks
-        const regularCategories = uniqueTasks.map((taskName, index) => {
-          // Filter tools for this category
-          const toolsInCategory = toolsData
-            .filter(tool => tool.primary_task === taskName)
-            .map(tool => ({
-              id: tool.id.toString(),
-              name: tool.company_name || "Unnamed Tool",
-              slug: tool.slug || "",
-              logo_url: tool.logo_url || ""
-            }));
+        // Process each tool and organize by category
+        toolsData.forEach(tool => {
+          // Handle null values safely
+          const taskName = tool.primary_task || "Uncategorized";
+          const toolId = tool.id?.toString() || "";
+          const toolName = tool.company_name || "Unnamed Tool";
+          const toolSlug = tool.slug || "";
+          const logoUrl = tool.logo_url || "";
           
-          return {
-            id: typeof taskName === 'string' ? taskName.toLowerCase().replace(/\s+/g, '-') : `category-${index}`,
-            name: taskName || `Category ${index + 1}`,
-            count: toolsInCategory.length,
-            tools: toolsInCategory,
-            color: categoryColors[index % categoryColors.length]
-          };
+          // Get or create category in our map
+          if (!categoryMap.has(taskName)) {
+            const categoryIndex = categoryMap.size % categoryColors.length;
+            categoryMap.set(taskName, {
+              id: taskName.toLowerCase().replace(/\s+/g, '-'),
+              name: taskName,
+              count: 0,
+              color: categoryColors[categoryIndex],
+              tools: []
+            });
+          }
+          
+          // Add tool to its category
+          const category = categoryMap.get(taskName)!;
+          category.tools.push({
+            id: toolId,
+            name: toolName,
+            slug: toolSlug,
+            logo_url: logoUrl
+          });
+          category.count = category.tools.length;
         });
         
-        console.log("Regular categories created:", regularCategories.length);
+        console.log(`Created ${categoryMap.size} categories from tools`);
         
-        // Sort regular categories by tool count (highest to lowest)
-        regularCategories.sort((a, b) => b.count - a.count);
-        
-        // Handle special categories
-        // Latest AI tools - sort by created_at
+        // Create special categories
         const latestTools = [...toolsData]
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime())
           .slice(0, 15)
           .map(tool => ({
-            id: tool.id.toString(),
+            id: tool.id?.toString() || "",
             name: tool.company_name || "Unnamed Tool",
             slug: tool.slug || "",
             logo_url: tool.logo_url || ""
           }));
         
-        specialCategories[0].tools = latestTools;
-        specialCategories[0].count = latestTools.length;
+        // Add special categories
+        const specialCategories = [
+          {
+            id: "latest",
+            name: "Latest AI",
+            count: latestTools.length,
+            tools: latestTools,
+            color: categoryColors[10],
+          },
+          {
+            id: "top-trends",
+            name: "Top 50 Trends [24H]",
+            count: latestTools.slice(0, 10).length,
+            tools: latestTools.slice(0, 10),
+            color: categoryColors[11],
+          }
+        ];
         
-        // Top trends - using the same as latest for now
-        specialCategories[1].tools = [...latestTools].slice(0, 10);
-        specialCategories[1].count = specialCategories[1].tools.length;
+        // Convert map to array and filter out empty categories
+        const regularCategories = Array.from(categoryMap.values())
+          .filter(category => category.count > 0)
+          .sort((a, b) => b.count - a.count);
         
-        // Combine all categories and filter out empty ones
-        const allCategories = [...specialCategories, ...regularCategories]
-          .filter(category => category.count > 0);
+        // Combine and return all categories
+        const allCategories = [...specialCategories, ...regularCategories];
         
-        console.log("Final categories with tools:", allCategories.length);
+        console.log(`Final categories with tools:`, allCategories.length);
+        // Log the first category as a sample
+        if (allCategories.length > 0) {
+          console.log("Sample category:", {
+            name: allCategories[0].name,
+            count: allCategories[0].count,
+            toolsCount: allCategories[0].tools.length,
+            firstTool: allCategories[0].tools[0]
+          });
+        }
         
         return allCategories;
       } catch (error) {
@@ -245,10 +253,31 @@ function SkeletonCategoryCard() {
 
 // Category card component with improved styling
 function CategoryCard({ category }: { category: Category }) {
-  // Safety check for category data
-  if (!category || !category.tools) {
+  // Debug this component rendering
+  console.log("Rendering CategoryCard for:", category.name, "with", category.tools?.length || 0, "tools");
+
+  // Safety check for category data - with more verbose logging
+  if (!category) {
+    console.error("Category is undefined");
     return null;
   }
+
+  if (!category.tools || !Array.isArray(category.tools)) {
+    console.error(`Category ${category.name} has invalid tools:`, category.tools);
+    return null;
+  }
+
+  // Choose an appropriate icon based on category name
+  const getCategoryIcon = () => {
+    if (category.id === "latest") {
+      return <Star size={16} className="text-amber-500" />;
+    } else if (category.id === "top-trends") {
+      return <TrendingUp size={16} className="text-primary" />;
+    } else {
+      // Default icon for all other categories
+      return <FileText size={16} className="text-primary" />;
+    }
+  };
 
   return (
     <Link to={`/tools?category=${category.id}`} className="group">
@@ -260,13 +289,7 @@ function CategoryCard({ category }: { category: Category }) {
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            {category.id === "latest" ? (
-              <Star size={16} className="text-amber-500" />
-            ) : category.id === "top-trends" ? (
-              <TrendingUp size={16} className="text-primary" />
-            ) : (
-              <span className={`w-3 h-3 rounded-full ${category.color || 'bg-primary'}`}></span>
-            )}
+            {getCategoryIcon()}
             {category.name}
           </h3>
           <Badge variant="outline" className="text-xs">
