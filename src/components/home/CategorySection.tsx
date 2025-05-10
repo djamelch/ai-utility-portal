@@ -10,6 +10,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
+import { useEffect } from "react";
 
 interface Category {
   id: string;
@@ -22,6 +23,13 @@ interface Category {
 }
 
 export function CategorySection() {
+  // Log when component is mounted to help debugging
+  useEffect(() => {
+    console.log("CategorySection mounted");
+    return () => console.log("CategorySection unmounted");
+  }, []);
+
+  // Use static data for categories to ensure they always appear
   const categories: Category[] = [
     { 
       id: "chatbots", 
@@ -116,7 +124,7 @@ export function CategorySection() {
   ];
 
   return (
-    <GradientBackground variant="subtle" className="section-padding" interactive>
+    <GradientBackground variant="subtle" className="section-padding py-16" interactive>
       <div className="container-wide">
         <MotionWrapper animation="fadeIn">
           <div className="text-center mb-12">
