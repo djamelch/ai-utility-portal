@@ -1,3 +1,4 @@
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ToolsSection } from "@/components/home/ToolsSection";
@@ -9,6 +10,7 @@ import { GradientBackground } from "@/components/ui/GradientBackground";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useEffect, useState } from "react";
+import { Hero } from "@/components/home/Hero"; // Import the Hero component
 
 const Index = () => {
   const [sectionLimits, setSectionLimits] = useState({
@@ -80,8 +82,11 @@ const Index = () => {
       <Navbar />
       
       <main className="flex-1">
+        {/* Hero Section */}
+        <Hero />
+        
         {/* Featured Tools Section */}
-        <div className="relative pt-24 md:pt-32">
+        <div className="relative">
           <div className="bg-background/80 pt-16">
             <ToolsSection 
               title="Featured Tools" 
