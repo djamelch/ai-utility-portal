@@ -87,6 +87,12 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
+        {/* Category Browser Section - Moved before Featured Tools */}
+        <CategorySection />
+        
+        {/* Trending Tools Section */}
+        <TrendingToolsSection />
+        
         {/* Featured Tools Section */}
         <div className="relative">
           <div className="bg-background/80 pt-16">
@@ -125,9 +131,6 @@ const Index = () => {
             />
           </div>
         </div>
-        
-        {/* Category Browser Section - Moved to after Recently Added Tools */}
-        <TrendingToolsSection />
                 
         {/* CTA Section */}
         <div className="relative">
