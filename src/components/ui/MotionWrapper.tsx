@@ -73,6 +73,12 @@ export function MotionWrapper({
   const animationClass = animation === "none" ? "" : `animate-${animation}`;
   const delayClass = delay === "none" ? "" : delay;
 
+  // For debugging
+  useEffect(() => {
+    // console.log("MotionWrapper isVisible:", isVisible);
+    // console.log("Animation class:", animationClass);
+  }, [isVisible, animationClass]);
+
   // If we're not in a browser or animation is "none", render without opacity-0
   if (!isBrowser || animation === "none") {
     return <div className={className}>{children}</div>;
@@ -82,7 +88,7 @@ export function MotionWrapper({
     <div
       ref={ref}
       className={cn(
-        isVisible ? "" : "opacity-0",
+        isVisible ? "opacity-100" : "opacity-0",
         isVisible && animationClass,
         isVisible && delayClass,
         className

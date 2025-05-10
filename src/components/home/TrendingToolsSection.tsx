@@ -53,6 +53,7 @@ export function TrendingToolsSection() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["categories-with-tools"],
     queryFn: async () => {
+      console.log("Fetching categories and tools...");
       try {
         // First get all distinct primary tasks (categories)
         const { data: distinctTasks, error: distinctError } = await supabase
@@ -65,6 +66,8 @@ export function TrendingToolsSection() {
           console.error("Error fetching distinct tasks:", distinctError);
           throw distinctError;
         }
+
+        console.log("Distinct tasks fetched:", distinctTasks);
         
         // Handle special categories first
         const specialCategories = [
@@ -89,9 +92,12 @@ export function TrendingToolsSection() {
         
         // Process each distinct primary task
         if (distinctTasks) {
-          for (let i = 0; i < distinctTasks.length; i++) {
-            const taskName = distinctTasks[i].primary_task;
-            if (!taskName) continue; // Skip null or undefined task names
+          console.log(`Processing ${distinctTasks.length} distinct tasks...`);
+          
+          // Use Promise.all to fetch all tools counts in parallel
+          const categoriesPromises = distinctTasks.map(async (task, i) => {
+            const taskName = task.primary_task;
+            if (!taskName) return null; // Skip null or undefined task names
             
             // Count tools for this category
             const { count, error: countError } = await supabase
@@ -101,19 +107,27 @@ export function TrendingToolsSection() {
             
             if (countError) {
               console.error(`Error counting tools for ${taskName}:`, countError);
-              continue; // Skip this category but continue with others
+              return null; // Skip this category but continue with others
             }
+
+            console.log(`Category: ${taskName}, Tools count: ${count}`);
             
             // Create category object
-            regularCategories.push({
+            return {
               id: taskName.toLowerCase().replace(/\s+/g, '-'),
               name: taskName,
               count: count || 0,
               tools: [],
               color: categoryColors[i % categoryColors.length], // Cycle through colors
-            });
-          }
+            };
+          });
+
+          // Wait for all counts to be fetched
+          const categoriesResults = await Promise.all(categoriesPromises);
+          regularCategories.push(...categoriesResults.filter(Boolean) as Category[]);
         }
+        
+        console.log("Regular categories before sorting:", regularCategories);
         
         // Sort regular categories by count (highest to lowest)
         const sortedRegularCategories = regularCategories.sort((a, b) => b.count - a.count);
@@ -121,8 +135,10 @@ export function TrendingToolsSection() {
         // Merge special and regular categories
         const allCategories = [...specialCategories, ...sortedRegularCategories];
         
+        console.log("All categories before fetching tools:", allCategories);
+        
         // Now fetch tools for each category
-        for (let category of allCategories) {
+        const categoriesWithToolsPromises = allCategories.map(async (category) => {
           let query = supabase.from("tools").select("id, company_name as name, slug, logo_url").limit(15);
           
           if (category.id === "latest") {
@@ -140,17 +156,28 @@ export function TrendingToolsSection() {
           
           if (toolsError) {
             console.error(`Error fetching tools for ${category.name}:`, toolsError);
-            continue;
+            return { ...category, tools: [], count: 0 };
           }
           
-          category.tools = toolsData || [];
-          category.count = category.tools.length;
-        }
+          console.log(`Category: ${category.name}, Tools fetched: ${toolsData?.length || 0}`);
+          
+          return { 
+            ...category, 
+            tools: toolsData || [], 
+            count: toolsData?.length || 0 
+          };
+        });
+        
+        // Wait for all tools to be fetched
+        const categoriesWithTools = await Promise.all(categoriesWithToolsPromises);
         
         // Filter out categories with no tools
-        const categoriesWithTools = allCategories.filter(cat => cat.count > 0);
+        const finalCategories = categoriesWithTools.filter(cat => cat.count > 0);
         
-        return categoriesWithTools;
+        console.log(`Final categories with tools: ${finalCategories.length}`);
+        console.log("Sample category:", finalCategories[0]);
+        
+        return finalCategories;
       } catch (error) {
         console.error("Error fetching categories with tools:", error);
         toast.error("Failed to load categories");
@@ -158,14 +185,21 @@ export function TrendingToolsSection() {
       }
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    retry: 3, // Retry three times if the query fails
   });
 
   // Update categories with data when available
   useEffect(() => {
     if (data) {
+      console.log("Setting categories state with data:", data);
       setCategories(data);
     }
   }, [data]);
+
+  // Log whenever categories change to help with debugging
+  useEffect(() => {
+    console.log("Categories state updated:", categories);
+  }, [categories]);
 
   return (
     <section className="py-12 md:py-16 bg-background">
@@ -197,11 +231,17 @@ export function TrendingToolsSection() {
           </div>
         ) : error ? (
           <div className="p-8 text-center">
-            <p className="text-destructive">Error loading categories</p>
+            <p className="text-destructive">Error loading categories: {(error as Error).message}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Reload
+            </Button>
           </div>
         ) : categories.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-muted-foreground">No categories found</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Reload
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -244,6 +284,11 @@ function SkeletonCategoryCard() {
 
 // Category card component
 function CategoryCard({ category }: { category: Category }) {
+  if (!category) {
+    console.error("Received null or undefined category");
+    return null;
+  }
+
   return (
     <Link to={`/tools?category=${category.id}`} className="group">
       <Card className="h-full border hover:shadow-md transition-all duration-300 overflow-hidden">
@@ -265,7 +310,7 @@ function CategoryCard({ category }: { category: Category }) {
           </div>
           
           <div className="space-y-1.5 text-sm">
-            {category.tools.slice(0, 12).map((tool) => (
+            {(category.tools || []).slice(0, 12).map((tool) => (
               <div key={tool.id} className="flex items-center gap-2 py-0.5">
                 {tool.logo_url ? (
                   <img 
@@ -288,7 +333,7 @@ function CategoryCard({ category }: { category: Category }) {
             ))}
             
             {/* Show indicator if there are more tools than shown */}
-            {category.tools.length > 12 && (
+            {(category.tools || []).length > 12 && (
               <div className="pt-2 text-right">
                 <span className="text-xs text-muted-foreground">
                   +{category.tools.length - 12} more
