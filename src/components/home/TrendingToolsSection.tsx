@@ -57,19 +57,16 @@ export function TrendingToolsSection() {
       console.log("Fetching categories and tools...");
       try {
         // First get all distinct primary tasks (categories)
-        // Use the SQL query approach instead of group method
-        const { data: distinctTasks, error: distinctError } = await supabase
-          .from("tools")
-          .select('primary_task, count(*)')
-          .not('primary_task', 'is', null)
-          .order('count', { ascending: false });
+        // We need to use raw SQL for the aggregation since the Supabase JS client has limitations
+        const { data: taskCounts, error: distinctError } = await supabase
+          .rpc('get_primary_task_counts');
         
         if (distinctError) {
           console.error("Error fetching distinct tasks:", distinctError);
           throw distinctError;
         }
 
-        console.log("Distinct tasks fetched:", distinctTasks);
+        console.log("Task counts fetched:", taskCounts);
         
         // Handle special categories first
         const specialCategories = [
@@ -96,11 +93,11 @@ export function TrendingToolsSection() {
         const regularCategories: Category[] = [];
         
         // Process each distinct primary task
-        if (distinctTasks) {
-          console.log(`Processing ${distinctTasks.length} distinct tasks...`);
+        if (taskCounts) {
+          console.log(`Processing ${taskCounts.length} distinct tasks...`);
           
-          for (let i = 0; i < distinctTasks.length; i++) {
-            const task = distinctTasks[i];
+          for (let i = 0; i < taskCounts.length; i++) {
+            const task = taskCounts[i];
             const taskName = task.primary_task;
             if (!taskName) continue;
             
