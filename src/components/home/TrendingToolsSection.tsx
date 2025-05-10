@@ -28,7 +28,7 @@ interface Tool {
   logo_url?: string;
 }
 
-// Define available category colors with stronger contrast
+// Define available category colors
 const categoryColors = [
   "bg-blue-500",
   "bg-pink-500",
@@ -53,8 +53,6 @@ export function TrendingToolsSection() {
     queryKey: ["categories-with-tools"],
     queryFn: async () => {
       try {
-        console.log("Fetching tools for categories...");
-        
         // First, get all tools to work with
         const { data: toolsData, error: toolsError } = await supabase
           .from("tools")
@@ -70,7 +68,7 @@ export function TrendingToolsSection() {
           return [];
         }
 
-        console.log(`Successfully fetched ${toolsData.length} tools`);
+        console.log("Fetched tools:", toolsData.length);
         
         // Get unique primary tasks for categories
         const uniqueTasks = Array.from(new Set(
@@ -102,25 +100,21 @@ export function TrendingToolsSection() {
         // Create categories from unique tasks
         const regularCategories = uniqueTasks.map((taskName, index) => {
           // Filter tools for this category
-          const toolsInCategory = toolsData
-            .filter(tool => tool.primary_task === taskName)
-            .map(tool => ({
-              id: tool.id.toString(),
-              name: tool.company_name || "Unnamed Tool",
-              slug: tool.slug || "",
-              logo_url: tool.logo_url || ""
-            }));
+          const toolsInCategory = toolsData.filter(tool => tool.primary_task === taskName);
           
           return {
             id: typeof taskName === 'string' ? taskName.toLowerCase().replace(/\s+/g, '-') : `category-${index}`,
             name: taskName || `Category ${index + 1}`,
             count: toolsInCategory.length,
-            tools: toolsInCategory,
+            tools: toolsInCategory.map(tool => ({
+              id: tool.id.toString(),
+              name: tool.company_name || "Unnamed Tool",
+              slug: tool.slug || "",
+              logo_url: tool.logo_url || ""
+            })),
             color: categoryColors[index % categoryColors.length]
           };
         });
-        
-        console.log("Regular categories created:", regularCategories.length);
         
         // Sort regular categories by tool count (highest to lowest)
         regularCategories.sort((a, b) => b.count - a.count);
@@ -141,14 +135,15 @@ export function TrendingToolsSection() {
         specialCategories[0].count = latestTools.length;
         
         // Top trends - using the same as latest for now
+        // In a real scenario, you might have click_count or trending data
         specialCategories[1].tools = [...latestTools].slice(0, 10);
         specialCategories[1].count = specialCategories[1].tools.length;
         
-        // Combine all categories and filter out empty ones
+        // Combine all categories
         const allCategories = [...specialCategories, ...regularCategories]
           .filter(category => category.count > 0);
         
-        console.log("Final categories with tools:", allCategories.length);
+        console.log("Final categories with tools:", allCategories);
         
         return allCategories;
       } catch (error) {
@@ -243,13 +238,8 @@ function SkeletonCategoryCard() {
   );
 }
 
-// Category card component with improved styling
+// Category card component
 function CategoryCard({ category }: { category: Category }) {
-  // Safety check for category data
-  if (!category || !category.tools) {
-    return null;
-  }
-
   return (
     <Link to={`/tools?category=${category.id}`} className="group">
       <GlassCard 
@@ -265,12 +255,12 @@ function CategoryCard({ category }: { category: Category }) {
             ) : category.id === "top-trends" ? (
               <TrendingUp size={16} className="text-primary" />
             ) : (
-              <span className={`w-3 h-3 rounded-full ${category.color || 'bg-primary'}`}></span>
+              <span className={`w-3 h-3 rounded-full ${category.color}`}></span>
             )}
             {category.name}
           </h3>
           <Badge variant="outline" className="text-xs">
-            {category.count || 0}
+            {category.count}
           </Badge>
         </div>
         
@@ -281,8 +271,8 @@ function CategoryCard({ category }: { category: Category }) {
                 {tool.logo_url ? (
                   <img 
                     src={tool.logo_url} 
-                    alt={tool.name || "Tool logo"} 
-                    className="w-4 h-4 rounded-full object-cover bg-white"
+                    alt={tool.name} 
+                    className="w-4 h-4 rounded-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
@@ -293,7 +283,7 @@ function CategoryCard({ category }: { category: Category }) {
                   <div className="w-4 h-4 rounded-full bg-primary/10"></div>
                 )}
                 <span className="text-muted-foreground hover:text-foreground truncate transition-colors">
-                  {tool.name || "Unnamed Tool"}
+                  {tool.name}
                 </span>
               </div>
             ))

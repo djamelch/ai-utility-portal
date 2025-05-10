@@ -10,7 +10,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface Category {
   id: string;
@@ -23,19 +22,6 @@ interface Category {
 }
 
 export function CategorySection() {
-  const [mounted, setMounted] = useState(false);
-  
-  // Track component mount status to prevent disappearing
-  useEffect(() => {
-    console.log("CategorySection mounted");
-    setMounted(true);
-    return () => {
-      console.log("CategorySection unmounted");
-      setMounted(false);
-    };
-  }, []);
-
-  // Use static data for categories to ensure they always appear
   const categories: Category[] = [
     { 
       id: "chatbots", 
@@ -129,25 +115,8 @@ export function CategorySection() {
     },
   ];
 
-  // Force re-render if component is about to disappear
-  if (!mounted) {
-    console.log("CategorySection not mounted - forcing display");
-    return (
-      <div id="category-section-placeholder" className="py-16">
-        <div className="container-tight text-center">
-          <p>Loading categories...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <GradientBackground 
-      variant="subtle" 
-      className="section-padding py-16" 
-      interactive
-      id="category-section-container"
-    >
+    <GradientBackground variant="subtle" className="section-padding" interactive>
       <div className="container-wide">
         <MotionWrapper animation="fadeIn">
           <div className="text-center mb-12">
@@ -171,7 +140,6 @@ export function CategorySection() {
                 key={category.id}
                 to={`/tools?category=${category.id}`}
                 className="group"
-                data-testid={`category-card-${category.id}`}
               >
                 <GlassCard 
                   animation="none"

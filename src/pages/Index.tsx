@@ -1,3 +1,4 @@
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ToolsSection } from "@/components/home/ToolsSection";
@@ -9,8 +10,9 @@ import { GradientBackground } from "@/components/ui/GradientBackground";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useEffect, useState } from "react";
-import { Hero } from "@/components/home/Hero"; 
-import { CategorySection } from "@/components/home/CategorySection";
+import { Hero } from "@/components/home/Hero"; // Import the Hero component
+import { TrendingToolsSection } from "@/components/home/TrendingToolsSection"; // Import the TrendingToolsSection component
+import { CategorySection } from "@/components/home/CategorySection"; // Import the CategorySection component
 
 const Index = () => {
   const [sectionLimits, setSectionLimits] = useState({
@@ -43,7 +45,7 @@ const Index = () => {
         });
       } else {
         setSectionLimits({
-          featured: 9,
+          featured: 9, // Increased from 6 to show more on mobile
           topRated: 9,
           recent: 9
         });
@@ -85,9 +87,6 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* Category Browser Section - Moved immediately after Hero */}
-        <CategorySection />
-        
         {/* Featured Tools Section */}
         <div className="relative">
           <div className="bg-background/80 pt-16">
@@ -127,6 +126,9 @@ const Index = () => {
           </div>
         </div>
         
+        {/* Category Browser Section - Moved to after Recently Added Tools */}
+        <TrendingToolsSection />
+                
         {/* CTA Section */}
         <div className="relative">
           <GradientBackground variant="primary" className="py-12 md:py-16" intensity="light">
