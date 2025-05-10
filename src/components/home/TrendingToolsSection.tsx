@@ -57,12 +57,12 @@ export function TrendingToolsSection() {
       console.log("Fetching categories and tools...");
       try {
         // First get all distinct primary tasks (categories)
+        // Use the SQL query approach instead of group method
         const { data: distinctTasks, error: distinctError } = await supabase
           .from("tools")
           .select('primary_task, count(*)')
           .not('primary_task', 'is', null)
-          .group('primary_task')
-          .order('count', { ascending: false }); // Order by count descending
+          .order('count', { ascending: false });
         
         if (distinctError) {
           console.error("Error fetching distinct tasks:", distinctError);
@@ -131,7 +131,7 @@ export function TrendingToolsSection() {
         
         // Now fetch tools for each category
         const categoriesWithToolsPromises = allCategories.map(async (category) => {
-          let query = supabase.from("tools").select("id, company_name as name, slug, logo_url").limit(15);
+          let query = supabase.from("tools").select("id, company_name, slug, logo_url").limit(15);
           
           if (category.id === "latest") {
             // For "Latest AI" category, get the most recently added tools
@@ -156,7 +156,7 @@ export function TrendingToolsSection() {
           // Map the tools data to match our Tool interface
           const mappedTools: Tool[] = (toolsData || []).map(tool => ({
             id: String(tool.id),
-            name: tool.name || "",
+            name: tool.company_name || "",
             slug: tool.slug || "",
             logo_url: tool.logo_url || ""
           }));
@@ -207,7 +207,7 @@ export function TrendingToolsSection() {
   return (
     <section className="py-12 md:py-16 bg-background">
       <div className="container-wide">
-        <MotionWrapper animation="none">
+        <MotionWrapper>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold">Browse Categories</h2>
@@ -252,7 +252,7 @@ export function TrendingToolsSection() {
           </div>
         )}
         
-        <MotionWrapper animation="none" className="mt-10 text-center">
+        <MotionWrapper className="mt-10 text-center">
           <Link 
             to="/tools" 
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 transition-colors"
