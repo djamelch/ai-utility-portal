@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ToolsSection } from "@/components/home/ToolsSection";
@@ -122,7 +121,7 @@ const Index = () => {
         
         {/* CTA Section */}
         <div className="relative">
-          <GradientBackground variant="primary" className="py-12 md:py-16" intensity="low">
+          <GradientBackground variant="primary" className="py-12 md:py-16" intensity="light">
             <div className="container-tight">
               <MotionWrapper animation="fadeIn">
                 <GlassCard 
