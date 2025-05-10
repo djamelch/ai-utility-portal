@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -156,6 +157,7 @@
   .filter-pill {
     @apply px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300;
     @apply bg-hostinger-brand/10 text-hostinger-brand hover:bg-hostinger-brand/20;
+    @apply dark:bg-hostinger-brand/20 dark:text-hostinger-brand/90 dark:hover:bg-hostinger-brand/30;
     @apply flex items-center gap-1.5 hover:gap-2;
   }
   
@@ -164,6 +166,7 @@
     @apply rounded-lg border border-border/60 bg-background/80 backdrop-blur-sm;
     @apply focus-within:ring-2 focus-within:ring-hostinger-brand/30 focus-within:border-hostinger-brand/40;
     @apply transition-all duration-300;
+    @apply dark:bg-background/50 dark:border-border/40;
   }
 
   /* Section dividers inspired by Hostinger */
@@ -185,6 +188,7 @@
   /* Hostinger-inspired section backgrounds */
   .hostinger-bg-gradient {
     @apply bg-gradient-to-br from-hostinger-brand/5 to-hostinger-accent/5;
+    @apply dark:from-hostinger-brand/10 dark:to-hostinger-accent/10;
   }
   
   .hostinger-pattern {
@@ -192,6 +196,22 @@
     background-image: 
       radial-gradient(at 76% 0%, rgba(103, 76, 196, 0.05) 0px, transparent 50%),
       radial-gradient(at 1% 100%, rgba(157, 38, 220, 0.05) 0px, transparent 50%);
+    
+    .dark & {
+      background-color: hsl(224, 71%, 4%);
+      background-image: 
+        radial-gradient(at 76% 0%, rgba(103, 76, 196, 0.1) 0px, transparent 50%),
+        radial-gradient(at 1% 100%, rgba(157, 38, 220, 0.1) 0px, transparent 50%);
+    }
+  }
+
+  /* Dark mode specific enhancements */
+  .dark .dropdown-content {
+    @apply bg-gray-800/95 border-gray-700;
+  }
+  
+  .dark .glass-card {
+    @apply bg-gray-900/50 border-gray-800;
   }
 }
 
@@ -246,6 +266,7 @@
 
 .bg-modern-gradient-subtle {
   @apply bg-gradient-to-r from-hostinger-brand/10 to-hostinger-accent/5;
+  @apply dark:from-hostinger-brand/20 dark:to-hostinger-accent/10;
 }
 
 .border-modern-gradient {

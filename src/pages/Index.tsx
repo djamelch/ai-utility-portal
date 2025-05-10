@@ -1,6 +1,6 @@
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Hero } from "@/components/home/Hero";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Link } from "react-router-dom";
@@ -81,11 +81,8 @@ const Index = () => {
       <Navbar />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <Hero />
-        
         {/* Featured Tools Section - With updated hostinger style divider */}
-        <div className="relative">
+        <div className="relative pt-24 md:pt-32">
           <div className="wave-divider-down hostinger-bg-gradient absolute top-0 left-0 right-0 z-10"></div>
           <div className="pt-16 hostinger-pattern">
             <ToolsSection 
@@ -132,14 +129,14 @@ const Index = () => {
             <div className="container-tight">
               <MotionWrapper animation="fadeIn">
                 <GlassCard 
-                  className="bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 p-6 md:p-10 text-center"
+                  className="bg-background/50 backdrop-blur-lg border border-white/10 dark:border-white/5 dark:bg-gray-900/40 p-6 md:p-10 text-center"
                   glowEffect
                   hoverEffect
                   glowColor="before:from-hostinger-international/30 before:to-hostinger-accent/20"
                 >
                   <div className="relative mb-5">
-                    <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-hostinger-brand via-hostinger-accent to-hostinger-brand rounded-full"></div>
-                    <Sparkles size={36} className="mx-auto text-hostinger-international" />
+                    <div className="absolute inset-0 blur-xl opacity-20 bg-gradient-to-br from-hostinger-brand via-hostinger-accent to-hostinger-brand rounded-full dark:opacity-30"></div>
+                    <Sparkles size={36} className="mx-auto text-hostinger-international dark:text-hostinger-accent" />
                   </div>
                   
                   <h2 className="text-xl sm:text-2xl font-bold">
@@ -164,7 +161,7 @@ const Index = () => {
                     </Button>
                     <Button 
                       variant="outline"
-                      className="rounded-lg border bg-background/50 backdrop-blur-sm px-5 py-2 font-medium"
+                      className="rounded-lg border bg-background/50 backdrop-blur-sm px-5 py-2 font-medium dark:bg-background/10"
                       asChild
                     >
                       <Link to="/blog" className="flex items-center">
