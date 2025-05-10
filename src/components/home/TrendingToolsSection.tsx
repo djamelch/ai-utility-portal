@@ -1,4 +1,3 @@
-
 import { ArrowRight, Star, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
@@ -52,14 +51,14 @@ export function TrendingToolsSection() {
     queryKey: ["categories-with-tools"],
     queryFn: async () => {
       try {
-        // First get all distinct primary_task values (categories) with their counts
-        const { data: categoryData, error: categoryError } = await supabase
+        // First get all distinct primary tasks (categories)
+        const { data: distinctTasks, error: distinctError } = await supabase
           .from("tools")
-          .select('primary_task, count(*)')
+          .select('primary_task')
           .not('primary_task', 'is', null)
-          .order('count', { ascending: false });
+          .order('primary_task');
         
-        if (categoryError) throw categoryError;
+        if (distinctError) throw distinctError;
         
         // Handle special categories first
         const specialCategories = [
@@ -79,20 +78,38 @@ export function TrendingToolsSection() {
           }
         ];
         
-        // Transform categories
-        let regularCategories = categoryData.map((item, index) => ({
-          id: item.primary_task.toLowerCase().replace(/\s+/g, '-'),
-          name: item.primary_task,
-          count: parseInt(item.count),
-          tools: [],
-          color: categoryColors[index % categoryColors.length], // Cycle through colors
-        }));
+        // Transform categories and count tools for each
+        const regularCategories: Category[] = [];
+        
+        // Process each distinct primary task
+        if (distinctTasks) {
+          for (let i = 0; i < distinctTasks.length; i++) {
+            const taskName = distinctTasks[i].primary_task;
+            
+            // Count tools for this category
+            const { count, error: countError } = await supabase
+              .from("tools")
+              .select('*', { count: 'exact', head: true })
+              .eq('primary_task', taskName);
+            
+            if (countError) throw countError;
+            
+            // Create category object
+            regularCategories.push({
+              id: taskName.toLowerCase().replace(/\s+/g, '-'),
+              name: taskName,
+              count: count || 0,
+              tools: [],
+              color: categoryColors[i % categoryColors.length], // Cycle through colors
+            });
+          }
+        }
         
         // Sort regular categories by count (highest to lowest)
-        regularCategories = regularCategories.sort((a, b) => b.count - a.count);
+        const sortedRegularCategories = regularCategories.sort((a, b) => b.count - a.count);
         
         // Merge special and regular categories
-        const allCategories = [...specialCategories, ...regularCategories];
+        const allCategories = [...specialCategories, ...sortedRegularCategories];
         
         // Now fetch tools for each category
         for (let category of allCategories) {
