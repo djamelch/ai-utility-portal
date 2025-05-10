@@ -12,6 +12,14 @@ import { Skeleton } from "../ui/skeleton";
 import { Card, CardContent } from "../ui/card";
 import { toast } from "sonner";
 
+interface Tool {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  logo_url?: string;
+}
+
 interface Category {
   id: string;
   name: string;
@@ -19,14 +27,6 @@ interface Category {
   count: number;
   color: string;
   tools: Tool[];
-}
-
-interface Tool {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  logo_url?: string;
 }
 
 // Define available category colors
@@ -156,7 +156,7 @@ export function TrendingToolsSection() {
           
           if (toolsError) {
             console.error(`Error fetching tools for ${category.name}:`, toolsError);
-            return { ...category, tools: [], count: 0 };
+            return { ...category, tools: [] as Tool[], count: 0 };
           }
           
           console.log(`Category: ${category.name}, Tools fetched: ${toolsData?.length || 0}`);
