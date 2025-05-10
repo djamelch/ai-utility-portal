@@ -13,7 +13,7 @@ import { Skeleton } from "../ui/skeleton";
 interface Category {
   id: string;
   name: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
   count: number;
   color: string;
   tools: Tool[];
@@ -52,12 +52,12 @@ export function TrendingToolsSection() {
     queryKey: ["categories-with-tools"],
     queryFn: async () => {
       try {
-        // First get all distinct primary_task values (categories)
+        // First get all distinct primary_task values (categories) with their counts
         const { data: categoryData, error: categoryError } = await supabase
           .from("tools")
           .select('primary_task, count(*)')
           .not('primary_task', 'is', null)
-          .group('primary_task');
+          .order('count', { ascending: false });
         
         if (categoryError) throw categoryError;
         
