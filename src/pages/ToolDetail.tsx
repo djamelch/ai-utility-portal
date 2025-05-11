@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
@@ -49,33 +50,57 @@ export default function ToolDetail() {
       setNotFound(false);
       
       try {
-        let query = supabase.from('tools').select('*');
-        
-        if (slug) {
-          query = query.eq('slug', slug);
-        }
-        
-        const { data, error } = await query.maybeSingle();
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (!data) {
-          console.error('Tool not found with slug:', slug);
+        if (!slug) {
+          console.error('Slug is undefined');
           setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        console.log("Fetching tool with slug:", slug);
+        
+        // Fetch the tool by slug or ID (handle both cases)
+        let { data: toolData, error: toolError } = await supabase
+          .from('tools')
+          .select('*')
+          .eq('slug', slug)
+          .maybeSingle();
+        
+        // If no tool found by slug, try searching by ID if slug is a number
+        if (!toolData && !toolError && !isNaN(Number(slug))) {
+          console.log("No tool found by slug, trying ID:", slug);
+          const { data, error } = await supabase
+            .from('tools')
+            .select('*')
+            .eq('id', Number(slug))
+            .maybeSingle();
+          
+          toolData = data;
+          toolError = error;
+        }
+        
+        if (toolError) {
+          console.error('Error fetching tool:', toolError);
+          throw toolError;
+        }
+        
+        if (!toolData) {
+          console.error('Tool not found with slug or ID:', slug);
+          setNotFound(true);
+          setLoading(false);
           return;
         }
         
-        console.log('Tool data:', data);
-        setTool(data);
+        console.log('Tool data fetched successfully:', toolData);
+        setTool(toolData);
         
-        fetchReviews(data.id);
+        // Now fetch reviews for this tool
+        fetchReviews(toolData.id);
       } catch (error) {
-        console.error('Error fetching tool:', error);
+        console.error('Error in fetchTool:', error);
         toast({
           title: 'Error fetching tool',
-          description: 'Failed to load tool details',
+          description: 'Failed to load tool details. Please try again.',
           variant: 'destructive',
         });
         setNotFound(true);
@@ -93,10 +118,15 @@ export default function ToolDetail() {
   }, [slug, toast, location.state]);
   
   const fetchReviews = async (toolId: number) => {
-    if (!toolId) return;
+    if (!toolId) {
+      console.error("Cannot fetch reviews: Tool ID is undefined");
+      return;
+    }
     
     setReviewsLoading(true);
     try {
+      console.log("Fetching reviews for tool ID:", toolId);
+      
       const { data: reviewsData, error: reviewsError } = await supabase
         .from('reviews')
         .select(`
@@ -109,22 +139,29 @@ export default function ToolDetail() {
         .eq('tool_id', toolId)
         .order('created_at', { ascending: false });
       
-      if (reviewsError) throw reviewsError;
+      if (reviewsError) {
+        console.error("Error fetching reviews:", reviewsError);
+        throw reviewsError;
+      }
       
-      const formattedReviews = reviewsData.map(review => ({
+      console.log("Reviews fetched:", reviewsData?.length || 0);
+      
+      const formattedReviews = reviewsData ? reviewsData.map(review => ({
         id: review.id,
         rating: review.rating,
         comment: review.comment,
         created_at: new Date(review.created_at).toLocaleDateString(),
         user_id: review.user_id,
         user_email: `User-${review.user_id.substring(0, 8)}`
-      }));
+      })) : [];
       
       setReviews(formattedReviews);
       
       if (formattedReviews.length > 0) {
         const total = formattedReviews.reduce((sum, review) => sum + review.rating, 0);
         setAverageRating(Number((total / formattedReviews.length).toFixed(1)));
+      } else {
+        setAverageRating(null);
       }
       
       if (user) {
@@ -141,7 +178,7 @@ export default function ToolDetail() {
         }
       }
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      console.error('Error in fetchReviews:', error);
       toast({
         title: 'Error',
         description: 'Failed to load reviews',
@@ -533,6 +570,22 @@ export default function ToolDetail() {
     );
   }
   
+  if (!tool) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center py-24">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
+            <p className="text-muted-foreground mb-6">Failed to load tool details.</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
   return (
     <div className="flex min-h-screen flex-col">
       <SEOHead
@@ -640,7 +693,7 @@ export default function ToolDetail() {
                         </div>
                       ) : null}
                       
-                      {tool.faqs && Object.keys(tool.faqs).length > 0 && (
+                      {tool.faqs && Object.keys(tool.faqs || {}).length > 0 && (
                         <div>
                           <h2 className="text-xl font-semibold mb-3">Frequently Asked Questions</h2>
                           <div className="space-y-4">
@@ -651,7 +704,7 @@ export default function ToolDetail() {
                                   <p className="text-muted-foreground">{faq.answer}</p>
                                 </div>
                               )) : 
-                              Object.entries(tool.faqs).map(([key, value]: [string, any], i: number) => (
+                              Object.entries(tool.faqs || {}).map(([key, value]: [string, any], i: number) => (
                                 <div key={i} className="border rounded-lg p-4">
                                   <h3 className="font-medium mb-2">{key}</h3>
                                   <p className="text-muted-foreground">{value}</p>
@@ -734,7 +787,75 @@ export default function ToolDetail() {
                   </TabsContent>
                   
                   <TabsContent value="reviews" className="mt-6">
-                    <ReviewsList />
+                    <div className="space-y-6">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-medium">
+                          {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+                        </h3>
+                        {!userHasReviewed && renderReviewButton()}
+                      </div>
+                      
+                      {reviewsLoading ? (
+                        <div className="flex justify-center py-6">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                      ) : reviews.length === 0 ? (
+                        <div className="text-center py-8">
+                          <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                          <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
+                          <p className="text-muted-foreground mb-6">
+                            Be the first to review this tool and help others make better decisions.
+                          </p>
+                          {renderReviewButton()}
+                        </div>
+                      ) : (
+                        <div className="divide-y">
+                          {reviews.map(review => (
+                            <div key={review.id} className="py-4">
+                              <div className="flex justify-between">
+                                <div className="flex items-center gap-2">
+                                  <RatingStars rating={review.rating} />
+                                  <span className="text-sm font-medium">{review.user_email}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {review.created_at}
+                                  </span>
+                                </div>
+                                
+                                {user && user.id === review.user_id && (
+                                  <div className="flex gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setEditingReviewId(review.id);
+                                        setUserRating(review.rating);
+                                        setUserReview(review.comment || '');
+                                        setReviewDialogOpen(true);
+                                      }}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleDeleteReview(review.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {review.comment && (
+                                <p className="mt-2 text-muted-foreground">
+                                  {review.comment}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>
@@ -772,7 +893,7 @@ export default function ToolDetail() {
                     <Button 
                       className="w-full" 
                       size="lg"
-                      onClick={handleVisitWebsite}
+                      onClick={() => handleVisitWebsite()}
                     >
                       Visit Website
                       <ExternalLink className="ml-2 h-4 w-4" />
