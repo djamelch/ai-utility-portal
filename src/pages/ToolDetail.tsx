@@ -59,14 +59,14 @@ export default function ToolDetail() {
 
         console.log("Fetching tool with slug:", slug);
         
-        // Fetch the tool by slug or ID (handle both cases)
+        // First try fetching by slug
         let { data: toolData, error: toolError } = await supabase
           .from('tools')
           .select('*')
           .eq('slug', slug)
           .maybeSingle();
         
-        // If no tool found by slug, try searching by ID if slug is a number
+        // If no tool found by slug and the slug looks like a number, try by ID
         if (!toolData && !toolError && !isNaN(Number(slug))) {
           console.log("No tool found by slug, trying ID:", slug);
           const { data, error } = await supabase
@@ -95,7 +95,9 @@ export default function ToolDetail() {
         setTool(toolData);
         
         // Now fetch reviews for this tool
-        fetchReviews(toolData.id);
+        if (toolData.id) {
+          fetchReviews(toolData.id);
+        }
       } catch (error) {
         console.error('Error in fetchTool:', error);
         toast({
@@ -336,86 +338,6 @@ export default function ToolDetail() {
     );
   };
   
-  const ReviewsList = () => {
-    if (reviewsLoading) {
-      return (
-        <div className="flex justify-center py-6">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
-      );
-    }
-    
-    if (reviews.length === 0) {
-      return (
-        <div className="text-center py-8">
-          <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
-          <p className="text-muted-foreground mb-6">
-            Be the first to review this tool and help others make better decisions.
-          </p>
-          {renderReviewButton()}
-        </div>
-      );
-    }
-    
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium">
-            {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
-          </h3>
-          {!userHasReviewed && renderReviewButton()}
-        </div>
-        
-        <div className="divide-y">
-          {reviews.map(review => (
-            <div key={review.id} className="py-4">
-              <div className="flex justify-between">
-                <div className="flex items-center gap-2">
-                  <RatingStars rating={review.rating} />
-                  <span className="text-sm font-medium">{review.user_email}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {review.created_at}
-                  </span>
-                </div>
-                
-                {user && user.id === review.user_id && (
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setEditingReviewId(review.id);
-                        setUserRating(review.rating);
-                        setUserReview(review.comment || '');
-                        setReviewDialogOpen(true);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteReview(review.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-              
-              {review.comment && (
-                <p className="mt-2 text-muted-foreground">
-                  {review.comment}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-  
   const renderReviewButton = () => {
     if (!user) {
       return (
@@ -501,6 +423,86 @@ export default function ToolDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    );
+  };
+  
+  const ReviewsList = () => {
+    if (reviewsLoading) {
+      return (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      );
+    }
+    
+    if (reviews.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+          <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
+          <p className="text-muted-foreground mb-6">
+            Be the first to review this tool and help others make better decisions.
+          </p>
+          {renderReviewButton()}
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-medium">
+            {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+          </h3>
+          {!userHasReviewed && renderReviewButton()}
+        </div>
+        
+        <div className="divide-y">
+          {reviews.map(review => (
+            <div key={review.id} className="py-4">
+              <div className="flex justify-between">
+                <div className="flex items-center gap-2">
+                  <RatingStars rating={review.rating} />
+                  <span className="text-sm font-medium">{review.user_email}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {review.created_at}
+                  </span>
+                </div>
+                
+                {user && user.id === review.user_id && (
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setEditingReviewId(review.id);
+                        setUserRating(review.rating);
+                        setUserReview(review.comment || '');
+                        setReviewDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteReview(review.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {review.comment && (
+                <p className="mt-2 text-muted-foreground">
+                  {review.comment}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     );
   };
   
@@ -787,75 +789,7 @@ export default function ToolDetail() {
                   </TabsContent>
                   
                   <TabsContent value="reviews" className="mt-6">
-                    <div className="space-y-6">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-medium">
-                          {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
-                        </h3>
-                        {!userHasReviewed && renderReviewButton()}
-                      </div>
-                      
-                      {reviewsLoading ? (
-                        <div className="flex justify-center py-6">
-                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        </div>
-                      ) : reviews.length === 0 ? (
-                        <div className="text-center py-8">
-                          <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                          <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
-                          <p className="text-muted-foreground mb-6">
-                            Be the first to review this tool and help others make better decisions.
-                          </p>
-                          {renderReviewButton()}
-                        </div>
-                      ) : (
-                        <div className="divide-y">
-                          {reviews.map(review => (
-                            <div key={review.id} className="py-4">
-                              <div className="flex justify-between">
-                                <div className="flex items-center gap-2">
-                                  <RatingStars rating={review.rating} />
-                                  <span className="text-sm font-medium">{review.user_email}</span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {review.created_at}
-                                  </span>
-                                </div>
-                                
-                                {user && user.id === review.user_id && (
-                                  <div className="flex gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => {
-                                        setEditingReviewId(review.id);
-                                        setUserRating(review.rating);
-                                        setUserReview(review.comment || '');
-                                        setReviewDialogOpen(true);
-                                      }}
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={() => handleDeleteReview(review.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {review.comment && (
-                                <p className="mt-2 text-muted-foreground">
-                                  {review.comment}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <ReviewsList />
                   </TabsContent>
                 </Tabs>
               </div>
