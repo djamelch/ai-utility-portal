@@ -58,78 +58,71 @@ export default function ToolDetail() {
 
         console.log("Fetching tool with slug:", slug);
         
-        // Try all methods of fetching to maximize chances of finding the tool
+        // Extract potential ID from slug (if format is like "5-out")
+        const potentialId = slug.split('-')[0];
+        const isNumericId = /^\d+$/.test(potentialId);
+        
+        console.log("Extracted potential ID:", potentialId, "Is numeric:", isNumericId);
+        
         let toolData = null;
-        let toolError = null;
         
-        // First try with the slug exactly as provided
-        const slugResult = await supabase
-          .from('tools')
-          .select('*')
-          .eq('slug', slug)
-          .maybeSingle();
-          
-        toolData = slugResult.data;
-        toolError = slugResult.error;
-        
-        // If no tool found by exact slug, try to format the slug for common formats
-        if (!toolData && !toolError) {
-          console.log("No tool found by exact slug, trying with formatted slug");
-          
-          // Try with hyphens replaced with spaces (if contains hyphens)
-          if (slug.includes('-')) {
-            const formattedSlug = slug.replace(/-/g, ' ');
-            console.log("Trying formatted slug:", formattedSlug);
-            
-            const formattedSlugResult = await supabase
-              .from('tools')
-              .select('*')
-              .eq('slug', formattedSlug)
-              .maybeSingle();
-              
-            if (formattedSlugResult.data) {
-              toolData = formattedSlugResult.data;
-              console.log("Found tool with formatted slug:", formattedSlug);
-            }
-          }
-        }
-        
-        // If still no tool found and slug looks like a number, try by ID
-        if (!toolData && !toolError && !isNaN(Number(slug))) {
-          console.log("No tool found by slug, trying by ID:", slug);
+        // First try with ID if it looks like a number (e.g., "5-out" -> try with ID 5)
+        if (isNumericId) {
+          console.log("Trying to fetch by ID:", potentialId);
           
           const idResult = await supabase
             .from('tools')
             .select('*')
-            .eq('id', Number(slug))
+            .eq('id', parseInt(potentialId))
             .maybeSingle();
             
-          toolData = idResult.data;
-          toolError = idResult.error;
+          if (idResult.data && !idResult.error) {
+            console.log("Found tool by ID:", idResult.data);
+            toolData = idResult.data;
+          } else if (idResult.error) {
+            console.error("Error fetching by ID:", idResult.error);
+          }
         }
         
-        // If still no tool found, try case insensitive search
-        if (!toolData && !toolError) {
-          console.log("No tool found by exact match, trying with company name");
+        // If no tool found by ID, try with the exact slug
+        if (!toolData) {
+          console.log("No tool found by ID or trying with exact slug");
+          
+          const slugResult = await supabase
+            .from('tools')
+            .select('*')
+            .eq('slug', slug)
+            .maybeSingle();
+            
+          if (slugResult.data && !slugResult.error) {
+            console.log("Found tool by exact slug:", slugResult.data);
+            toolData = slugResult.data;
+          } else if (slugResult.error) {
+            console.error("Error fetching by slug:", slugResult.error);
+          }
+        }
+        
+        // If still no tool found, try with company name
+        if (!toolData) {
+          console.log("No tool found by slug, trying with company name");
           
           const nameResult = await supabase
             .from('tools')
             .select('*')
             .ilike('company_name', `%${slug}%`)
             .limit(1)
-            .single();
+            .maybeSingle();
             
-          toolData = nameResult.data;
-          toolError = nameResult.error;
-        }
-        
-        if (toolError) {
-          console.error('Error fetching tool:', toolError);
-          throw toolError;
+          if (nameResult.data && !nameResult.error) {
+            console.log("Found tool by company name:", nameResult.data);
+            toolData = nameResult.data;
+          } else if (nameResult.error) {
+            console.error("Error fetching by company name:", nameResult.error);
+          }
         }
         
         if (!toolData) {
-          console.error('Tool not found with any method. Slug/ID:', slug);
+          console.error('Tool not found with any method. Slug:', slug);
           setNotFound(true);
           setLoading(false);
           return;
@@ -145,8 +138,8 @@ export default function ToolDetail() {
       } catch (error) {
         console.error('Error in fetchTool:', error);
         toast({
-          title: 'خطأ في جلب الأداة',
-          description: 'فشل في تحميل تفاصيل الأداة. يرجى المحاولة مرة أخرى.',
+          title: 'Error fetching tool',
+          description: 'Failed to load tool details. Please try again.',
           variant: 'destructive',
         });
         setNotFound(true);
@@ -599,13 +592,13 @@ export default function ToolDetail() {
           <div className="container-wide">
             <MotionWrapper animation="fadeIn">
               <div className="text-center py-12">
-                <h1 className="text-4xl font-bold mb-4">الأداة غير موجودة</h1>
+                <h1 className="text-4xl font-bold mb-4">Tool Not Found</h1>
                 <p className="text-muted-foreground mb-8">
-                  الأداة التي تبحث عنها غير موجودة أو تم إزالتها.
+                  The tool you are looking for does not exist or has been removed.
                 </p>
                 <Button onClick={() => navigate('/tools')}>
                   <ChevronLeft className="mr-2 h-4 w-4" />
-                  العودة إلى الأدوات
+                  Return to Tools
                 </Button>
               </div>
             </MotionWrapper>
@@ -622,9 +615,9 @@ export default function ToolDetail() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center py-24">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">حدث خطأ ما</h1>
-            <p className="text-muted-foreground mb-6">فشل في تحميل تفاصيل الأداة.</p>
-            <Button onClick={() => window.location.reload()}>إعادة المحاولة</Button>
+            <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
+            <p className="text-muted-foreground mb-6">Failed to load tool details.</p>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
           </div>
         </main>
         <Footer />
