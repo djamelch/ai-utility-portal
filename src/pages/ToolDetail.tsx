@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
@@ -66,8 +67,23 @@ export default function ToolDetail() {
         
         let toolData = null;
         
-        // First try with ID if it looks like a number (e.g., "5-out" -> try with ID 5)
-        if (isNumericId) {
+        // First try with exact slug match
+        console.log("Trying to fetch by exact slug:", slug);
+        const exactSlugResult = await supabase
+          .from('tools')
+          .select('*')
+          .eq('slug', slug)
+          .maybeSingle();
+          
+        if (exactSlugResult.data && !exactSlugResult.error) {
+          console.log("Found tool by exact slug:", exactSlugResult.data);
+          toolData = exactSlugResult.data;
+        } else if (exactSlugResult.error) {
+          console.error("Error fetching by exact slug:", exactSlugResult.error);
+        }
+        
+        // If no tool found by exact slug, try with ID if it looks like a number
+        if (!toolData && isNumericId) {
           console.log("Trying to fetch by ID:", potentialId);
           
           const idResult = await supabase
@@ -84,32 +100,33 @@ export default function ToolDetail() {
           }
         }
         
-        // If no tool found by ID, try with the exact slug
+        // If still no tool found, try with partial slug match
         if (!toolData) {
-          console.log("No tool found by ID or trying with exact slug");
+          console.log("Trying to fetch by partial slug match");
           
-          const slugResult = await supabase
+          const partialSlugResult = await supabase
             .from('tools')
             .select('*')
-            .eq('slug', slug)
+            .ilike('slug', `%${slug}%`)
+            .limit(1)
             .maybeSingle();
             
-          if (slugResult.data && !slugResult.error) {
-            console.log("Found tool by exact slug:", slugResult.data);
-            toolData = slugResult.data;
-          } else if (slugResult.error) {
-            console.error("Error fetching by slug:", slugResult.error);
+          if (partialSlugResult.data && !partialSlugResult.error) {
+            console.log("Found tool by partial slug match:", partialSlugResult.data);
+            toolData = partialSlugResult.data;
+          } else if (partialSlugResult.error) {
+            console.error("Error fetching by partial slug match:", partialSlugResult.error);
           }
         }
         
         // If still no tool found, try with company name
         if (!toolData) {
-          console.log("No tool found by slug, trying with company name");
+          console.log("No tool found by slug or ID, trying with company name");
           
           const nameResult = await supabase
             .from('tools')
             .select('*')
-            .ilike('company_name', `%${slug}%`)
+            .ilike('company_name', `%${slug.replace(/-/g, ' ')}%`)
             .limit(1)
             .maybeSingle();
             
@@ -219,8 +236,8 @@ export default function ToolDetail() {
     } catch (error) {
       console.error('Error in fetchReviews:', error);
       toast({
-        title: 'خطأ',
-        description: 'فشل في تحميل التقييمات',
+        title: 'Error',
+        description: 'Failed to load reviews',
         variant: 'destructive'
       });
     } finally {
@@ -249,8 +266,8 @@ export default function ToolDetail() {
       
       if (!session) {
         toast({
-          title: "التحقق من الهوية مطلوب",
-          description: "الرجاء تسجيل الدخول لإرسال تقييم",
+          title: "Authentication Required",
+          description: "Please log in to submit a review",
           variant: "destructive",
         });
         setReviewDialogOpen(false);
@@ -269,8 +286,8 @@ export default function ToolDetail() {
         if (error) throw error;
         
         toast({
-          title: "تم تحديث التقييم",
-          description: "تم تحديث تقييمك بنجاح",
+          title: "Review Updated",
+          description: "Your review has been updated successfully",
         });
       } else {
         const { error } = await supabase.from('reviews').insert({
@@ -283,8 +300,8 @@ export default function ToolDetail() {
         if (error) throw error;
         
         toast({
-          title: "تم إرسال التقييم",
-          description: "شكراً على رأيك!",
+          title: "Review Submitted",
+          description: "Thank you for your feedback!",
         });
       }
       
@@ -297,8 +314,8 @@ export default function ToolDetail() {
     } catch (error) {
       console.error('Error submitting review:', error);
       toast({
-        title: "خطأ",
-        description: "فشل في إرسال تقييمك. يرجى المحاولة مرة أخرى.",
+        title: "Error",
+        description: "Failed to submit your review. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -307,7 +324,7 @@ export default function ToolDetail() {
   };
   
   const handleDeleteReview = async (reviewId: string) => {
-    if (!confirm("هل أنت متأكد من رغبتك في حذف هذا التقييم؟")) return;
+    if (!confirm("Are you sure you want to delete this review?")) return;
     
     try {
       const { error } = await supabase
@@ -318,16 +335,16 @@ export default function ToolDetail() {
       if (error) throw error;
       
       toast({
-        title: "تم الحذف",
-        description: "تم حذف تقييمك",
+        title: "Deleted",
+        description: "Your review has been deleted",
       });
       
       fetchReviews(tool.id);
     } catch (error) {
       console.error('Error deleting review:', error);
       toast({
-        title: "خطأ",
-        description: "فشل في حذف التقييم",
+        title: "Error",
+        description: "Failed to delete review",
         variant: "destructive",
       });
     }
@@ -379,7 +396,7 @@ export default function ToolDetail() {
     if (!user) {
       return (
         <Button onClick={() => navigate('/auth')}>
-          سجل دخول لكتابة تقييم
+          Log in to write a review
         </Button>
       );
     }
@@ -398,7 +415,7 @@ export default function ToolDetail() {
             }
           }}
         >
-          تعديل تقييمك
+          Edit Your Review
         </Button>
       );
     }
@@ -406,27 +423,27 @@ export default function ToolDetail() {
     return (
       <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
         <DialogTrigger asChild>
-          <Button>كتابة تقييم</Button>
+          <Button>Write a Review</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              {editingReviewId ? 'تعديل تقييمك' : 'كتابة تقييم'}
+              {editingReviewId ? 'Edit Your Review' : 'Write a Review'}
             </DialogTitle>
             <DialogDescription>
-              شارك تجربتك مع {tool?.company_name} لمساعدة الآخرين.
+              Share your experience with {tool?.company_name} to help others.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="rating">التقييم</Label>
+              <Label htmlFor="rating">Rating</Label>
               <StarRating />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="review">تقييمك</Label>
+              <Label htmlFor="review">Your Review</Label>
               <Textarea
                 id="review"
-                placeholder="ما الذي أعجبك أو لم يعجبك في هذه الأداة؟"
+                placeholder="What did you like or dislike about this tool?"
                 rows={5}
                 value={userReview}
                 onChange={(e) => setUserReview(e.target.value)}
@@ -444,7 +461,7 @@ export default function ToolDetail() {
               }}
               disabled={submitting}
             >
-              إلغاء
+              Cancel
             </Button>
             <Button 
               onClick={handleReviewSubmit}
@@ -453,9 +470,9 @@ export default function ToolDetail() {
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {editingReviewId ? 'جار التحديث...' : 'جار الإرسال...'}
+                  {editingReviewId ? 'Updating...' : 'Submitting...'}
                 </>
-              ) : editingReviewId ? 'تحديث التقييم' : 'إرسال التقييم'}
+              ) : editingReviewId ? 'Update Review' : 'Submit Review'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -476,9 +493,9 @@ export default function ToolDetail() {
       return (
         <div className="text-center py-8">
           <User className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h3 className="text-lg font-medium mb-2">لا توجد تقييمات حتى الآن</h3>
+          <h3 className="text-lg font-medium mb-2">No Reviews Yet</h3>
           <p className="text-muted-foreground mb-6">
-            كن أول من يقيم هذه الأداة وساعد الآخرين في اتخاذ قرارات أفضل.
+            Be the first to review this tool and help others make better decisions.
           </p>
           {renderReviewButton()}
         </div>
@@ -489,7 +506,7 @@ export default function ToolDetail() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-medium">
-            {reviews.length} {reviews.length === 1 ? 'تقييم' : 'تقييمات'}
+            {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
           </h3>
           {!userHasReviewed && renderReviewButton()}
         </div>
@@ -628,9 +645,9 @@ export default function ToolDetail() {
   return (
     <div className="flex min-h-screen flex-col">
       <SEOHead
-        title={tool ? `${tool.company_name} - تفاصيل الأداة` : 'الأداة غير موجودة'}
-        description={tool ? (tool.short_description || `تعرف على ${tool.company_name}، ميزاتها، والأسعار، وتقييمات المستخدمين.`) : 'الأداة غير موجودة أو تم إزالتها.'}
-        keywords={tool ? `${tool.company_name}, أداة ذكاء اصطناعي, ${tool.primary_task || ''}, ${tool.pricing || ''}, برنامج ذكاء اصطناعي` : 'أداة ذكاء اصطناعي, غير موجودة'}
+        title={tool ? `${tool.company_name} - Tool Details` : 'Tool Not Found'}
+        description={tool ? (tool.short_description || `Learn about ${tool.company_name}, its features, pricing, and user reviews.`) : 'The tool does not exist or has been removed.'}
+        keywords={tool ? `${tool.company_name}, AI tool, ${tool.primary_task || ''}, ${tool.pricing || ''}, AI software` : 'AI tool, not found'}
         ogImage={tool?.featured_image_url || tool?.logo_url}
         ogType="product"
         canonicalUrl={`/tool/${slug}`}
@@ -648,7 +665,7 @@ export default function ToolDetail() {
               onClick={() => navigate('/tools')}
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
-              العودة إلى الأدوات
+              Back to Tools
             </Button>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -686,17 +703,17 @@ export default function ToolDetail() {
                 
                 <Tabs defaultValue="overview" className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
-                    <TabsTrigger value="details">التفاصيل</TabsTrigger>
-                    <TabsTrigger value="reviews">التقييمات</TabsTrigger>
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="details">Details</TabsTrigger>
+                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="overview" className="mt-6">
                     <div className="space-y-6">
                       <div>
-                        <h2 className="text-xl font-semibold mb-3">حول الأداة</h2>
+                        <h2 className="text-xl font-semibold mb-3">About the Tool</h2>
                         <p className="text-muted-foreground whitespace-pre-line">
-                          {tool.full_description || tool.short_description || "لا يوجد وصف متاح."}
+                          {tool.full_description || tool.short_description || "No description available."}
                         </p>
                       </div>
                       
@@ -704,11 +721,11 @@ export default function ToolDetail() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {tool.pros && tool.pros.length > 0 && (
                             <div className="space-y-2">
-                              <h3 className="font-medium">المزايا</h3>
+                              <h3 className="font-medium">Pros</h3>
                               <ul className="space-y-1">
                                 {tool.pros.map((pro: string, i: number) => (
                                   <li key={i} className="flex items-start">
-                                    <span className="text-green-500 ml-2">✓</span>
+                                    <span className="text-green-500 mr-2">✓</span>
                                     <span>{pro}</span>
                                   </li>
                                 ))}
@@ -718,11 +735,11 @@ export default function ToolDetail() {
                           
                           {tool.cons && tool.cons.length > 0 && (
                             <div className="space-y-2">
-                              <h3 className="font-medium">العيوب</h3>
+                              <h3 className="font-medium">Cons</h3>
                               <ul className="space-y-1">
                                 {tool.cons.map((con: string, i: number) => (
                                   <li key={i} className="flex items-start">
-                                    <span className="text-red-500 ml-2">✗</span>
+                                    <span className="text-red-500 mr-2">✗</span>
                                     <span>{con}</span>
                                   </li>
                                 ))}
@@ -734,7 +751,7 @@ export default function ToolDetail() {
                       
                       {tool.faqs && Object.keys(tool.faqs || {}).length > 0 && (
                         <div>
-                          <h2 className="text-xl font-semibold mb-3">الأسئلة الشائعة</h2>
+                          <h2 className="text-xl font-semibold mb-3">FAQs</h2>
                           <div className="space-y-4">
                             {Array.isArray(tool.faqs) ? 
                               tool.faqs.map((faq: any, i: number) => (
@@ -759,13 +776,13 @@ export default function ToolDetail() {
                   <TabsContent value="details" className="mt-6">
                     <div className="space-y-6">
                       <div>
-                        <h2 className="text-xl font-semibold mb-3">التفاصيل التقنية</h2>
+                        <h2 className="text-xl font-semibold mb-3">Technical Details</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                           {tool.primary_task && (
                             <div className="flex items-center gap-2">
                               <Tag className="h-4 w-4 text-muted-foreground" />
                               <div>
-                                <p className="text-sm font-medium">المهمة الأساسية</p>
+                                <p className="text-sm font-medium">Primary Task</p>
                                 <p className="text-sm text-muted-foreground">{tool.primary_task}</p>
                               </div>
                             </div>
@@ -775,7 +792,7 @@ export default function ToolDetail() {
                             <div className="flex items-center gap-2">
                               <Tag className="h-4 w-4 text-muted-foreground" />
                               <div>
-                                <p className="text-sm font-medium">نموذج التسعير</p>
+                                <p className="text-sm font-medium">Pricing Model</p>
                                 <p className="text-sm text-muted-foreground">{tool.pricing}</p>
                               </div>
                             </div>
@@ -785,7 +802,7 @@ export default function ToolDetail() {
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
                               <div>
-                                <p className="text-sm font-medium">تمت الإضافة في</p>
+                                <p className="text-sm font-medium">Added On</p>
                                 <p className="text-sm text-muted-foreground">
                                   {new Date(tool.created_at).toLocaleDateString()}
                                 </p>
@@ -797,7 +814,7 @@ export default function ToolDetail() {
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-muted-foreground" />
                               <div>
-                                <p className="text-sm font-medium">آخر تحديث</p>
+                                <p className="text-sm font-medium">Last Update</p>
                                 <p className="text-sm text-muted-foreground">
                                   {new Date(tool.updated_at).toLocaleDateString()}
                                 </p>
@@ -809,7 +826,7 @@ export default function ToolDetail() {
                       
                       {tool.applicable_tasks && tool.applicable_tasks.length > 0 && (
                         <div>
-                          <h3 className="font-medium mb-2">المهام التطبيقية</h3>
+                          <h3 className="font-medium mb-2">Applicable Tasks</h3>
                           <div className="flex flex-wrap gap-2">
                             {tool.applicable_tasks.map((task: string, i: number) => (
                               <span 
@@ -841,7 +858,7 @@ export default function ToolDetail() {
                         </div>
                         <span className="font-medium">{averageRating}</span>
                         <span className="text-muted-foreground">
-                          ({reviews.length} {reviews.length === 1 ? 'تقييم' : 'تقييمات'})
+                          ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
                         </span>
                       </>
                     ) : (
@@ -855,7 +872,7 @@ export default function ToolDetail() {
                             />
                           ))}
                         </div>
-                        <span className="text-muted-foreground">لا توجد تقييمات بعد</span>
+                        <span className="text-muted-foreground">No reviews yet</span>
                       </>
                     )}
                   </div>
@@ -866,31 +883,31 @@ export default function ToolDetail() {
                       size="lg"
                       onClick={handleVisitWebsite}
                     >
-                      زيارة الموقع
-                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Visit Website
+                      <ExternalLink className="ml-2 h-4 w-4" />
                     </Button>
                     
                     <Separator />
                     
                     <div>
-                      <h3 className="font-medium mb-2">معلومات سريعة</h3>
+                      <h3 className="font-medium mb-2">Quick Info</h3>
                       <ul className="space-y-2 text-sm">
                         {tool.primary_task && (
                           <li className="flex justify-between">
-                            <span className="text-muted-foreground">الفئة</span>
+                            <span className="text-muted-foreground">Category</span>
                             <span>{tool.primary_task}</span>
                           </li>
                         )}
                         
                         {tool.pricing && (
                           <li className="flex justify-between">
-                            <span className="text-muted-foreground">التسعير</span>
+                            <span className="text-muted-foreground">Pricing</span>
                             <span>{tool.pricing}</span>
                           </li>
                         )}
                         
                         <li className="flex justify-between">
-                          <span className="text-muted-foreground">التقييمات</span>
+                          <span className="text-muted-foreground">Reviews</span>
                           <span>{reviews.length}</span>
                         </li>
                       </ul>
