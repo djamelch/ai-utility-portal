@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Zap, Filter, X, Tag, CheckCircle, ArrowRight, Sparkles, Target } from "lucide-react";
@@ -21,6 +22,7 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
+import { useToast } from "@/hooks/use-toast";
 
 interface Category {
   id: string;
@@ -44,11 +46,29 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  // Handle clicks outside the suggestions dropdown to close it
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node) && 
+          searchInputRef.current && !searchInputRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   
   // Generate search suggestions based on input
   useEffect(() => {
     if (searchTerm.length > 0) {
+      console.log("Generating suggestions for:", searchTerm);
       // Generate suggestions based on categories
       const categorySuggestions = categories
         .filter(cat => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -67,13 +87,17 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
         .map(tool => `Tool: ${tool}`);
       
       // Combine and limit suggestions
-      setSearchSuggestions([
+      const allSuggestions = [
         ...toolSuggestions.slice(0, 3),
         ...categorySuggestions.slice(0, 2),
         ...pricingSuggestions.slice(0, 1)
-      ]);
+      ];
       
-      setShowSuggestions(true);
+      console.log("All suggestions:", allSuggestions);
+      setSearchSuggestions(allSuggestions);
+      
+      // Only show suggestions when we have something to show
+      setShowSuggestions(allSuggestions.length > 0);
     } else {
       setSearchSuggestions([]);
       setShowSuggestions(false);
@@ -114,6 +138,11 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
     if (selectedFeatures.length > 0) {
       queryParams.append("features", selectedFeatures.join(','));
     }
+    
+    toast({
+      title: "نتائج البحث",
+      description: `جاري البحث: ${searchTerm || "جميع الأدوات"}`
+    });
     
     navigate(`/tools?${queryParams.toString()}`);
   };
@@ -156,7 +185,7 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
           <Input
             type="text"
-            placeholder="Search for AI tools... (Press / to focus)"
+            placeholder="البحث عن أدوات الذكاء الاصطناعي... (اضغط / للتركيز)"
             className="flex-1 pl-10 pr-8 rounded-l-md border-0 focus-visible:ring-0 bg-transparent"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -168,8 +197,11 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
                 setCommandOpen(true);
               }
             }}
-            onFocus={() => setShowSuggestions(searchTerm.length > 0)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onFocus={() => {
+              if (searchTerm.length > 0 && searchSuggestions.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
             ref={searchInputRef}
           />
           
@@ -184,7 +216,10 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
           
           {/* Real-time suggestions dropdown */}
           {showSuggestions && searchSuggestions.length > 0 && (
-            <div className="absolute left-0 right-0 top-full z-10 mt-1 bg-background border border-input rounded-md shadow-md">
+            <div 
+              ref={suggestionsRef}
+              className="absolute left-0 right-0 top-full z-10 mt-1 bg-background border border-input rounded-md shadow-md"
+            >
               <ul className="py-1">
                 {searchSuggestions.map((suggestion, index) => (
                   <li 
@@ -209,10 +244,10 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
           <div className="border-l border-input min-w-[140px]">
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="border-0 focus:ring-0 rounded-l-none bg-transparent">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder="التصنيف" />
               </SelectTrigger>
               <SelectContent className="bg-background/95 backdrop-blur-sm">
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">جميع التصنيفات</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
@@ -228,7 +263,7 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
           onClick={handleSearch}
         >
           <span className="relative z-10 flex items-center">
-            Search
+            بحث
             <Zap size={18} className="ml-2 transition-all group-hover:rotate-12" />
           </span>
           <span className="absolute inset-0 bg-primary-foreground/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-200"></span>
@@ -237,13 +272,13 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
       
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
         <CommandInput 
-          placeholder="Search for AI tools..." 
+          placeholder="البحث عن أدوات الذكاء الاصطناعي..." 
           value={searchTerm}
           onValueChange={setSearchTerm}
         />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
+          <CommandEmpty>لا توجد نتائج.</CommandEmpty>
+          <CommandGroup heading="المقترحات">
             {searchSuggestions.length > 0 ? (
               searchSuggestions.map((suggestion, index) => (
                 <CommandItem
@@ -262,7 +297,7 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
                 </CommandItem>
               ))
             ) : (
-              <CommandItem>Start typing to see suggestions</CommandItem>
+              <CommandItem>ابدأ الكتابة لرؤية المقترحات</CommandItem>
             )}
           </CommandGroup>
         </CommandList>
@@ -280,19 +315,19 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
             className="w-full group hover:border-primary/50 transition-all duration-300"
           >
             <Filter size={16} className="mr-2 transition-transform group-hover:rotate-45 duration-300" />
-            {showAdvancedFilters ? "Hide Advanced Filters" : "Show Advanced Filters"}
+            {showAdvancedFilters ? "إخفاء الفلاتر المتقدمة" : "إظهار الفلاتر المتقدمة"}
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-4 bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-input animate-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Pricing</label>
+              <label className="text-sm font-medium mb-2 block">الأسعار</label>
               <Select value={selectedPricing} onValueChange={setSelectedPricing}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select pricing" />
+                  <SelectValue placeholder="اختر السعر" />
                 </SelectTrigger>
                 <SelectContent className="bg-background/95 backdrop-blur-sm">
-                  <SelectItem value="all">All Pricing</SelectItem>
+                  <SelectItem value="all">جميع الأسعار</SelectItem>
                   {pricingOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
@@ -302,50 +337,50 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Sort By</label>
+              <label className="text-sm font-medium mb-2 block">ترتيب حسب</label>
               <Select value={sortOrder} onValueChange={setSortOrder}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder="ترتيب حسب" />
                 </SelectTrigger>
                 <SelectContent className="bg-background/95 backdrop-blur-sm">
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="popular">Most Popular</SelectItem>
-                  <SelectItem value="top-rated">Top Rated</SelectItem>
+                  <SelectItem value="newest">الأحدث</SelectItem>
+                  <SelectItem value="popular">الأكثر شعبية</SelectItem>
+                  <SelectItem value="top-rated">الأعلى تقييمًا</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           
           <div className="mb-4">
-            <label className="text-sm font-medium mb-2 block">Tool Features</label>
+            <label className="text-sm font-medium mb-2 block">ميزات الأداة</label>
             <ToggleGroup type="multiple" value={selectedFeatures} onValueChange={handleFeatureToggle} className="flex flex-wrap gap-2">
               <ToggleGroupItem value="api-access" className="text-xs group">
-                <Zap size={12} className="mr-1 group-data-[state=on]:text-primary" /> API Access
+                <Zap size={12} className="mr-1 group-data-[state=on]:text-primary" /> واجهة برمجة التطبيقات
               </ToggleGroupItem>
               <ToggleGroupItem value="free-trial" className="text-xs group">
-                <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> Free Trial
+                <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> تجربة مجانية
               </ToggleGroupItem>
               <ToggleGroupItem value="no-signup" className="text-xs group">
-                <ArrowRight size={12} className="mr-1 group-data-[state=on]:text-primary" /> No Signup
+                <ArrowRight size={12} className="mr-1 group-data-[state=on]:text-primary" /> لا يحتاج تسجيل
               </ToggleGroupItem>
               <ToggleGroupItem value="mobile-friendly" className="text-xs group">
-                <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> Mobile Friendly
+                <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> متوافق مع الجوال
               </ToggleGroupItem>
               <ToggleGroupItem value="browser-extension" className="text-xs group">
-                <Target size={12} className="mr-1 group-data-[state=on]:text-primary" /> Browser Extension
+                <Target size={12} className="mr-1 group-data-[state=on]:text-primary" /> إضافة للمتصفح
               </ToggleGroupItem>
               <ToggleGroupItem value="offline-mode" className="text-xs group">
-                <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> Offline Mode
+                <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> وضع بدون اتصال
               </ToggleGroupItem>
               <ToggleGroupItem value="team-collaboration" className="text-xs group">
-                <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> Team Collaboration
+                <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> تعاون الفريق
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
           
           <Button size="sm" onClick={handleSearch} className="w-full group">
             <span className="relative z-10 flex items-center">
-              Apply Filters
+              تطبيق الفلاتر
               <Filter size={14} className="ml-2 transition-all group-hover:scale-110" />
             </span>
           </Button>
