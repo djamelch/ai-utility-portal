@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Filter, SlidersHorizontal, Info, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -37,12 +36,87 @@ const Tools = () => {
   const features = searchParams.get("features")?.split(",").filter(Boolean) || [];
   
   const [searchInput, setSearchInput] = useState(searchQuery);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  
   // Start with a higher number to display more tools initially
   const [loadMoreCount, setLoadMoreCount] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [totalTools, setTotalTools] = useState(0);
   const initialLimit = 12;
   const loadMoreIncrement = 12;
+
+  // Generate search suggestions based on input
+  useEffect(() => {
+    if (searchInput.length > 1) {
+      console.log("Tools page: Generating suggestions for:", searchInput);
+      
+      // Generate fake search suggestions (in a real app, you would fetch these from the database)
+      const toolNames = [
+        "ChatGPT", "Midjourney", "Jasper", "Dall-E", "GitHub Copilot", 
+        "Notion AI", "Otter.ai", "Synthesia", "RunwayML", "Murf.ai",
+        "AutoGPT", "Stable Diffusion", "DeepL", "Krisp", "Replicate"
+      ];
+      
+      const categoryNames = [
+        "Text Generation", "Image Generation", "Audio Processing", "Video Creation", 
+        "Content Writing", "Code Generation", "Data Analysis", "Email Assistant",
+        "Social Media", "Productivity", "Education", "Marketing", "Design"
+      ];
+      
+      const pricingOptions = [
+        "Free", "Freemium", "Paid", "Subscription", "One-time purchase"
+      ];
+      
+      // Filter suggestions based on input
+      const toolSuggestions = toolNames
+        .filter(tool => tool.toLowerCase().includes(searchInput.toLowerCase()))
+        .slice(0, 4);
+      
+      const categorySuggestions = categoryNames
+        .filter(cat => cat.toLowerCase().includes(searchInput.toLowerCase()))
+        .map(cat => `${cat} Tools`)
+        .slice(0, 3);
+      
+      const pricingSuggestions = pricingOptions
+        .filter(price => price.toLowerCase().includes(searchInput.toLowerCase()))
+        .map(price => `${price} Tools`)
+        .slice(0, 2);
+      
+      // Combine all suggestions
+      const allSuggestions = [
+        ...toolSuggestions,
+        ...categorySuggestions,
+        ...pricingSuggestions
+      ];
+      
+      console.log("Tools page: All suggestions:", allSuggestions);
+      setSearchSuggestions(allSuggestions);
+      
+      // Only show suggestions when we have something to show
+      setShowSuggestions(allSuggestions.length > 0);
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchInput]);
+
+  // Handle clicks outside the suggestions dropdown to close it
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node) && 
+          searchInputRef.current && !searchInputRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const generateSEOTitle = () => {
     if (category && pricing) {
@@ -197,8 +271,11 @@ const Tools = () => {
   const isLoading = isCategoriesLoading || isPricingLoading;
   const hasError = categoriesError || pricingError;
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
     const params = new URLSearchParams(searchParams);
     
     if (searchInput) {
@@ -210,7 +287,43 @@ const Tools = () => {
     setSearchParams(params);
     // Reset to 1 to start with the first batch when search changes
     setLoadMoreCount(1);
+    setShowSuggestions(false);
     console.log("Search submitted, loadMoreCount reset to 1");
+  };
+
+  const handleSelectSuggestion = (value: string) => {
+    // If it's a category suggestion
+    if (value.endsWith(" Tools")) {
+      const categoryName = value.replace(" Tools", "");
+      
+      // Convert spaces to dashes and lowercase for URL
+      const categorySlug = categoryName.toLowerCase().replace(/\s+/g, '-');
+      
+      const params = new URLSearchParams(searchParams);
+      params.set("category", categorySlug);
+      params.delete("search");
+      setSearchParams(params);
+    } 
+    // If it's a pricing suggestion
+    else if (value.startsWith("Free") || value.includes("pay") || value.includes("subscription") || value.includes("purchase")) {
+      const pricingType = value.replace(" Tools", "");
+      
+      const params = new URLSearchParams(searchParams);
+      params.set("pricing", pricingType);
+      params.delete("search");
+      setSearchParams(params);
+    }
+    // Otherwise it's a tool name
+    else {
+      setSearchInput(value);
+      
+      const params = new URLSearchParams(searchParams);
+      params.set("search", value);
+      setSearchParams(params);
+    }
+    
+    setShowSuggestions(false);
+    setLoadMoreCount(1);
   };
 
   const loadMore = () => {
@@ -334,7 +447,38 @@ const Tools = () => {
                           className="w-full pl-10 pr-4 border-none bg-transparent"
                           value={searchInput}
                           onChange={(e) => setSearchInput(e.target.value)}
+                          onFocus={() => {
+                            if (searchInput.length > 1 && searchSuggestions.length > 0) {
+                              setShowSuggestions(true);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSearch();
+                            if (e.key === "Escape") setShowSuggestions(false);
+                          }}
+                          ref={searchInputRef}
                         />
+                        
+                        {/* Real-time suggestions dropdown */}
+                        {showSuggestions && searchSuggestions.length > 0 && (
+                          <div 
+                            ref={suggestionsRef}
+                            className="absolute left-0 right-0 top-full z-10 mt-1 bg-background border border-input rounded-md shadow-md"
+                          >
+                            <ul className="py-1">
+                              {searchSuggestions.map((suggestion, index) => (
+                                <li 
+                                  key={index} 
+                                  className="px-3 py-2 hover:bg-accent cursor-pointer text-sm flex items-center"
+                                  onClick={() => handleSelectSuggestion(suggestion)}
+                                >
+                                  <Search className="mr-2 h-4 w-4" />
+                                  {suggestion}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                       
                       <Button type="submit" className="bg-primary hover:bg-primary/90">

@@ -25,7 +25,41 @@ export function UserSearchBar({
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState(searchTerm);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<Array<{id: string; email: string}>>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // Filter suggestions based on input
+  useEffect(() => {
+    if (inputValue.length > 1 && suggestions.length > 0) {
+      console.log("UserSearchBar: Filtering suggestions for:", inputValue);
+      const filtered = suggestions.filter(user => 
+        user.email.toLowerCase().includes(inputValue.toLowerCase())
+      ).slice(0, 5); // Limit to 5 suggestions
+      
+      setFilteredSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+      console.log("UserSearchBar: Filtered suggestions:", filtered);
+    } else {
+      setFilteredSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [inputValue, suggestions]);
+
+  // Handle clicks outside the suggestions dropdown to close it
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node) && 
+          inputRef.current && !inputRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Show dialog on / press
   useEffect(() => {
@@ -43,7 +77,6 @@ export function UserSearchBar({
     const value = e.target.value;
     setInputValue(value);
     onSearchChange(value);
-    setShowSuggestions(value.length > 0);
   };
 
   const handleClear = () => {
@@ -71,8 +104,11 @@ export function UserSearchBar({
           className="pl-8 pr-8"
           value={inputValue}
           onChange={handleChange}
-          onFocus={() => setShowSuggestions(inputValue.length > 0)}
-          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          onFocus={() => {
+            if (inputValue.length > 1 && filteredSuggestions.length > 0) {
+              setShowSuggestions(true);
+            }
+          }}
           ref={inputRef}
           onKeyDown={(e) => {
             if (e.key === "Escape") {
@@ -91,6 +127,27 @@ export function UserSearchBar({
             <X className="h-4 w-4" />
           </button>
         )}
+        
+        {/* Real-time suggestions dropdown */}
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div 
+            ref={suggestionsRef}
+            className="absolute left-0 right-0 top-full z-10 mt-1 bg-background border border-input rounded-md shadow-md"
+          >
+            <ul className="py-1">
+              {filteredSuggestions.map((suggestion) => (
+                <li 
+                  key={suggestion.id} 
+                  className="px-3 py-2 hover:bg-accent cursor-pointer text-sm flex items-center"
+                  onClick={() => handleSelectSuggestion(suggestion.email)}
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  {suggestion.email}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
@@ -105,8 +162,8 @@ export function UserSearchBar({
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            {suggestions.length > 0 ? (
-              suggestions.map((suggestion) => (
+            {filteredSuggestions.length > 0 ? (
+              filteredSuggestions.map((suggestion) => (
                 <CommandItem
                   key={suggestion.id}
                   onSelect={() => handleSelectSuggestion(suggestion.email)}

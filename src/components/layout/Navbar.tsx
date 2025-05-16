@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Menu, X, Search, Moon, Sun, User, LogOut, Shield, LayoutDashboard
@@ -28,6 +29,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 
 interface NavbarProps {
   className?: string;
@@ -42,8 +51,64 @@ export function Navbar({ className }: NavbarProps) {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+
+  // Generate search suggestions based on input
+  useEffect(() => {
+    if (searchTerm.length > 1) {
+      console.log("Navbar: Generating suggestions for:", searchTerm);
+      
+      // Sample tool suggestions (in a real app, you would fetch these from the database)
+      const toolSuggestions = [
+        "ChatGPT", "Midjourney", "Jasper", "Dall-E", "GitHub Copilot", 
+        "Notion AI", "Otter.ai", "Synthesia", "RunwayML", "Murf.ai"
+      ].filter(tool => tool.toLowerCase().includes(searchTerm.toLowerCase()))
+        .map(tool => `${tool}`);
+      
+      // Sample category suggestions
+      const categorySuggestions = [
+        "Text Generation", "Image Generation", "Audio Processing", "Video Creation", 
+        "Content Writing", "Code Generation", "Data Analysis"
+      ].filter(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()))
+        .map(cat => `${cat} Tools`);
+      
+      // Combine and limit suggestions
+      const allSuggestions = [
+        ...toolSuggestions.slice(0, 3),
+        ...categorySuggestions.slice(0, 2)
+      ];
+      
+      console.log("Navbar: All suggestions:", allSuggestions);
+      setSearchSuggestions(allSuggestions);
+      
+      // Only show suggestions when we have something to show
+      setShowSuggestions(allSuggestions.length > 0);
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchTerm]);
+
+  // Handle clicks outside the suggestions dropdown to close it
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node) && 
+          searchInputRef.current && !searchInputRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -93,7 +158,24 @@ export function Navbar({ className }: NavbarProps) {
     if (searchTerm.trim()) {
       navigate(`/tools?search=${encodeURIComponent(searchTerm)}`);
       setIsSearchOpen(false);
+      setIsCommandOpen(false);
     }
+  };
+
+  const handleSelectSuggestion = (value: string) => {
+    setSearchTerm(value);
+    setShowSuggestions(false);
+    
+    // If it ends with "Tools", then it's a category search
+    if (value.endsWith(" Tools")) {
+      const category = value.replace(" Tools", "");
+      navigate(`/tools?category=${encodeURIComponent(category)}`);
+    } else {
+      navigate(`/tools?search=${encodeURIComponent(value)}`);
+    }
+    
+    setIsSearchOpen(false);
+    setIsCommandOpen(false);
   };
 
   const navLinks = [
@@ -148,11 +230,43 @@ export function Navbar({ className }: NavbarProps) {
           </ul>
           
           <div className="flex items-center gap-4">
+            <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
+              <CommandInput 
+                placeholder="Search AI tools..." 
+                value={searchTerm}
+                onValueChange={setSearchTerm}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
+              />
+              <CommandList>
+                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandGroup heading="Suggestions">
+                  {searchSuggestions.length > 0 ? (
+                    searchSuggestions.map((suggestion, index) => (
+                      <CommandItem
+                        key={index}
+                        onSelect={() => handleSelectSuggestion(suggestion)}
+                        className="cursor-pointer"
+                      >
+                        <Search className="mr-2 h-4 w-4" />
+                        {suggestion}
+                      </CommandItem>
+                    ))
+                  ) : (
+                    <CommandItem>Start typing to see suggestions</CommandItem>
+                  )}
+                </CommandGroup>
+              </CommandList>
+            </CommandDialog>
+
             <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
               <DialogTrigger asChild>
                 <button 
                   aria-label="Search" 
                   className="rounded-full p-2 text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setIsCommandOpen(true)}
                 >
                   <Search size={20} />
                 </button>
@@ -161,7 +275,7 @@ export function Navbar({ className }: NavbarProps) {
                 <DialogHeader>
                   <DialogTitle>Search AI Tools</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSearch} className="flex items-center space-x-2 mt-4">
+                <form onSubmit={handleSearch} className="flex items-center space-x-2 mt-4 relative">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                     <Input
@@ -170,8 +284,39 @@ export function Navbar({ className }: NavbarProps) {
                       className="pl-10"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
+                      onFocus={() => {
+                        if (searchTerm.length > 1 && searchSuggestions.length > 0) {
+                          setShowSuggestions(true);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSearch();
+                        if (e.key === "Escape") setShowSuggestions(false);
+                      }}
+                      ref={searchInputRef}
                       autoFocus
                     />
+                    
+                    {/* Real-time suggestions dropdown */}
+                    {showSuggestions && searchSuggestions.length > 0 && (
+                      <div 
+                        ref={suggestionsRef}
+                        className="absolute left-0 right-0 top-full z-20 mt-1 bg-background border border-input rounded-md shadow-md"
+                      >
+                        <ul className="py-1">
+                          {searchSuggestions.map((suggestion, index) => (
+                            <li 
+                              key={index} 
+                              className="px-3 py-2 hover:bg-accent cursor-pointer text-sm flex items-center"
+                              onClick={() => handleSelectSuggestion(suggestion)}
+                            >
+                              <Search className="mr-2 h-4 w-4" />
+                              {suggestion}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   <Button type="submit">Search</Button>
                 </form>
