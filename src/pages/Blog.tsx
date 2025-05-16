@@ -1,10 +1,17 @@
-
-import { useState } from "react";
-import { CalendarDays, Clock, Tag, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CalendarDays, Clock, Tag, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 
 interface BlogPost {
   id: string;
@@ -106,6 +113,9 @@ const blogPosts: BlogPost[] = [
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   
   const categories = Array.from(new Set(blogPosts.map(post => post.category)));
   
@@ -118,6 +128,55 @@ const Blog = () => {
   });
   
   const featuredPost = blogPosts.find(post => post.featured);
+
+  useEffect(() => {
+    // Generate search suggestions based on query
+    if (searchQuery.length > 0) {
+      const suggestions = blogPosts
+        .map(post => post.title)
+        .filter(title => title.toLowerCase().includes(searchQuery.toLowerCase()))
+        .slice(0, 5);
+      
+      // Add categories that match
+      const matchingCategories = categories
+        .filter(category => category.toLowerCase().includes(searchQuery.toLowerCase()))
+        .map(category => `Category: ${category}`);
+      
+      setSearchSuggestions([...suggestions, ...matchingCategories]);
+      setShowSuggestions(true);
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchQuery]);
+
+  // Show dialog on / press
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const handleSelectSuggestion = (value: string) => {
+    if (value.startsWith("Category: ")) {
+      const category = value.replace("Category: ", "");
+      setSelectedCategory(category);
+      setSearchQuery("");
+    } else {
+      setSearchQuery(value);
+    }
+    setShowSuggestions(false);
+    setCommandOpen(false);
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -144,11 +203,54 @@ const Blog = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                 <input
                   type="text"
-                  placeholder="Search articles..."
+                  placeholder="Search articles... (Press / to focus)"
                   className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-4"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={() => setShowSuggestions(searchQuery.length > 0)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setShowSuggestions(false);
+                    } else if (e.key === "ArrowDown" && showSuggestions) {
+                      e.preventDefault();
+                      setCommandOpen(true);
+                    }
+                  }}
                 />
+                {searchQuery && (
+                  <button 
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchSuggestions([]);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+                
+                {/* Real-time suggestions dropdown */}
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-background border border-input rounded-md shadow-md">
+                    <ul className="py-1">
+                      {searchSuggestions.map((suggestion, index) => (
+                        <li 
+                          key={index} 
+                          className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
+                          onClick={() => handleSelectSuggestion(suggestion)}
+                        >
+                          {suggestion.startsWith("Category:") ? (
+                            <Tag className="mr-2 h-4 w-4" />
+                          ) : (
+                            <Search className="mr-2 h-4 w-4" />
+                          )}
+                          {suggestion}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
               
               <select 
@@ -163,6 +265,37 @@ const Blog = () => {
               </select>
             </div>
           </MotionWrapper>
+          
+          <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+            <CommandInput 
+              placeholder="Search articles..." 
+              value={searchQuery}
+              onValueChange={handleSearchChange}
+            />
+            <CommandList>
+              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandGroup heading="Articles">
+                {searchSuggestions.length > 0 ? (
+                  searchSuggestions.map((suggestion, index) => (
+                    <CommandItem
+                      key={index}
+                      onSelect={() => handleSelectSuggestion(suggestion)}
+                      className="cursor-pointer"
+                    >
+                      {suggestion.startsWith("Category:") ? (
+                        <Tag className="mr-2 h-4 w-4" />
+                      ) : (
+                        <Search className="mr-2 h-4 w-4" />
+                      )}
+                      {suggestion}
+                    </CommandItem>
+                  ))
+                ) : (
+                  <CommandItem>Start typing to see suggestions</CommandItem>
+                )}
+              </CommandGroup>
+            </CommandList>
+          </CommandDialog>
           
           {/* Featured Post */}
           {featuredPost && (

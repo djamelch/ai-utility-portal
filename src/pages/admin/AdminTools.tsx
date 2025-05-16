@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { 
-  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2, Award, ShieldCheck, Star, StarOff, Shield
+  Edit, Trash2, Plus, Search, Eye, Filter, ArrowUpDown, Loader2, Award, ShieldCheck, Star, StarOff, Shield, X
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { 
@@ -34,6 +33,14 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Toggle } from '@/components/ui/toggle';
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 
 interface Tool {
   id: number;
@@ -58,6 +65,9 @@ export function AdminTools() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [updatingFeatures, setUpdatingFeatures] = useState<Record<number, boolean>>({});
   const [updatingVerified, setUpdatingVerified] = useState<Record<number, boolean>>({});
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -69,6 +79,62 @@ export function AdminTools() {
   useEffect(() => {
     filterTools();
   }, [searchQuery, tools, sortField, sortDirection]);
+
+  // Generate search suggestions
+  useEffect(() => {
+    if (searchQuery && searchQuery.length > 0) {
+      // Get company name suggestions
+      const companyNameSuggestions = tools
+        .filter(tool => tool.company_name.toLowerCase().includes(searchQuery.toLowerCase()))
+        .map(tool => `Tool: ${tool.company_name}`);
+
+      // Get category suggestions  
+      const categories = Array.from(new Set(
+        tools
+          .map(tool => tool.primary_task)
+          .filter(Boolean)
+      ));
+      
+      const categorySuggestions = categories
+        .filter(category => category && category.toLowerCase().includes(searchQuery.toLowerCase()))
+        .map(category => `Category: ${category}`);
+
+      // Get pricing suggestions
+      const pricingOptions = Array.from(new Set(
+        tools
+          .map(tool => tool.pricing)
+          .filter(Boolean)
+      ));
+      
+      const pricingSuggestions = pricingOptions
+        .filter(pricing => pricing && pricing.toLowerCase().includes(searchQuery.toLowerCase()))
+        .map(pricing => `Pricing: ${pricing}`);
+
+      // Combine and limit suggestions  
+      setSearchSuggestions([
+        ...companyNameSuggestions.slice(0, 5),
+        ...categorySuggestions.slice(0, 3),
+        ...pricingSuggestions.slice(0, 2)
+      ]);
+      
+      setShowSuggestions(true);
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchQuery, tools]);
+
+  // Show dialog on / press
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   const fetchTools = async () => {
     try {
@@ -104,7 +170,8 @@ export function AdminTools() {
       result = result.filter(tool => 
         (tool.company_name && tool.company_name.toLowerCase().includes(query)) || 
         (tool.short_description && tool.short_description.toLowerCase().includes(query)) ||
-        (tool.primary_task && tool.primary_task.toLowerCase().includes(query))
+        (tool.primary_task && tool.primary_task.toLowerCase().includes(query)) ||
+        (tool.pricing && tool.pricing.toLowerCase().includes(query))
       );
     }
     
@@ -129,6 +196,26 @@ export function AdminTools() {
     });
     
     setFilteredTools(result);
+  };
+
+  const handleSelectSuggestion = (value: string) => {
+    if (value.startsWith("Tool: ")) {
+      setSearchQuery(value.replace("Tool: ", ""));
+    } else if (value.startsWith("Category: ")) {
+      setSearchQuery(value.replace("Category: ", ""));
+    } else if (value.startsWith("Pricing: ")) {
+      setSearchQuery(value.replace("Pricing: ", ""));
+    } else {
+      setSearchQuery(value);
+    }
+    
+    setShowSuggestions(false);
+    setCommandOpen(false);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setSearchSuggestions([]);
   };
 
   const handleSort = (field: keyof Tool) => {
@@ -253,16 +340,91 @@ export function AdminTools() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search tools..."
+            placeholder="Search tools... (Press / to focus)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 pr-8"
+            onFocus={() => setShowSuggestions(searchQuery.length > 0)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setShowSuggestions(false);
+              } else if (e.key === "ArrowDown" && showSuggestions) {
+                e.preventDefault();
+                setCommandOpen(true);
+              }
+            }}
           />
+          {searchQuery && (
+            <button 
+              onClick={handleClearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          
+          {/* Real-time suggestions dropdown */}
+          {showSuggestions && searchSuggestions.length > 0 && (
+            <div className="absolute z-10 mt-1 w-full bg-background border border-input rounded-md shadow-md">
+              <ul className="py-1">
+                {searchSuggestions.map((suggestion, index) => (
+                  <li 
+                    key={index} 
+                    className="px-3 py-2 hover:bg-accent cursor-pointer text-sm flex items-center"
+                    onClick={() => handleSelectSuggestion(suggestion)}
+                  >
+                    {suggestion.startsWith("Category:") ? (
+                      <Filter className="mr-2 h-4 w-4 text-primary" />
+                    ) : suggestion.startsWith("Pricing:") ? (
+                      <Award className="mr-2 h-4 w-4 text-amber-500" />
+                    ) : (
+                      <Search className="mr-2 h-4 w-4" />
+                    )}
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         <Button onClick={() => navigate('/admin/tools/new')}>
           <Plus className="mr-2 h-4 w-4" /> Add New Tool
         </Button>
       </div>
+
+      <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+        <CommandInput 
+          placeholder="Search tools..." 
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+        />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Suggestions">
+            {searchSuggestions.length > 0 ? (
+              searchSuggestions.map((suggestion, index) => (
+                <CommandItem
+                  key={index}
+                  onSelect={() => handleSelectSuggestion(suggestion)}
+                  className="cursor-pointer"
+                >
+                  {suggestion.startsWith("Category:") ? (
+                    <Filter className="mr-2 h-4 w-4 text-primary" />
+                  ) : suggestion.startsWith("Pricing:") ? (
+                    <Award className="mr-2 h-4 w-4 text-amber-500" />
+                  ) : (
+                    <Search className="mr-2 h-4 w-4" />
+                  )}
+                  {suggestion}
+                </CommandItem>
+              ))
+            ) : (
+              <CommandItem>Start typing to see suggestions</CommandItem>
+            )}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
 
       {isLoading ? (
         <div className="h-96 flex items-center justify-center">
