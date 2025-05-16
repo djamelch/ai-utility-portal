@@ -1,7 +1,6 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Zap, Filter, X } from "lucide-react";
+import { Search, Zap, Filter, X, Tag, CheckCircle, ArrowRight, Sparkles, Target } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
@@ -14,7 +13,6 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
-import { CheckCircle, ArrowRight, Sparkles, Target } from "lucide-react";
 import {
   CommandDialog,
   CommandInput,
