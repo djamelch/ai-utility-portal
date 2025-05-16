@@ -315,19 +315,19 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
             className="w-full group hover:border-primary/50 transition-all duration-300"
           >
             <Filter size={16} className="mr-2 transition-transform group-hover:rotate-45 duration-300" />
-            {showAdvancedFilters ? "إخفاء الفلاتر المتقدمة" : "إظهار الفلاتر المتقدمة"}
+            {showAdvancedFilters ? "Hide Advanced Filters" : "Show Advanced Filters"}
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-4 bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-input animate-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">الأسعار</label>
+              <label className="text-sm font-medium mb-2 block">Pricing</label>
               <Select value={selectedPricing} onValueChange={setSelectedPricing}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="اختر السعر" />
+                  <SelectValue placeholder="Select pricing" />
                 </SelectTrigger>
                 <SelectContent className="bg-background/95 backdrop-blur-sm">
-                  <SelectItem value="all">جميع الأسعار</SelectItem>
+                  <SelectItem value="all">All Pricing</SelectItem>
                   {pricingOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
@@ -337,50 +337,50 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">ترتيب حسب</label>
+              <label className="text-sm font-medium mb-2 block">Sort By</label>
               <Select value={sortOrder} onValueChange={setSortOrder}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="ترتيب حسب" />
+                  <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent className="bg-background/95 backdrop-blur-sm">
-                  <SelectItem value="newest">الأحدث</SelectItem>
-                  <SelectItem value="popular">الأكثر شعبية</SelectItem>
-                  <SelectItem value="top-rated">الأعلى تقييمًا</SelectItem>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="popular">Most Popular</SelectItem>
+                  <SelectItem value="top-rated">Top Rated</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           
           <div className="mb-4">
-            <label className="text-sm font-medium mb-2 block">ميزات الأداة</label>
+            <label className="text-sm font-medium mb-2 block">Tool Features</label>
             <ToggleGroup type="multiple" value={selectedFeatures} onValueChange={handleFeatureToggle} className="flex flex-wrap gap-2">
               <ToggleGroupItem value="api-access" className="text-xs group">
-                <Zap size={12} className="mr-1 group-data-[state=on]:text-primary" /> واجهة برمجة التطبيقات
+                <Zap size={12} className="mr-1 group-data-[state=on]:text-primary" /> API Access
               </ToggleGroupItem>
               <ToggleGroupItem value="free-trial" className="text-xs group">
-                <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> تجربة مجانية
+                <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> Free Trial
               </ToggleGroupItem>
               <ToggleGroupItem value="no-signup" className="text-xs group">
-                <ArrowRight size={12} className="mr-1 group-data-[state=on]:text-primary" /> لا يحتاج تسجيل
+                <ArrowRight size={12} className="mr-1 group-data-[state=on]:text-primary" /> No Signup
               </ToggleGroupItem>
               <ToggleGroupItem value="mobile-friendly" className="text-xs group">
-                <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> متوافق مع الجوال
+                <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> Mobile Friendly
               </ToggleGroupItem>
               <ToggleGroupItem value="browser-extension" className="text-xs group">
-                <Target size={12} className="mr-1 group-data-[state=on]:text-primary" /> إضافة للمتصفح
+                <Target size={12} className="mr-1 group-data-[state=on]:text-primary" /> Browser Extension
               </ToggleGroupItem>
               <ToggleGroupItem value="offline-mode" className="text-xs group">
-                <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> وضع بدون اتصال
+                <CheckCircle size={12} className="mr-1 group-data-[state=on]:text-primary" /> Offline Mode
               </ToggleGroupItem>
               <ToggleGroupItem value="team-collaboration" className="text-xs group">
-                <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> تعاون الفريق
+                <Sparkles size={12} className="mr-1 group-data-[state=on]:text-primary" /> Team Collaboration
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
           
           <Button size="sm" onClick={handleSearch} className="w-full group">
             <span className="relative z-10 flex items-center">
-              تطبيق الفلاتر
+              Apply Filters
               <Filter size={14} className="ml-2 transition-all group-hover:scale-110" />
             </span>
           </Button>
