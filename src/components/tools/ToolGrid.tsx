@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "./ToolCard";
@@ -22,6 +21,7 @@ export interface Tool {
   slug?: string;
   isFeatured?: boolean;
   isNew?: boolean;
+  isVerified?: boolean;
   
   short_description?: string;
   full_description?: string;
@@ -40,7 +40,6 @@ export interface Tool {
   detail_url?: string;
   is_featured?: boolean;
   is_verified?: boolean;
-  isVerified?: boolean;
 }
 
 interface ToolGridProps {
@@ -55,6 +54,7 @@ interface ToolGridProps {
   columnsPerRow?: number;
   features?: string[];
   tools?: Tool[];
+  isLoading?: boolean;
 }
 
 export function ToolGrid({ 
@@ -68,7 +68,8 @@ export function ToolGrid({
   sortBy = "featured",
   columnsPerRow = 4, // Default to 4 columns
   features = [],
-  tools: providedTools
+  tools: providedTools,
+  isLoading: externalLoading
 }: ToolGridProps) {
   const [loadedTools, setLoadedTools] = useState<Tool[]>([]);
   const effectiveSearchTerm = searchQuery || searchTerm || "";
@@ -185,6 +186,9 @@ export function ToolGrid({
 
   // Use provided tools or database tools
   const toolsToProcess = providedTools || dbTools;
+  
+  // Determine if loading from either external or internal loading state
+  const isActuallyLoading = externalLoading !== undefined ? externalLoading : isLoading;
 
   // Update the loadedTools state when toolsToProcess changes or the limit changes
   useEffect(() => {
@@ -251,7 +255,7 @@ export function ToolGrid({
     }
   }, [toolsToProcess, limit, effectiveCategoryFilter]);
 
-  if (isLoading && !providedTools) {
+  if (isActuallyLoading) {
     return <ToolGridSkeleton count={limit || 8} columnsPerRow={columnsPerRow} />;
   }
 

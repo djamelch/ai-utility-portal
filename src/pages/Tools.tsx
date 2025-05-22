@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -55,7 +56,7 @@ export default function Tools() {
             query = query.order("click_count", { ascending: false });
             break;
           case "top-rated":
-            query = query.order("rating", { ascending: false });
+            query = query.order("is_featured", { ascending: false });
             break;
           case "newest":
           default:
@@ -89,8 +90,8 @@ export default function Tools() {
           description: dbTool.short_description || "",
           logo: dbTool.logo_url || "",
           category: dbTool.primary_task || "",
-          rating: dbTool.rating || 4,
-          reviewCount: dbTool.review_count || 0,
+          rating: 4, // Default rating since rating field doesn't exist
+          reviewCount: 0, // Default review count
           pricing: dbTool.pricing || "",
           url: dbTool.visit_website_url || dbTool.detail_url || "#",
           slug: dbTool.slug || "",
@@ -143,18 +144,20 @@ export default function Tools() {
     setCurrentPage(prev => prev + 1);
   };
 
-  // Fetch categories for filters
+  // Fetch primary task categories for filters
   const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["primary-task-categories"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from("categories")
-          .select("*")
-          .order("count", { ascending: false });
+        const { data, error } = await supabase.rpc('get_primary_task_counts');
         
         if (error) throw error;
-        return data || [];
+        
+        // Map to the format expected by FilterBar
+        return (data || []).map((item: any) => ({
+          name: item.primary_task,
+          count: parseInt(item.count)
+        }));
       } catch (error) {
         console.error("Error fetching categories:", error);
         return [];
@@ -167,12 +170,20 @@ export default function Tools() {
     queryKey: ["pricing-options"],
     queryFn: async () => {
       try {
+        // Since we don't have a pricing_options table, get distinct values from tools table
         const { data, error } = await supabase
-          .from("pricing_options")
-          .select("name");
+          .from('tools')
+          .select('pricing')
+          .not('pricing', 'is', null);
         
         if (error) throw error;
-        return (data || []).map(option => option.name);
+        
+        // Get unique pricing values
+        const uniquePricing = Array.from(
+          new Set((data || []).map(item => item.pricing).filter(Boolean))
+        );
+        
+        return uniquePricing;
       } catch (error) {
         console.error("Error fetching pricing options:", error);
         return ["Free", "Freemium", "Paid", "Contact for Pricing"];
@@ -211,7 +222,7 @@ export default function Tools() {
         keywords="AI tools list, all AI tools, AI software directory, AI solutions, artificial intelligence apps"
       />
       
-      <GradientBackground variant="subtle" className="py-8 md:py-12" intensity="low">
+      <GradientBackground variant="medium" className="py-8 md:py-12" intensity="medium">
         <div className="container-wide">
           <MotionWrapper animation="fadeIn">
             <div className="mb-8">
@@ -262,8 +273,7 @@ export default function Tools() {
           <>
             {/* Tools Grid */}
             <ToolGrid 
-              tools={displayedTools} 
-              isLoading={isLoading}
+              tools={displayedTools}
               columnsPerRow={4}  // Default to 4 columns for desktop
             />
             

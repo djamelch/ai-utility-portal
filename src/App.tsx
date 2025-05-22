@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -6,10 +7,8 @@ import {
   useLocation,
 } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { ThemeProvider } from "@/components/ui/theme-provider";
+import { ThemeProvider } from "next-themes";
 import { useAuth } from "@/context/AuthContext";
-import { Dashboard } from "@/pages/Dashboard";
-import { AdminPanel } from "@/pages/AdminPanel";
 import Index from "@/pages/Index";
 import Tools from "@/pages/Tools";
 import ToolDetail from "@/pages/ToolDetail";
@@ -25,11 +24,12 @@ import Layout from "@/components/layout/Layout";
 import Categories from "./pages/Categories";
 
 function App() {
-  const { checkAuth } = useAuth();
+  const { user } = useAuth();
   
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    // Auth check can be handled through the AuthContext directly
+    // No need for explicit checkAuth call
+  }, []);
 
   return (
     <HelmetProvider>
@@ -48,9 +48,11 @@ function App() {
             {/* Auth routes */}
             <Route path="auth" element={<Auth />} />
             
+            {/* User Dashboard route */}
+            <Route path="dashboard" element={<div>Dashboard</div>} />
+            
             {/* Admin routes */}
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="admin" element={<AdminPanel />} />
+            <Route path="admin" element={<div>Admin Panel</div>} />
             
             {/* 404 route */}
             <Route path="*" element={<NotFound />} />

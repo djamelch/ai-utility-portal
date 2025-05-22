@@ -76,25 +76,30 @@ export default function Categories() {
     toolSuggestions: [] // No need for tool suggestions here
   });
 
-  // Fetch all categories
+  // Fetch all categories - since there's no 'categories' table, we'll use the get_primary_task_counts function
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
       try {
-        // Replace with your actual category fetching logic
-        const { data, error } = await supabase
-          .from("categories")
-          .select("*")
-          .order("count", { ascending: false });
+        // Use the database function to get primary task counts
+        const { data: categoryData, error } = await supabase.rpc('get_primary_task_counts');
         
         if (error) throw error;
         
-        // If no data returned from Supabase, use sample data
-        if (!data || data.length === 0) {
+        // Map the data to our Category interface
+        const mappedCategories: Category[] = (categoryData || []).map((item: any) => ({
+          id: item.primary_task.toLowerCase().replace(/\s+/g, '-'),
+          name: item.primary_task,
+          count: Number(item.count),
+          description: `Explore ${item.primary_task} tools and find the best options for your needs.`
+        }));
+        
+        // If no data returned or empty, use sample data
+        if (!mappedCategories || mappedCategories.length === 0) {
           return sampleCategories;
         }
         
-        return data as Category[];
+        return mappedCategories;
       } catch (error) {
         console.error("Error fetching categories:", error);
         return sampleCategories;
@@ -142,7 +147,7 @@ export default function Categories() {
       
       <main className="min-h-screen pb-16">
         {/* Hero section with search */}
-        <GradientBackground variant="primary" className="py-12 md:py-20" intensity="subtle">
+        <GradientBackground variant="medium" className="py-12 md:py-20" intensity="medium">
           <div className="container-wide">
             <MotionWrapper animation="fadeIn">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
