@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Zap, Filter, X, Tag as TagIcon, CheckCircle, ArrowRight, Sparkles, Target } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -23,6 +22,8 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
+import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggestions";
+import { SearchSuggestions } from "@/components/search/SearchSuggestions";
 
 interface Category {
   id: string;
@@ -42,67 +43,21 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Handle clicks outside the suggestions dropdown to close it
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node) && 
-          searchInputRef.current && !searchInputRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-  
-  // Generate search suggestions based on input
-  useEffect(() => {
-    if (searchTerm.length > 1) {
-      console.log("Generating suggestions for:", searchTerm);
-      // Generate suggestions based on categories
-      const categorySuggestions = categories
-        .filter(cat => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
-        .map(cat => `Category: ${cat.name} (${cat.count})`);
-      
-      // Generate suggestions based on pricing
-      const pricingSuggestions = pricingOptions
-        .filter(price => price.toLowerCase().includes(searchTerm.toLowerCase()))
-        .map(price => `Pricing: ${price}`);
-      
-      // Sample tool suggestions (in a real app, you would fetch these from the database)
-      const toolSuggestions = [
-        "ChatGPT", "Midjourney", "Jasper", "Dall-E", "GitHub Copilot", 
-        "Notion AI", "Otter.ai", "Synthesia", "RunwayML", "Murf.ai"
-      ].filter(tool => tool.toLowerCase().includes(searchTerm.toLowerCase()))
-        .map(tool => `Tool: ${tool}`);
-      
-      // Combine and limit suggestions
-      const allSuggestions = [
-        ...toolSuggestions.slice(0, 3),
-        ...categorySuggestions.slice(0, 2),
-        ...pricingSuggestions.slice(0, 1)
-      ];
-      
-      console.log("All suggestions:", allSuggestions);
-      setSearchSuggestions(allSuggestions);
-      
-      // Only show suggestions when we have something to show
-      setShowSuggestions(allSuggestions.length > 0);
-    } else {
-      setSearchSuggestions([]);
-      setShowSuggestions(false);
-    }
-  }, [searchTerm, categories, pricingOptions]);
+  const { 
+    showSuggestions, 
+    setShowSuggestions,
+    suggestions, 
+    setInputRef,
+    setSuggestionsRef
+  } = useSearchSuggestions({
+    searchTerm,
+    categories,
+    pricingOptions
+  });
 
   // Show dialog on / press
   useEffect(() => {
@@ -151,19 +106,13 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
     setSelectedFeatures(features);
   };
   
-  const handleSelectSuggestion = (value: string) => {
-    if (value.startsWith("Category: ")) {
-      const category = value.replace(/Category: (.+) \(\d+\)/, "$1");
-      const categoryId = categories.find(cat => cat.name === category)?.id || "all";
-      setSelectedCategory(categoryId);
-    } else if (value.startsWith("Pricing: ")) {
-      const pricing = value.replace("Pricing: ", "");
-      setSelectedPricing(pricing);
-    } else if (value.startsWith("Tool: ")) {
-      const tool = value.replace("Tool: ", "");
-      setSearchTerm(tool);
+  const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
+    if (suggestion.type === "category") {
+      setSelectedCategory(suggestion.value);
+    } else if (suggestion.type === "pricing") {
+      setSelectedPricing(suggestion.value);
     } else {
-      setSearchTerm(value);
+      setSearchTerm(suggestion.value);
     }
     
     setShowSuggestions(false);
@@ -172,9 +121,11 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
 
   const handleClearSearch = () => {
     setSearchTerm("");
-    setSearchSuggestions([]);
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
+    if (setInputRef) {
+      const input = setInputRef as unknown as HTMLInputElement;
+      if (input && input.focus) {
+        input.focus();
+      }
     }
   };
   
@@ -198,11 +149,11 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
               }
             }}
             onFocus={() => {
-              if (searchTerm.length > 1 && searchSuggestions.length > 0) {
+              if (searchTerm.length >= 2 && suggestions.length > 0) {
                 setShowSuggestions(true);
               }
             }}
-            ref={searchInputRef}
+            ref={(ref) => setInputRef(ref)}
           />
           
           {searchTerm && (
@@ -215,29 +166,12 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
           )}
           
           {/* Real-time suggestions dropdown */}
-          {showSuggestions && searchSuggestions.length > 0 && (
-            <div 
-              ref={suggestionsRef}
-              className="absolute left-0 right-0 top-full z-10 mt-1 bg-background border border-input rounded-md shadow-md"
-            >
-              <ul className="py-1">
-                {searchSuggestions.map((suggestion, index) => (
-                  <li 
-                    key={index} 
-                    className="px-3 py-2 hover:bg-accent cursor-pointer text-sm flex items-center"
-                    onClick={() => handleSelectSuggestion(suggestion)}
-                  >
-                    {suggestion.startsWith("Category:") ? (
-                      <TagIcon className="mr-2 h-4 w-4 text-primary" />
-                    ) : suggestion.startsWith("Pricing:") ? (
-                      <Zap className="mr-2 h-4 w-4 text-amber-500" />
-                    ) : (
-                      <Search className="mr-2 h-4 w-4" />
-                    )}
-                    {suggestion}
-                  </li>
-                ))}
-              </ul>
+          {showSuggestions && (
+            <div ref={(ref) => setSuggestionsRef(ref)}>
+              <SearchSuggestions
+                suggestions={suggestions}
+                onSelectSuggestion={handleSelectSuggestion}
+              />
             </div>
           )}
           
@@ -279,21 +213,21 @@ export function HeroSearch({ categories, pricingOptions }: HeroSearchProps) {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            {searchSuggestions.length > 0 ? (
-              searchSuggestions.map((suggestion, index) => (
+            {suggestions.length > 0 ? (
+              suggestions.map((suggestion, index) => (
                 <CommandItem
                   key={index}
                   onSelect={() => handleSelectSuggestion(suggestion)}
                   className="cursor-pointer"
                 >
-                  {suggestion.startsWith("Category:") ? (
+                  {suggestion.type === "category" ? (
                     <TagIcon className="mr-2 h-4 w-4 text-primary" />
-                  ) : suggestion.startsWith("Pricing:") ? (
+                  ) : suggestion.type === "pricing" ? (
                     <Zap className="mr-2 h-4 w-4 text-amber-500" />
                   ) : (
                     <Search className="mr-2 h-4 w-4" />
                   )}
-                  {suggestion}
+                  {suggestion.text}
                 </CommandItem>
               ))
             ) : (

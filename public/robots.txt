@@ -1,42 +1,63 @@
 
 # AI Tools Portal Robots.txt
-# Allow all crawlers full access
+# Allow crawlers full access to most pages, but restrict admin areas
 
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /dashboard
+Disallow: /api/
 
 # Sitemap location
 Sitemap: https://your-domain.com/sitemap.xml
 
-# Specific bot rules
+# Rate limiting for specific bots
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
 User-agent: Slurp
 Allow: /
+Crawl-delay: 2
 
 User-agent: DuckDuckBot
 Allow: /
+Crawl-delay: 2
 
 User-agent: Baiduspider
 Allow: /
+Crawl-delay: 5
 
 User-agent: Yandex
 Allow: /
+Crawl-delay: 5
 
 User-agent: Sogou
 Allow: /
+Crawl-delay: 5
 
+# Social media crawlers
 User-agent: facebookexternalhit
 Allow: /
+Crawl-delay: 3
 
 User-agent: Twitterbot
 Allow: /
+Crawl-delay: 3
 
-# Disallow admin pages for all crawlers
+# Don't index admin sections
 User-agent: *
 Disallow: /admin/
 Disallow: /auth/
+Disallow: /dashboard/
+
+# Allow tools and categories pages
+User-agent: *
+Allow: /tools
+Allow: /categories
+Allow: /blog

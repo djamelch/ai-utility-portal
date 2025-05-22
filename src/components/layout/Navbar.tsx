@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -178,9 +177,11 @@ export function Navbar({ className }: NavbarProps) {
     setIsCommandOpen(false);
   };
 
+  // Update navLinks to include Categories and rename "Tools" to "All Tools"
   const navLinks = [
     { title: "Home", path: "/" },
-    { title: "Tools", path: "/tools" },
+    { title: "All Tools", path: "/tools" },
+    { title: "Categories", path: "/categories" },
     { title: "Blog", path: "/blog" },
     { title: "Submit Tool", path: "/submit-tool", isButton: true }
   ];
