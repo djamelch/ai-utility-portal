@@ -1,299 +1,223 @@
-
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import { Tool } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { Tool } from "@/components/tools/ToolGrid";
-import { ToolGrid } from "@/components/tools/ToolGrid";
-import { Button } from "@/components/ui/button";
-import { SEOHead } from "@/components/seo/SEOHead";
 import { FilterBar } from "@/components/tools/FilterBar";
-import { ModernLoadingIndicator } from "@/components/ui/ModernLoadingIndicator";
-import { GradientBackground } from "@/components/ui/GradientBackground";
-import { MotionWrapper } from "@/components/ui/MotionWrapper";
-import { useToast } from "@/hooks/use-toast";
+import { ToolCard } from "@/components/tools/ToolCard";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Loader2 } from "lucide-react";
 
-export default function Tools() {
-  const [searchParams] = useSearchParams();
-  const categoryParam = searchParams.get("category");
-  const searchParam = searchParams.get("search");
-  const pricingParam = searchParams.get("pricing");
-  const featuresParam = searchParams.get("features");
-  const sortByParam = searchParams.get("sortBy") || "newest";
-  
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [displayedTools, setDisplayedTools] = useState<Tool[]>([]);
-  const toolsPerPage = 12;
-  const [totalTools, setTotalTools] = useState(0);
-  const { toast } = useToast();
+const Tools: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category") || "all";
+  const initialPricing = searchParams.get("pricing") || "all";
+  const initialSortOrder = searchParams.get("sort") || "newest";
+  const initialSearchTerm = searchParams.get("search") || "";
 
-  // Fetch tools based on filters
-  const { data: tools = [], isLoading, refetch } = useQuery({
-    queryKey: ["tools", categoryParam, searchParam, pricingParam, featuresParam, sortByParam],
-    queryFn: async () => {
-      try {
-        console.log("Fetching tools with filters:", { categoryParam, searchParam, pricingParam, featuresParam, sortByParam });
-        
-        let query = supabase.from("tools").select("*");
-        
-        // Apply filters
-        if (categoryParam) {
-          query = query.eq("primary_task", categoryParam);
-        }
-        
-        if (searchParam) {
-          query = query.or(`company_name.ilike.%${searchParam}%,short_description.ilike.%${searchParam}%`);
-        }
-        
-        if (pricingParam && pricingParam !== "all") {
-          query = query.eq("pricing", pricingParam);
-        }
-        
-        // Apply sorting
-        switch (sortByParam) {
-          case "popular":
-            query = query.order("click_count", { ascending: false });
-            break;
-          case "top-rated":
-            query = query.order("is_featured", { ascending: false });
-            break;
-          case "newest":
-          default:
-            query = query.order("created_at", { ascending: false });
-            break;
-        }
-        
-        // Get the total count first (for pagination info)
-        const countQuery = { ...query };
-        const { count, error: countError } = await countQuery.count();
-        
-        if (countError) {
-          console.error("Error getting count:", countError);
-          setTotalTools(0);
-        } else {
-          setTotalTools(count || 0);
-        }
-        
-        // Now get the actual data
-        const { data, error } = await query.range(0, 100); // Get a reasonable max amount
-        
-        if (error) {
-          console.error("Error fetching tools:", error);
-          return [];
-        }
-        
-        // Convert to Tool objects and apply feature filtering if needed
-        let filteredTools = (data || []).map(dbTool => ({
-          id: dbTool.id,
-          name: dbTool.company_name || "",
-          description: dbTool.short_description || "",
-          logo: dbTool.logo_url || "",
-          category: dbTool.primary_task || "",
-          rating: 4, // Default rating since rating field doesn't exist
-          reviewCount: 0, // Default review count
-          pricing: dbTool.pricing || "",
-          url: dbTool.visit_website_url || dbTool.detail_url || "#",
-          slug: dbTool.slug || "",
-          isFeatured: Boolean(dbTool.is_featured),
-          isVerified: Boolean(dbTool.is_verified),
-          isNew: new Date(dbTool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
-        }));
-        
-        // Apply feature filtering if needed
-        if (featuresParam) {
-          const features = featuresParam.split(',');
-          
-          // This is a simplified example - in a real app you'd check against actual feature data
-          filteredTools = filteredTools.filter(tool => {
-            // Simulate feature filtering - replace with actual logic based on your data structure
-            const hasFeature = (feature: string) => Math.random() > 0.5; // Replace with actual feature check
-            return features.some(feature => hasFeature(feature));
-          });
-        }
-        
-        return filteredTools;
-      } catch (error) {
-        console.error("Error in tools query:", error);
+  const [tools, setTools] = useState<Tool[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<
+    Array<{ name: string; count: number }>
+  >([]);
+  const [pricingOptions, setPricingOptions] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedPricing, setSelectedPricing] = useState(initialPricing);
+  const [selectedSortOrder, setSelectedSortOrder] = useState(initialSortOrder);
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+
+  const fetchTools = useCallback(
+    async (
+      category: string,
+      pricing: string,
+      sortOrder: string,
+      searchTerm: string
+    ) => {
+      setLoading(true);
+      let query = supabase.from("tools").select("*");
+
+      if (category !== "all") {
+        query = query.eq("category", category);
+      }
+
+      if (pricing !== "all") {
+        query = query.eq("pricing", pricing);
+      }
+
+      if (searchTerm) {
+        query = query.ilike("name", `%${searchTerm}%`);
+      }
+
+      if (sortOrder === "newest") {
+        query = query.order("created_at", { ascending: false });
+      } else if (sortOrder === "popular") {
+        query = query.order("likes", { ascending: false });
+      } else if (sortOrder === "top-rated") {
+        query = query.order("rating", { ascending: false });
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching tools:", error);
+        setLoading(false);
         return [];
       }
-    }
-  });
 
-  // Reset pagination when filters change
+      setLoading(false);
+      return data || [];
+    },
+    []
+  );
+
   useEffect(() => {
-    setCurrentPage(1);
-    setHasMore(true);
-  }, [categoryParam, searchParam, pricingParam, featuresParam, sortByParam]);
+    fetchTools(selectedCategory, selectedPricing, selectedSortOrder, searchTerm)
+      .then((fetchedTools) => setTools(fetchedTools))
+      .catch((error) => console.error("Error in useEffect:", error));
+  }, [selectedCategory, selectedPricing, selectedSortOrder, searchTerm, fetchTools]);
 
-  // Update displayed tools when tools data or page changes
   useEffect(() => {
-    if (tools.length > 0) {
-      const endIndex = currentPage * toolsPerPage;
-      const newDisplayedTools = tools.slice(0, endIndex);
-      setDisplayedTools(newDisplayedTools);
-      setHasMore(endIndex < tools.length);
-    } else {
-      setDisplayedTools([]);
-      setHasMore(false);
-    }
-  }, [tools, currentPage]);
+    const fetchCategories = async () => {
+      const { data: toolsData, error: toolsError } = await supabase
+        .from("tools")
+        .select("category");
 
-  // Function to load more tools
-  const handleLoadMore = () => {
-    setCurrentPage(prev => prev + 1);
-  };
-
-  // Fetch primary task categories for filters
-  const { data: categories = [] } = useQuery({
-    queryKey: ["primary-task-categories"],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase.rpc('get_primary_task_counts');
-        
-        if (error) throw error;
-        
-        // Map to the format expected by FilterBar
-        return (data || []).map((item: any) => ({
-          name: item.primary_task,
-          count: parseInt(item.count)
-        }));
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        return [];
+      if (toolsError) {
+        console.error("Error fetching tools for categories:", toolsError);
+        return;
       }
-    }
-  });
 
-  // Fetch pricing options for filters
-  const { data: pricingOptions = [] } = useQuery({
-    queryKey: ["pricing-options"],
-    queryFn: async () => {
-      try {
-        // Since we don't have a pricing_options table, get distinct values from tools table
-        const { data, error } = await supabase
-          .from('tools')
-          .select('pricing')
-          .not('pricing', 'is', null);
-        
-        if (error) throw error;
-        
-        // Get unique pricing values
-        const uniquePricing = Array.from(
-          new Set((data || []).map(item => item.pricing).filter(Boolean))
-        );
-        
-        return uniquePricing;
-      } catch (error) {
-        console.error("Error fetching pricing options:", error);
-        return ["Free", "Freemium", "Paid", "Contact for Pricing"];
+      const categoryCountMap: { [key: string]: number } = {};
+      toolsData.forEach((tool) => {
+        const category = tool.category;
+        categoryCountMap[category] = (categoryCountMap[category] || 0) + 1;
+      });
+
+      const categoriesWithCount = Object.keys(categoryCountMap).map(
+        (category) => {
+          const categoryWithCount = {
+            name: category,
+            count: categoryCountMap[category] || 0
+          };
+          return categoryWithCount;
+        }
+      );
+
+      setCategories(categoriesWithCount);
+    };
+
+    const fetchPricingOptions = async () => {
+      const { data: toolsData, error: toolsError } = await supabase
+        .from("tools")
+        .select("pricing");
+
+      if (toolsError) {
+        console.error("Error fetching tools for pricing options:", toolsError);
+        return;
       }
-    }
-  });
 
-  // Handle filter changes
-  const handleFilterChange = (type: string, value: string) => {
-    const newParams = new URLSearchParams(searchParams);
-    
-    if (value === "all") {
-      newParams.delete(type);
-    } else {
-      newParams.set(type, value);
-    }
-    
-    // Update URL with new filters
-    window.history.pushState({}, '', `?${newParams.toString()}`);
-    
-    // Force a refetch with the new filters
-    refetch();
-    
-    // Show toast notification
-    toast({
-      title: "Filters Updated",
-      description: `Showing ${type === "category" ? value : type === "pricing" ? `${value} pricing` : "filtered"} tools`,
+      const uniquePricingOptions = [
+        ...new Set(toolsData.map((tool) => tool.pricing)),
+      ];
+      setPricingOptions(uniquePricingOptions);
+    };
+
+    fetchCategories();
+    fetchPricingOptions();
+  }, []);
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    setSearchParams({
+      category: value,
+      pricing: selectedPricing,
+      sort: selectedSortOrder,
+      search: searchTerm,
     });
   };
 
+  const handlePricingChange = (value: string) => {
+    setSelectedPricing(value);
+    setSearchParams({
+      category: selectedCategory,
+      pricing: value,
+      sort: selectedSortOrder,
+      search: searchTerm,
+    });
+  };
+
+  const handleSortChange = (value: string) => {
+    setSelectedSortOrder(value);
+    setSearchParams({
+      category: selectedCategory,
+      pricing: selectedPricing,
+      sort: value,
+      search: searchTerm,
+    });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setSearchParams({
+      category: selectedCategory,
+      pricing: selectedPricing,
+      sort: selectedSortOrder,
+      search: value,
+    });
+  };
+
+  const getPricingCount = (pricing: string) => {
+    return tools.filter((tool) => tool.pricing === pricing).length;
+  };
+
   return (
-    <>
-      <SEOHead 
-        title="All AI Tools - Comprehensive Directory | AI Any Tool" 
-        description="Browse our complete collection of AI tools across all categories. Filter by features, pricing, and more to find the perfect AI solution for your needs."
-        keywords="AI tools list, all AI tools, AI software directory, AI solutions, artificial intelligence apps"
-      />
-      
-      <GradientBackground variant="medium" className="py-8 md:py-12" intensity="medium">
-        <div className="container-wide">
-          <MotionWrapper animation="fadeIn">
-            <div className="mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                {categoryParam ? `${categoryParam} Tools` : searchParam ? `Search: ${searchParam}` : "All Tools"}
-              </h1>
-              <p className="text-muted-foreground">
-                {totalTools === 0 && !isLoading 
-                  ? "No tools found. Try adjusting your filters."
-                  : `Browse through our collection of ${totalTools} AI tools.`}
-              </p>
-            </div>
-          </MotionWrapper>
-          
-          <FilterBar 
-            categories={categories}
-            pricingOptions={pricingOptions}
-            selectedCategory={categoryParam || "all"}
-            selectedPricing={pricingParam || "all"}
-            selectedSortOrder={sortByParam}
-            onCategoryChange={(value) => handleFilterChange("category", value)}
-            onPricingChange={(value) => handleFilterChange("pricing", value)}
-            onSortChange={(value) => handleFilterChange("sortBy", value)}
-          />
-        </div>
-      </GradientBackground>
-      
-      <div className="container-wide py-8">
-        {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <ModernLoadingIndicator variant="dots" size="lg" text="Loading tools..." />
-          </div>
-        ) : displayedTools.length === 0 ? (
-          <div className="text-center py-16">
-            <h3 className="text-2xl font-medium mb-2">No tools found</h3>
-            <p className="text-muted-foreground mb-6">Try adjusting your search criteria or filters</p>
-            <Button 
-              onClick={() => {
-                window.history.pushState({}, '', '/tools');
-                window.location.reload();
-              }}
-              variant="outline"
-            >
-              Clear all filters
-            </Button>
-          </div>
-        ) : (
-          <>
-            {/* Tools Grid */}
-            <ToolGrid 
-              tools={displayedTools}
-              columnsPerRow={4}  // Default to 4 columns for desktop
-            />
-            
-            {/* Load More Button */}
-            {hasMore && (
-              <div className="mt-8 flex justify-center">
-                <Button 
-                  onClick={handleLoadMore} 
-                  variant="outline" 
-                  size="lg"
-                  className="group relative overflow-hidden"
-                >
-                  <span className="relative z-10">Load More Tools</span>
-                  <span className="absolute inset-0 bg-primary/5 transform translate-y-full group-hover:translate-y-0 transition-transform duration-200"></span>
-                </Button>
-              </div>
-            )}
-          </>
-        )}
+    <div className="container mx-auto py-12">
+      <h1 className="text-3xl font-bold text-center mb-8">Explore AI Tools</h1>
+
+      <div className="mb-6 px-4">
+        <Input
+          placeholder="Search for tools..."
+          value={searchTerm}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full md:w-auto"
+        />
       </div>
-    </>
+
+      <FilterBar
+        categories={categories}
+        pricingOptions={pricingOptions}
+        selectedCategory={selectedCategory}
+        selectedPricing={selectedPricing}
+        selectedSortOrder={selectedSortOrder}
+        onCategoryChange={handleCategoryChange}
+        onPricingChange={handlePricingChange}
+        onSortChange={handleSortChange}
+      />
+
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
+          {tools.map((tool) => (
+            <motion.div
+              key={tool.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <ToolCard tool={tool} />
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
   );
-}
+};
+
+export default Tools;

@@ -1,10 +1,8 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
-  useLocation,
 } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
@@ -17,6 +15,7 @@ import BlogPost from "@/pages/BlogPost";
 import About from "@/pages/About";
 import SubmitTool from "@/pages/SubmitTool";
 import Auth from "@/pages/Auth";
+import AuthCallback from "@/pages/AuthCallback";
 import NotFound from "@/pages/NotFound";
 import Layout from "@/components/layout/Layout";
 
@@ -26,11 +25,6 @@ import Categories from "./pages/Categories";
 function App() {
   const { user } = useAuth();
   
-  useEffect(() => {
-    // Auth check can be handled through the AuthContext directly
-    // No need for explicit checkAuth call
-  }, []);
-
   return (
     <HelmetProvider>
       <ThemeProvider defaultTheme="system" storageKey="theme">
@@ -47,6 +41,7 @@ function App() {
             
             {/* Auth routes */}
             <Route path="auth" element={<Auth />} />
+            <Route path="auth/callback" element={<AuthCallback />} />
             
             {/* User Dashboard route */}
             <Route path="dashboard" element={<div>Dashboard</div>} />
