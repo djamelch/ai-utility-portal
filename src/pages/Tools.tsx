@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Tool } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -222,14 +221,16 @@ const Tools: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
           {tools.map((tool) => (
-            <motion.div
+            <div
               key={tool.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              className="opacity-0 translate-y-4 animate-fade-in"
+              style={{
+                animationFillMode: 'forwards',
+                animationDelay: '0.1s'
+              }}
             >
               <ToolCard tool={tool} />
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
