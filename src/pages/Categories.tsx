@@ -5,7 +5,7 @@ import { Helmet } from "react-helmet-async";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MotionWrapper } from "@/components/ui/MotionWrapper";
+import { AnimationWrapper } from "@/components/ui/AnimationWrapper";
 import { Card, CardContent } from "@/components/ui/card";
 import { MainNav } from "@/components/layout/MainNav";
 import { siteConfig } from "@/config/site";
@@ -71,44 +71,43 @@ const Categories = () => {
       </Helmet>
       <MainNav />
       <section className="container grid items-center gap-6 pt-6 pb-8 md:py-10">
-        <MotionWrapper animation="fadeIn">
-          <div className="inline-block max-w-lg">
-            <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl">
-              Explore Tools by Category
-            </h1>
-            <p className="max-w-[700px] text-lg text-muted-foreground mt-3">
-              Dive deep into our curated categories to discover the perfect tool
-              for your next project.
-            </p>
-          </div>
+        <div className="inline-block max-w-lg">
+          <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl">
+            Explore Tools by Category
+          </h1>
+          <p className="max-w-[700px] text-lg text-muted-foreground mt-3">
+            Dive deep into our curated categories to discover the perfect tool
+            for your next project.
+          </p>
+        </div>
 
-          <div className="relative w-full max-w-md">
-            <Input
-              type="search"
-              placeholder="Search categories..."
-              value={search}
-              onChange={handleSearch}
-              className="pr-10"
-            />
-          </div>
+        <div className="relative w-full max-w-md">
+          <Input
+            type="search"
+            placeholder="Search categories..."
+            value={search}
+            onChange={handleSearch}
+            className="pr-10"
+          />
+        </div>
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
-            {loading ? (
-              // Skeleton loaders while loading
-              [...Array(8)].map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-4">
-                    <Skeleton className="h-4 w-[60%]" />
-                    <Skeleton className="h-3 w-[40%] mt-2" />
-                  </CardContent>
-                </Card>
-              ))
-            ) : filteredCategories.length > 0 ? (
-              // Display categories if available
-              filteredCategories.map((category) => (
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
+          {loading ? (
+            // Skeleton loaders while loading
+            [...Array(8)].map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-4">
+                  <Skeleton className="h-4 w-[60%]" />
+                  <Skeleton className="h-3 w-[40%] mt-2" />
+                </CardContent>
+              </Card>
+            ))
+          ) : filteredCategories.length > 0 ? (
+            // Display categories if available
+            filteredCategories.map((category, index) => (
+              <AnimationWrapper key={category.id} delay={index * 50}>
                 <Link
                   to={`/tools?category=${category.slug}`}
-                  key={category.id}
                 >
                   <Card className="transition-colors duration-200 hover:bg-secondary">
                     <CardContent className="p-4">
@@ -122,17 +121,17 @@ const Categories = () => {
                     </CardContent>
                   </Card>
                 </Link>
-              ))
-            ) : (
-              // Display message if no categories are found
-              <div className="col-span-full text-center py-6">
-                <p className="text-muted-foreground">
-                  No categories found matching your search.
-                </p>
-              </div>
-            )}
-          </div>
-        </MotionWrapper>
+              </AnimationWrapper>
+            ))
+          ) : (
+            // Display message if no categories are found
+            <div className="col-span-full text-center py-6">
+              <p className="text-muted-foreground">
+                No categories found matching your search.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
     </>
   );
