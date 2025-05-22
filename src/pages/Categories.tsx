@@ -11,11 +11,17 @@ import { MainNav } from "@/components/layout/MainNav";
 import { siteConfig } from "@/config/site";
 import { Category } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { EnhancedSearch } from "@/components/search/EnhancedSearch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Folder, Search, ArrowUpDown, FolderTree } from "lucide-react";
+
+type SortOption = "count-desc" | "count-asc" | "alpha-asc" | "alpha-desc";
 
 const Categories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sortOption, setSortOption] = useState<SortOption>("count-desc");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -56,9 +62,39 @@ const Categories = () => {
     setSearch(e.target.value);
   };
 
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(search.toLowerCase())
+  const handleSortChange = (value: string) => {
+    setSortOption(value as SortOption);
+  };
+
+  const sortCategories = (cats: Category[]): Category[] => {
+    return [...cats].sort((a, b) => {
+      switch (sortOption) {
+        case "count-desc":
+          return b.count - a.count;
+        case "count-asc":
+          return a.count - b.count;
+        case "alpha-asc":
+          return a.name.localeCompare(b.name);
+        case "alpha-desc":
+          return b.name.localeCompare(a.name);
+        default:
+          return 0;
+      }
+    });
+  };
+
+  const filteredCategories = sortCategories(
+    categories.filter((category) =>
+      category.name.toLowerCase().includes(search.toLowerCase())
+    )
   );
+
+  // Get an icon for a category based on its name
+  const getCategoryIcon = (categoryName: string) => {
+    // For simplicity using just a folder icon for all categories
+    // In a real app, you might want to map specific categories to specific icons
+    return <Folder className="h-8 w-8 text-primary mb-2" />;
+  };
 
   return (
     <>
@@ -82,17 +118,35 @@ const Categories = () => {
             </p>
           </div>
 
-          <div className="relative w-full max-w-md">
-            <Input
-              type="search"
-              placeholder="Search categories..."
-              value={search}
-              onChange={handleSearch}
-              className="pr-10"
-            />
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 my-6">
+            <div className="relative w-full max-w-md">
+              <EnhancedSearch 
+                placeholder="Search categories..." 
+                redirectToTools={false}
+                onSearch={(term) => setSearch(term)}
+                buttonText={null}
+                size="sm"
+              />
+            </div>
+
+            <div className="flex items-center">
+              <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
+              <span className="text-sm mr-2">Sort by:</span>
+              <Select value={sortOption} onValueChange={handleSortChange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="count-desc">Most Tools</SelectItem>
+                  <SelectItem value="count-asc">Fewest Tools</SelectItem>
+                  <SelectItem value="alpha-asc">A-Z</SelectItem>
+                  <SelectItem value="alpha-desc">Z-A</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {loading ? (
               // Skeleton loaders while loading
               [...Array(8)].map((_, i) => (
@@ -110,13 +164,14 @@ const Categories = () => {
                   to={`/tools?category=${category.slug}`}
                   key={category.id}
                 >
-                  <Card className="transition-colors duration-200 hover:bg-secondary">
-                    <CardContent className="p-4">
+                  <Card className="transition-all duration-200 hover:bg-accent/50 hover:shadow-md">
+                    <CardContent className="p-4 flex flex-col items-center text-center">
+                      {getCategoryIcon(category.name)}
                       <h2 className="text-lg font-semibold">{category.name}</h2>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className="text-sm text-muted-foreground truncate mb-2">
                         {category.description || `Browse ${category.name} tools`}
                       </p>
-                      <Badge variant="secondary" className="ml-2">
+                      <Badge variant="secondary" className="mt-2">
                         {category.count} tools
                       </Badge>
                     </CardContent>

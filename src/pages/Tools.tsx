@@ -8,9 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { FilterBar } from "@/components/tools/FilterBar";
 import { ToolCard } from "@/components/tools/ToolCard";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { EnhancedSearch } from "@/components/search/EnhancedSearch";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 const Tools: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,13 +30,19 @@ const Tools: React.FC = () => {
   const [selectedPricing, setSelectedPricing] = useState(initialPricing);
   const [selectedSortOrder, setSelectedSortOrder] = useState(initialSortOrder);
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchTools = useCallback(
     async (
       category: string,
       pricing: string,
       sortOrder: string,
-      searchTerm: string
+      searchTerm: string,
+      page: number = 1
     ) => {
       setLoading(true);
       let query = supabase.from("tools").select("*");
@@ -60,6 +67,20 @@ const Tools: React.FC = () => {
         query = query.order("is_featured", { ascending: false });
       }
 
+      // First get count of all matching items
+      const countQuery = query;
+      const { count, error: countError } = await countQuery.count();
+      
+      if (countError) {
+        console.error("Error fetching tool count:", countError);
+      } else {
+        setTotalPages(Math.ceil((count as number) / itemsPerPage));
+      }
+      
+      // Then fetch the page of results
+      const startIdx = (page - 1) * itemsPerPage;
+      query = query.range(startIdx, startIdx + itemsPerPage - 1);
+      
       const { data, error } = await query;
 
       if (error) {
@@ -101,10 +122,10 @@ const Tools: React.FC = () => {
   );
 
   useEffect(() => {
-    fetchTools(selectedCategory, selectedPricing, selectedSortOrder, searchTerm)
+    fetchTools(selectedCategory, selectedPricing, selectedSortOrder, searchTerm, currentPage)
       .then((fetchedTools) => setTools(fetchedTools))
       .catch((error) => console.error("Error in useEffect:", error));
-  }, [selectedCategory, selectedPricing, selectedSortOrder, searchTerm, fetchTools]);
+  }, [selectedCategory, selectedPricing, selectedSortOrder, searchTerm, currentPage, fetchTools]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -152,6 +173,7 @@ const Tools: React.FC = () => {
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
+    setCurrentPage(1); // Reset to page 1 when filter changes
     setSearchParams({
       category: value,
       pricing: selectedPricing,
@@ -162,6 +184,7 @@ const Tools: React.FC = () => {
 
   const handlePricingChange = (value: string) => {
     setSelectedPricing(value);
+    setCurrentPage(1); // Reset to page 1 when filter changes
     setSearchParams({
       category: selectedCategory,
       pricing: value,
@@ -172,6 +195,7 @@ const Tools: React.FC = () => {
 
   const handleSortChange = (value: string) => {
     setSelectedSortOrder(value);
+    setCurrentPage(1); // Reset to page 1 when filter changes
     setSearchParams({
       category: selectedCategory,
       pricing: selectedPricing,
@@ -182,6 +206,7 @@ const Tools: React.FC = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
+    setCurrentPage(1); // Reset to page 1 when search changes
     setSearchParams({
       category: selectedCategory,
       pricing: selectedPricing,
@@ -189,17 +214,25 @@ const Tools: React.FC = () => {
       search: value,
     });
   };
+  
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="container mx-auto py-12">
-      <h1 className="text-3xl font-bold text-center mb-8">Explore AI Tools</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">All Tools</h1>
 
       <div className="mb-6 px-4">
-        <Input
+        <EnhancedSearch
           placeholder="Search for tools..."
-          value={searchTerm}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full md:w-auto"
+          initialValue={searchTerm}
+          onSearch={handleSearchChange}
+          redirectToTools={false}
+          className="w-full md:max-w-lg mx-auto"
         />
       </div>
 
@@ -215,24 +248,81 @@ const Tools: React.FC = () => {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
-          {tools.map((tool) => (
-            <div
-              key={tool.id}
-              className="opacity-0 translate-y-4 animate-fade-in"
-              style={{
-                animationFillMode: 'forwards',
-                animationDelay: '0.1s'
-              }}
-            >
-              <ToolCard tool={tool} />
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
+            {tools.map((tool) => (
+              <div
+                key={tool.id}
+                className="opacity-0 translate-y-4 animate-fade-in"
+                style={{
+                  animationFillMode: 'forwards',
+                  animationDelay: '0.1s'
+                }}
+              >
+                <ToolCard tool={tool} />
+              </div>
+            ))}
+          </div>
+          
+          {totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  
+                  {[...Array(totalPages)].map((_, i) => {
+                    const page = i + 1;
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      page === 1 || 
+                      page === totalPages || 
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <PaginationItem key={page}>
+                          <PaginationLink 
+                            isActive={page === currentPage}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    }
+                    // Show ellipsis for skipped pages
+                    else if (
+                      page === 2 || 
+                      page === totalPages - 1
+                    ) {
+                      return (
+                        <PaginationItem key={page}>
+                          <span className="px-2">...</span>
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
+                  })}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
