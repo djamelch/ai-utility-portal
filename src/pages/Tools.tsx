@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
@@ -41,7 +42,7 @@ const Tools: React.FC = () => {
       let query = supabase.from("tools").select("*");
 
       if (category !== "all") {
-        query = query.eq("category", category);
+        query = query.eq("primary_task", category);
       }
 
       if (pricing !== "all") {
@@ -49,15 +50,15 @@ const Tools: React.FC = () => {
       }
 
       if (searchTerm) {
-        query = query.ilike("name", `%${searchTerm}%`);
+        query = query.ilike("company_name", `%${searchTerm}%`);
       }
 
       if (sortOrder === "newest") {
         query = query.order("created_at", { ascending: false });
       } else if (sortOrder === "popular") {
-        query = query.order("likes", { ascending: false });
+        query = query.order("click_count", { ascending: false });
       } else if (sortOrder === "top-rated") {
-        query = query.order("rating", { ascending: false });
+        query = query.order("is_featured", { ascending: false });
       }
 
       const { data, error } = await query;
@@ -68,8 +69,34 @@ const Tools: React.FC = () => {
         return [];
       }
 
+      // Transform data to match our Tool interface
+      const transformedTools: Tool[] = data.map(tool => ({
+        id: tool.id,
+        name: tool.company_name,
+        company_name: tool.company_name,
+        description: tool.short_description,
+        short_description: tool.short_description,
+        logo: tool.logo_url,
+        logo_url: tool.logo_url,
+        category: tool.primary_task,
+        primary_task: tool.primary_task,
+        rating: 5, // Default rating since it's not in the DB
+        reviewCount: 0, // Default review count since it's not in the DB
+        pricing: tool.pricing,
+        url: tool.visit_website_url || tool.detail_url || "#",
+        visit_website_url: tool.visit_website_url,
+        detail_url: tool.detail_url,
+        slug: tool.slug,
+        isFeatured: Boolean(tool.is_featured),
+        isVerified: Boolean(tool.is_verified),
+        is_featured: tool.is_featured,
+        is_verified: tool.is_verified,
+        isNew: new Date(tool.created_at || "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
+        ...tool
+      }));
+
       setLoading(false);
-      return data || [];
+      return transformedTools;
     },
     []
   );
@@ -82,48 +109,42 @@ const Tools: React.FC = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const { data: toolsData, error: toolsError } = await supabase
-        .from("tools")
-        .select("category");
+      // Use the RPC function we defined earlier
+      const { data, error } = await supabase.rpc('get_primary_task_counts');
 
-      if (toolsError) {
-        console.error("Error fetching tools for categories:", toolsError);
+      if (error) {
+        console.error("Error fetching categories:", error);
         return;
       }
 
-      const categoryCountMap: { [key: string]: number } = {};
-      toolsData.forEach((tool) => {
-        const category = tool.category;
-        categoryCountMap[category] = (categoryCountMap[category] || 0) + 1;
-      });
+      if (data) {
+        const formattedCategories = data.map((item: any) => ({
+          name: item.primary_task,
+          count: item.count || 0
+        }));
 
-      const categoriesWithCount = Object.keys(categoryCountMap).map(
-        (category) => {
-          const categoryWithCount = {
-            name: category,
-            count: categoryCountMap[category] || 0
-          };
-          return categoryWithCount;
-        }
-      );
-
-      setCategories(categoriesWithCount);
+        setCategories(formattedCategories);
+      }
     };
 
     const fetchPricingOptions = async () => {
-      const { data: toolsData, error: toolsError } = await supabase
+      const { data, error } = await supabase
         .from("tools")
-        .select("pricing");
+        .select("pricing")
+        .not('pricing', 'is', null);
 
-      if (toolsError) {
-        console.error("Error fetching tools for pricing options:", toolsError);
+      if (error) {
+        console.error("Error fetching pricing options:", error);
         return;
       }
 
-      const uniquePricingOptions = [
-        ...new Set(toolsData.map((tool) => tool.pricing)),
-      ];
-      setPricingOptions(uniquePricingOptions);
+      if (data) {
+        const uniquePricingOptions = [
+          ...new Set(data.map((tool) => tool.pricing)),
+        ].filter(Boolean);
+        
+        setPricingOptions(uniquePricingOptions);
+      }
     };
 
     fetchCategories();
@@ -168,10 +189,6 @@ const Tools: React.FC = () => {
       sort: selectedSortOrder,
       search: value,
     });
-  };
-
-  const getPricingCount = (pricing: string) => {
-    return tools.filter((tool) => tool.pricing === pricing).length;
   };
 
   return (

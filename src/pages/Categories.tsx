@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -20,35 +21,26 @@ const Categories = () => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("categories")
-          .select("id, name, slug, description");
+        // We need to use a function to get categories since there's no categories table
+        const { data: categoryData, error } = await supabase
+          .rpc('get_primary_task_counts');
 
         if (error) {
           console.error("Error fetching categories:", error);
         }
 
-        if (data) {
-          const categoriesWithToolCount = await Promise.all(
-            data.map(async (category) => {
-              const { count, error } = await supabase
-                .from("tools")
-                .select("*", { count: "exact" })
-                .eq("category_id", category.id);
+        if (categoryData) {
+          // Transform the data to match our Category interface
+          const formattedCategories: Category[] = categoryData.map((item: any) => {
+            return {
+              id: item.primary_task,
+              name: item.primary_task,
+              slug: item.primary_task.toLowerCase().replace(/\s+/g, '-'),
+              count: item.count || 0
+            };
+          });
 
-              if (error) {
-                console.error(
-                  `Error fetching tool count for category ${category.name}:`,
-                  error
-                );
-                return { ...category, count: 0 };
-              }
-
-              return { ...category, count: count || 0 };
-            })
-          );
-
-          setCategories(categoriesWithToolCount);
+          setCategories(formattedCategories);
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
@@ -122,7 +114,7 @@ const Categories = () => {
                     <CardContent className="p-4">
                       <h2 className="text-lg font-semibold">{category.name}</h2>
                       <p className="text-sm text-muted-foreground truncate">
-                        {category.description}
+                        {category.description || `Browse ${category.name} tools`}
                       </p>
                       <Badge variant="secondary" className="ml-2">
                         {category.count} tools
