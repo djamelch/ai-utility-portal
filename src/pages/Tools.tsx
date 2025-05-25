@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
@@ -68,8 +67,21 @@ const Tools: React.FC = () => {
       }
 
       // First get count of all matching items
-      const countQuery = query;
-      const { count, error: countError } = await countQuery.count();
+      let countQuery = supabase.from("tools").select("*", { count: 'exact', head: true });
+      
+      if (category !== "all") {
+        countQuery = countQuery.eq("primary_task", category);
+      }
+
+      if (pricing !== "all") {
+        countQuery = countQuery.eq("pricing", pricing);
+      }
+
+      if (searchTerm) {
+        countQuery = countQuery.ilike("company_name", `%${searchTerm}%`);
+      }
+      
+      const { count, error: countError } = await countQuery;
       
       if (countError) {
         console.error("Error fetching tool count:", countError);
