@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
@@ -235,16 +236,24 @@ const Tools: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-12">
-      <h1 className="text-3xl font-bold text-center mb-8">All Tools</h1>
+    <div className="container mx-auto py-12 min-h-screen">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          All AI Tools
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Discover the perfect AI tool for your needs from our comprehensive collection
+        </p>
+      </div>
 
-      <div className="mb-6 px-4">
+      <div className="mb-8 px-4">
         <EnhancedSearch
-          placeholder="Search for tools..."
+          placeholder="Search for AI tools..."
           initialValue={searchTerm}
           onSearch={handleSearchChange}
           redirectToTools={false}
-          className="w-full md:max-w-lg mx-auto"
+          className="w-full md:max-w-2xl mx-auto"
+          size="lg"
         />
       </div>
 
@@ -260,19 +269,50 @@ const Tools: React.FC = () => {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading amazing AI tools...</p>
+          </div>
+        </div>
+      ) : tools.length === 0 ? (
+        <div className="text-center py-20">
+          <div className="max-w-md mx-auto">
+            <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No tools found</h3>
+            <p className="text-muted-foreground mb-6">
+              Try adjusting your search criteria or browse all categories
+            </p>
+            <Button 
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCategory("all");
+                setSelectedPricing("all");
+                setCurrentPage(1);
+              }}
+              variant="outline"
+            >
+              Clear Filters
+            </Button>
+          </div>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
-            {tools.map((tool) => (
+          <div className="mb-6 px-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Showing {tools.length} of {(currentPage - 1) * itemsPerPage + tools.length} tools
+              {searchTerm && ` for "${searchTerm}"`}
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 mb-12">
+            {tools.map((tool, index) => (
               <div
                 key={tool.id}
                 className="opacity-0 translate-y-4 animate-fade-in"
                 style={{
                   animationFillMode: 'forwards',
-                  animationDelay: '0.1s'
+                  animationDelay: `${index * 0.1}s`
                 }}
               >
                 <ToolCard tool={tool} />
@@ -281,53 +321,47 @@ const Tools: React.FC = () => {
           </div>
           
           {totalPages > 1 && (
-            <div className="mt-8">
+            <div className="mt-12 flex justify-center">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious 
                       onClick={() => handlePageChange(currentPage - 1)}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-accent"}
                     />
                   </PaginationItem>
                   
-                  {[...Array(totalPages)].map((_, i) => {
-                    const page = i + 1;
-                    // Show first page, last page, current page, and pages around current
-                    if (
-                      page === 1 || 
-                      page === totalPages || 
-                      (page >= currentPage - 1 && page <= currentPage + 1)
-                    ) {
-                      return (
-                        <PaginationItem key={page}>
-                          <PaginationLink 
-                            isActive={page === currentPage}
-                            onClick={() => handlePageChange(page)}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      );
+                  {[...Array(Math.min(totalPages, 7))].map((_, i) => {
+                    let pageNumber;
+                    if (totalPages <= 7) {
+                      pageNumber = i + 1;
+                    } else {
+                      if (currentPage <= 4) {
+                        pageNumber = i + 1;
+                      } else if (currentPage >= totalPages - 3) {
+                        pageNumber = totalPages - 6 + i;
+                      } else {
+                        pageNumber = currentPage - 3 + i;
+                      }
                     }
-                    // Show ellipsis for skipped pages
-                    else if (
-                      page === 2 || 
-                      page === totalPages - 1
-                    ) {
-                      return (
-                        <PaginationItem key={page}>
-                          <span className="px-2">...</span>
-                        </PaginationItem>
-                      );
-                    }
-                    return null;
+                    
+                    return (
+                      <PaginationItem key={pageNumber}>
+                        <PaginationLink 
+                          isActive={pageNumber === currentPage}
+                          onClick={() => handlePageChange(pageNumber)}
+                          className="cursor-pointer"
+                        >
+                          {pageNumber}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
                   })}
                   
                   <PaginationItem>
                     <PaginationNext 
                       onClick={() => handlePageChange(currentPage + 1)}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-accent"}
                     />
                   </PaginationItem>
                 </PaginationContent>
