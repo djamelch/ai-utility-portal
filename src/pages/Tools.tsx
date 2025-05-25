@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
@@ -142,7 +141,6 @@ const Tools: React.FC = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      // Use the RPC function we defined earlier
       const { data, error } = await supabase.rpc('get_primary_task_counts');
 
       if (error) {
@@ -186,7 +184,7 @@ const Tools: React.FC = () => {
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
-    setCurrentPage(1); // Reset to page 1 when filter changes
+    setCurrentPage(1);
     setSearchParams({
       category: value,
       pricing: selectedPricing,
@@ -197,7 +195,7 @@ const Tools: React.FC = () => {
 
   const handlePricingChange = (value: string) => {
     setSelectedPricing(value);
-    setCurrentPage(1); // Reset to page 1 when filter changes
+    setCurrentPage(1);
     setSearchParams({
       category: selectedCategory,
       pricing: value,
@@ -208,7 +206,7 @@ const Tools: React.FC = () => {
 
   const handleSortChange = (value: string) => {
     setSelectedSortOrder(value);
-    setCurrentPage(1); // Reset to page 1 when filter changes
+    setCurrentPage(1);
     setSearchParams({
       category: selectedCategory,
       pricing: selectedPricing,
@@ -219,7 +217,7 @@ const Tools: React.FC = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(1); // Reset to page 1 when search changes
+    setCurrentPage(1);
     setSearchParams({
       category: selectedCategory,
       pricing: selectedPricing,
@@ -254,6 +252,7 @@ const Tools: React.FC = () => {
           redirectToTools={false}
           className="w-full md:max-w-2xl mx-auto"
           size="lg"
+          variant="hero"
         />
       </div>
 

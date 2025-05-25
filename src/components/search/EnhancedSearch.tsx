@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search as SearchIcon } from "lucide-react";
+import { Search as SearchIcon, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearchSuggestions, SearchSuggestion } from "@/hooks/useSearchSuggestions";
@@ -17,6 +17,7 @@ interface EnhancedSearchProps {
   showIcon?: boolean;
   buttonText?: string | null;
   size?: "sm" | "md" | "lg";
+  variant?: "default" | "header" | "hero";
 }
 
 export const EnhancedSearch: React.FC<EnhancedSearchProps> = ({
@@ -27,10 +28,12 @@ export const EnhancedSearch: React.FC<EnhancedSearchProps> = ({
   className = "",
   showIcon = true,
   buttonText = "Search",
-  size = "md"
+  size = "md",
+  variant = "default"
 }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState(initialValue);
+  const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string; count: number }[]>([]);
   const [pricingOptions, setPricingOptions] = useState<string[]>([]);
   
@@ -107,11 +110,19 @@ export const EnhancedSearch: React.FC<EnhancedSearchProps> = ({
   };
 
   // Handle search submission
-  const handleSearch = (term: string = searchTerm) => {
-    if (onSearch) {
-      onSearch(term);
-    } else if (redirectToTools && term.trim()) {
-      navigate(`/tools?search=${encodeURIComponent(term.trim())}`);
+  const handleSearch = async (term: string = searchTerm) => {
+    if (!term.trim()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      if (onSearch) {
+        onSearch(term);
+      } else if (redirectToTools) {
+        navigate(`/tools?search=${encodeURIComponent(term.trim())}`);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,7 +136,13 @@ export const EnhancedSearch: React.FC<EnhancedSearchProps> = ({
     }
   };
 
-  // Determine size classes
+  // Clear search
+  const handleClear = () => {
+    setSearchTerm("");
+    setShowSuggestions(false);
+  };
+
+  // Determine size and variant classes
   const sizeClasses = {
     sm: "h-8 text-sm",
     md: "h-10", 
@@ -135,14 +152,26 @@ export const EnhancedSearch: React.FC<EnhancedSearchProps> = ({
   const inputSizeClass = sizeClasses[size];
   
   const buttonSizeClass = {
-    sm: "h-8 px-3",
+    sm: "h-8 px-3 text-sm",
     md: "h-10 px-4",
-    lg: "h-12 px-6"
+    lg: "h-12 px-6 text-lg"
   }[size];
+
+  const containerClasses = {
+    default: "bg-background border border-input rounded-md shadow-sm",
+    header: "bg-background/95 backdrop-blur-sm border border-input/50 rounded-md shadow-sm",
+    hero: "bg-background/80 backdrop-blur-sm border border-input shadow-lg rounded-lg"
+  }[variant];
+
+  const inputClasses = {
+    default: "border-0 focus-visible:ring-0 bg-transparent",
+    header: "border-0 focus-visible:ring-0 bg-transparent text-sm",
+    hero: "border-0 focus-visible:ring-0 bg-transparent font-medium"
+  }[variant];
 
   return (
     <div className={`relative ${className}`}>
-      <div className="flex w-full items-center">
+      <div className={`flex w-full items-center overflow-hidden transition-all duration-200 hover:shadow-md ${containerClasses}`}>
         <div className="relative flex-grow">
           <Input
             ref={setInputRef}
@@ -152,11 +181,25 @@ export const EnhancedSearch: React.FC<EnhancedSearchProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => searchTerm.length >= 1 && setShowSuggestions(true)}
             onKeyDown={handleKeyPress}
-            className={`pr-10 ${inputSizeClass} ${showIcon ? 'pl-10' : ''}`}
+            className={`${inputClasses} ${inputSizeClass} ${showIcon ? 'pl-10' : 'pl-3'} ${searchTerm && !isLoading ? 'pr-8' : 'pr-3'}`}
+            disabled={isLoading}
           />
           
           {showIcon && (
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          )}
+
+          {isLoading && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+
+          {searchTerm && !isLoading && (
+            <button 
+              onClick={handleClear}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
           )}
         </div>
         
@@ -164,14 +207,19 @@ export const EnhancedSearch: React.FC<EnhancedSearchProps> = ({
           <Button 
             onClick={() => handleSearch()} 
             className={`ml-2 ${buttonSizeClass}`}
-            disabled={!searchTerm.trim()}
+            disabled={!searchTerm.trim() || isLoading}
+            variant={variant === "hero" ? "default" : "secondary"}
           >
-            {buttonText || "Search"}
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              buttonText || "Search"
+            )}
           </Button>
         )}
       </div>
       
-      {showSuggestions && (
+      {showSuggestions && suggestions.length > 0 && (
         <div ref={setSuggestionsRef}>
           <SearchSuggestions 
             suggestions={suggestions}

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MotionWrapper } from "@/components/ui/MotionWrapper";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +12,7 @@ import { Category } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedSearch } from "@/components/search/EnhancedSearch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Folder, Search, ArrowUpDown, FolderTree } from "lucide-react";
+import { Folder, Search, ArrowUpDown, FolderTree, Layers, Code, Palette, MessageSquare, Database, Cpu, Briefcase, Globe, Image, Video, Headphones, FileText, Users, Zap, Bot } from "lucide-react";
 
 type SortOption = "count-desc" | "count-asc" | "alpha-asc" | "alpha-desc";
 
@@ -27,7 +26,6 @@ const Categories = () => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        // We need to use a function to get categories since there's no categories table
         const { data: categoryData, error } = await supabase
           .rpc('get_primary_task_counts');
 
@@ -36,7 +34,6 @@ const Categories = () => {
         }
 
         if (categoryData) {
-          // Transform the data to match our Category interface
           const formattedCategories: Category[] = categoryData.map((item: any) => {
             return {
               id: item.primary_task,
@@ -57,10 +54,6 @@ const Categories = () => {
 
     fetchCategories();
   }, []);
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-  };
 
   const handleSortChange = (value: string) => {
     setSortOption(value as SortOption);
@@ -91,8 +84,24 @@ const Categories = () => {
 
   // Get an icon for a category based on its name
   const getCategoryIcon = (categoryName: string) => {
-    // For simplicity using just a folder icon for all categories
-    // In a real app, you might want to map specific categories to specific icons
+    const name = categoryName.toLowerCase();
+    
+    if (name.includes('code') || name.includes('programming') || name.includes('development')) return <Code className="h-8 w-8 text-blue-500 mb-2" />;
+    if (name.includes('design') || name.includes('ui') || name.includes('graphic')) return <Palette className="h-8 w-8 text-purple-500 mb-2" />;
+    if (name.includes('chat') || name.includes('conversation') || name.includes('communication')) return <MessageSquare className="h-8 w-8 text-green-500 mb-2" />;
+    if (name.includes('data') || name.includes('analytics') || name.includes('database')) return <Database className="h-8 w-8 text-orange-500 mb-2" />;
+    if (name.includes('ai') || name.includes('machine learning') || name.includes('ml')) return <Bot className="h-8 w-8 text-red-500 mb-2" />;
+    if (name.includes('productivity') || name.includes('automation')) return <Zap className="h-8 w-8 text-yellow-500 mb-2" />;
+    if (name.includes('business') || name.includes('finance') || name.includes('sales')) return <Briefcase className="h-8 w-8 text-indigo-500 mb-2" />;
+    if (name.includes('web') || name.includes('internet') || name.includes('browser')) return <Globe className="h-8 w-8 text-cyan-500 mb-2" />;
+    if (name.includes('image') || name.includes('photo') || name.includes('picture')) return <Image className="h-8 w-8 text-pink-500 mb-2" />;
+    if (name.includes('video') || name.includes('media') || name.includes('movie')) return <Video className="h-8 w-8 text-red-400 mb-2" />;
+    if (name.includes('audio') || name.includes('music') || name.includes('sound')) return <Headphones className="h-8 w-8 text-purple-400 mb-2" />;
+    if (name.includes('text') || name.includes('writing') || name.includes('content')) return <FileText className="h-8 w-8 text-gray-500 mb-2" />;
+    if (name.includes('social') || name.includes('team') || name.includes('collaboration')) return <Users className="h-8 w-8 text-blue-400 mb-2" />;
+    if (name.includes('process') || name.includes('workflow')) return <Cpu className="h-8 w-8 text-emerald-500 mb-2" />;
+    
+    // Default icon
     return <Folder className="h-8 w-8 text-primary mb-2" />;
   };
 
@@ -125,7 +134,8 @@ const Categories = () => {
                 redirectToTools={false}
                 onSearch={(term) => setSearch(term)}
                 buttonText={null}
-                size="sm"
+                size="md"
+                variant="default"
               />
             </div>
 
@@ -148,7 +158,6 @@ const Categories = () => {
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {loading ? (
-              // Skeleton loaders while loading
               [...Array(8)].map((_, i) => (
                 <Card key={i}>
                   <CardContent className="p-4">
@@ -158,13 +167,12 @@ const Categories = () => {
                 </Card>
               ))
             ) : filteredCategories.length > 0 ? (
-              // Display categories if available
               filteredCategories.map((category) => (
                 <Link
                   to={`/tools?category=${category.slug}`}
                   key={category.id}
                 >
-                  <Card className="transition-all duration-200 hover:bg-accent/50 hover:shadow-md">
+                  <Card className="transition-all duration-200 hover:bg-accent/50 hover:shadow-md hover:scale-105">
                     <CardContent className="p-4 flex flex-col items-center text-center">
                       {getCategoryIcon(category.name)}
                       <h2 className="text-lg font-semibold">{category.name}</h2>
@@ -179,8 +187,8 @@ const Categories = () => {
                 </Link>
               ))
             ) : (
-              // Display message if no categories are found
               <div className="col-span-full text-center py-6">
+                <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">
                   No categories found matching your search.
                 </p>

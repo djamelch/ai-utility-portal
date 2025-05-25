@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { siteConfig } from "@/config/site";
+import { EnhancedSearch } from "@/components/search/EnhancedSearch";
 
 export function MainNav() {
   return (
@@ -25,6 +26,17 @@ export function MainNav() {
               About
             </Link>
           </nav>
+        </div>
+        
+        {/* Header Search */}
+        <div className="hidden lg:block">
+          <EnhancedSearch
+            placeholder="Search tools..."
+            variant="header"
+            size="sm"
+            buttonText={null}
+            className="w-80"
+          />
         </div>
       </div>
     </header>
